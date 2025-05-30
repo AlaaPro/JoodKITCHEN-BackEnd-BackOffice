@@ -1,0 +1,45 @@
+api_platform:
+    title: 'JoodKitchen API'
+    version: '1.0.0'
+    description: 'API pour la gestion du restaurant JoodKitchen'
+    
+    # Enable multiple formats
+    formats:
+        jsonld:
+            mime_types: ['application/ld+json']
+        json:
+            mime_types: ['application/json']
+        html:
+            mime_types: ['text/html']
+    
+    # API Platform documentation
+    docs_formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        html: ['text/html']
+    
+    # Default format
+    patch_formats: []
+    
+    # Error formats
+    error_formats:
+        jsonproblem: ['application/problem+json']
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    
+    defaults:
+        stateless: false
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+        extra_properties:
+            standard_put: true
+            rfc_7807_compliant_errors: true
+    
+    # OpenAPI Configuration for Swagger UI
+    openapi:
+        swagger_ui_extra_configuration:
+            syntaxHighlight.theme: 'arta'
+            docExpansion: 'none'
+    
+    keep_legacy_inflector: false
+    use_symfony_listeners: true
