@@ -22,3 +22,472 @@
 [10-Jun-2025 16:24:55 UTC] PHP Deprecated:  App\Service\NotificationService::getOrderStatusUpdates(): Implicitly marking parameter $since as nullable is deprecated, the explicit nullable type must be used instead in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\src\Service\NotificationService.php on line 101
 [10-Jun-2025 16:34:46 UTC] [critical] Error thrown while running command "doctrine:fixtures:load --no-interaction --append". Message: "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'chef@joodkitchen.com' for key 'UNIQ_8D93D649E7927C74'"
 [10-Jun-2025 16:35:00 UTC] [critical] Error thrown while running command "doctrine:query:sql "DELETE FROM user WHERE email = 'user@example.com'"". Message: "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1451 Cannot delete or update a parent row: a foreign key constraint fails (`joodkitchen`.`admin_profile`, CONSTRAINT `FK_456B2886A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`))"
+[11-Jun-2025 10:12:56 UTC] [critical] Error thrown while running command ""server:start" --port=8001". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[11-Jun-2025 10:16:01 UTC] PHP Fatal error:  Uncaught TypeError: Invalid return value: callable object expected, "int" returned from "public/router.php". in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php:12
+Stack trace:
+#0 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\index.php(5): require_once()
+#1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\router.php(14): require_once('C:\\Users\\valaa\\...')
+#2 {main}
+  thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php on line 12
+[11-Jun-2025 10:16:06 UTC] PHP Fatal error:  Uncaught TypeError: Invalid return value: callable object expected, "int" returned from "public/router.php". in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php:12
+Stack trace:
+#0 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\index.php(5): require_once()
+#1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\router.php(14): require_once('C:\\Users\\valaa\\...')
+#2 {main}
+  thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php on line 12
+[11-Jun-2025 10:16:11 UTC] PHP Fatal error:  Uncaught TypeError: Invalid return value: callable object expected, "int" returned from "public/router.php". in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php:12
+Stack trace:
+#0 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\index.php(5): require_once()
+#1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\public\router.php(14): require_once('C:\\Users\\valaa\\...')
+#2 {main}
+  thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\autoload_runtime.php on line 12
+[11-Jun-2025 10:16:39 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:16:39 UTC] [info] Matched route "admin_test".
+[11-Jun-2025 10:16:39 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:16:39 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:16:39 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:16:39 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:16:39 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.controller_arguments" to listener "ContainerEiPuQSV\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:40 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:45 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:16:45 UTC] [info] Matched route "admin_login".
+[11-Jun-2025 10:16:45 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:16:45 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:16:45 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.controller_arguments" to listener "ContainerEiPuQSV\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:45 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:51 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:16:51 UTC] [info] Matched route "admin_dashboard_alt".
+[11-Jun-2025 10:16:51 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:16:51 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:16:51 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "debug.security.authorization.vote" to listener "Symfony\Bundle\SecurityBundle\EventListener\VoteListener::onVoterVote".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Access denied, the user is not fully authenticated; redirecting to authentication entry point.
+[11-Jun-2025 10:16:51 UTC] [debug] Calling Authentication entry point.
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.exception" to listener "Symfony\Component\Security\Http\Firewall\ExceptionListener::onKernelException".
+[11-Jun-2025 10:16:51 UTC] [debug] Listener "Symfony\Component\Security\Http\Firewall\ExceptionListener::onKernelException" stopped propagation of the event "kernel.exception".
+[11-Jun-2025 10:16:51 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::logKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:16:51 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:16:51 UTC] [debug] Listener "ApiPlatform\Symfony\EventListener\ExceptionListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:16:51 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:16:51 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:48 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:17:48 UTC] [info] Matched route "admin_login".
+[11-Jun-2025 10:17:48 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:17:48 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:17:48 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.controller_arguments" to listener "ContainerFZR3i6V\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:48 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:53 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:17:53 UTC] [info] Matched route "admin_dashboard_alt".
+[11-Jun-2025 10:17:53 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:17:53 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:17:53 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "debug.security.authorization.vote" to listener "Symfony\Bundle\SecurityBundle\EventListener\VoteListener::onVoterVote".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Access denied, the user is not fully authenticated; redirecting to authentication entry point.
+[11-Jun-2025 10:17:53 UTC] [debug] Calling Authentication entry point.
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.exception" to listener "Symfony\Component\Security\Http\Firewall\ExceptionListener::onKernelException".
+[11-Jun-2025 10:17:53 UTC] [debug] Listener "Symfony\Component\Security\Http\Firewall\ExceptionListener::onKernelException" stopped propagation of the event "kernel.exception".
+[11-Jun-2025 10:17:53 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::logKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:17:53 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:17:53 UTC] [debug] Listener "ApiPlatform\Symfony\EventListener\ExceptionListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:17:53 UTC] [debug] Listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onKernelException" was not called for event "kernel.exception".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:17:53 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:19 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:23:19 UTC] [info] Matched route "admin_login".
+[11-Jun-2025 10:23:20 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:23:20 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:23:20 UTC] [debug] Authenticator does not support the request.
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.controller_arguments" to listener "ContainerGd0am4O\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:20 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:28 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:23:28 UTC] [info] Matched route "admin_login".
+[11-Jun-2025 10:23:28 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:23:28 UTC] [debug] Checking support on authenticator.
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "Symfony\Component\Security\Http\Event\CheckPassportEvent" to listener "Symfony\Component\Security\Http\EventListener\UserProviderListener::checkPassport".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "Symfony\Component\Security\Http\Event\CheckPassportEvent" to listener "Symfony\Component\Security\Http\EventListener\UserProviderListener::checkPassport".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "Symfony\Component\Security\Http\Event\CheckPassportEvent" to listener "Symfony\Component\Security\Http\EventListener\CsrfProtectionListener::checkPassport".
+[11-Jun-2025 10:23:29 UTC] [info] Authenticator failed.
+[11-Jun-2025 10:23:29 UTC] [debug] Authentication failure, redirect triggered.
+[11-Jun-2025 10:23:29 UTC] [debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the failure response.
+[11-Jun-2025 10:23:29 UTC] [debug] The "Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator" authenticator set the response. Any later authenticator will not be called
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest" stopped propagation of the event "kernel.request".
+[11-Jun-2025 10:23:29 UTC] [debug] Listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest" was not called for event "kernel.request".
+[11-Jun-2025 10:23:29 UTC] [debug] Listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest" was not called for event "kernel.request".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:23:29 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:05 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:29:05 UTC] [info] Matched route "api_login".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Container7TR5VHu\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:05 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:15 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:29:15 UTC] [info] Matched route "api_login".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Container7TR5VHu\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:15 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:32 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:29:32 UTC] [info] Matched route "api_login".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Container7TR5VHu\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:29:32 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:29:34 UTC] [info] User Deprecated: Since api-platform/core 3.1: Having mercure.include_type (always include @type in Mercure updates, even delete ones) set to false in the configuration is deprecated. It will be true by default in API Platform 4.0.
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:34 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:43 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:29:43 UTC] [info] Matched route "admin_login".
+[11-Jun-2025 10:29:43 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Container7TR5VHu\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:29:43 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[11-Jun-2025 10:33:04 UTC] [info] User Deprecated: Since api-platform/core 3.4: Injecting the "ApiPlatform\JsonSchema\TypeFactoryInterface" inside "ApiPlatform\JsonSchema\SchemaFactory" is deprecated and "ApiPlatform\JsonSchema\TypeFactoryInterface" will be removed in 4.x.
+[11-Jun-2025 10:33:04 UTC] [info] Matched route "admin_dashboard_alt".
+[11-Jun-2025 10:33:04 UTC] [debug] Checking for authenticator support.
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\DebugHandlersListener::configure".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\ValidateRequestListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::setDefaultLocale".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\AddFormatListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\QueryParameterValidateListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::configureLogoutUrlGenerator".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\ReadListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.request" to listener "ApiPlatform\Symfony\EventListener\DeserializeListener::onKernelRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\Security\Http\EventListener\IsGrantedAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelControllerArguments".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Container7TR5VHu\RequestPayloadValueResolverGhost3590451::onKernelControllerArguments".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.controller_arguments" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::onControllerArguments".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Security\Http\Firewall\ContextListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CorsListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ResponseListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\WebLink\EventListener\AddLinkHeaderListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\Mercure\EventSubscriber\SetCookieSubscriber::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Nelmio\CorsBundle\EventListener\CacheableResponseVaryListener::onResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\CacheAttributeListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\ErrorListener::removeCspHeader".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\DisallowRobotsIndexingListener::onResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.response" to listener "Symfony\Component\HttpKernel\EventListener\SessionListener::onKernelResponse".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleListener::onKernelFinishRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
+[11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".

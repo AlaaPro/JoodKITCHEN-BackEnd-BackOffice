@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" data-coreui-theme="light">
+<head>
+    <base href="./">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="description" content="JoodKitchen Admin - Gestion Restaurant">
+    <meta name="author" content="JoodKitchen">
+    <meta name="keyword" content="Restaurant,Admin,Template,Gestion,Dashboard">
+    <title>{% block title %}JoodKitchen Admin{% endblock %}</title>
+    
+    <!-- CoreUI for Bootstrap CSS (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.2.0/dist/css/coreui.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- CoreUI Icons (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/@coreui/icons@3.0.1/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- SimpleBar CSS (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/simplebar@6.2.5/dist/simplebar.min.css" rel="stylesheet">
+    <!-- Font Awesome (CDN) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- CoreUI Theme CSS (Critical for sidebar layout) -->
+    <link href="{{ asset('admin/css/theme.css') }}" rel="stylesheet">
+    
+    <!-- Custom Admin Styles -->
+    <link href="{{ asset('admin/css/style.css') }}" rel="stylesheet">
+    
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
+        <div class="sidebar-header border-bottom">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-full">
+                    <i class="fas fa-utensils me-2"></i>
+                    JoodKitchen
+                </div>
+                <div class="sidebar-brand-narrow">
+                    <i class="fas fa-utensils"></i>
+                </div>
+            </div>
+            <button class="btn-close d-lg-none" type="button" data-coreui-dismiss="offcanvas" data-coreui-theme="dark" aria-label="Close" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
+        </div>
+        {{ include('components/admin_sidebar.html.twig') }}
+        <div class="sidebar-footer border-top d-none d-md-flex">
+            <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
+        </div>
+    </div>
+
+    <!-- Main wrapper -->
+    <div class="wrapper d-flex flex-column min-vh-100">
+        <!-- Header -->
+        <header class="header header-sticky p-0 mb-4">
+            {{ include('components/admin_header.html.twig') }}
+            
+            <!-- Breadcrumb Container -->
+            <div class="container-fluid px-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb my-0">
+                        {% block breadcrumb %}
+                        <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                        {% endblock %}
+                    </ol>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main content body -->
+        <div class="body flex-grow-1">
+            <div class="container-lg px-4">
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Alert Messages -->
+                        <div id="alert-container"></div>
+                        
+                        <!-- Page Content -->
+                        {% block content %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer px-4">
+            <div>
+                <a href="#">JoodKitchen</a>
+                <span class="ms-1">Admin Template © {{ "now"|date("Y") }} JoodKitchen.</span>
+            </div>
+            <div class="ms-auto">
+                Powered by&nbsp;<a href="https://coreui.io/docs/">CoreUI UI Components</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals Container -->
+    <div id="modals-container"></div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
+
+    <!-- Chart.js (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <!-- SimpleBar JS (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@6.2.5/dist/simplebar.min.js"></script>
+    
+    <!-- CoreUI for Bootstrap Bundle with Popper (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.2.0/dist/js/coreui.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- jQuery (CDN) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- CoreUI Configuration -->
+    <script src="{{ asset('admin/js/config.js') }}"></script>
+    
+    <!-- CoreUI Color Modes -->
+    <script src="{{ asset('admin/js/color-modes.js') }}"></script>
+    
+    <!-- CoreUI Main JS -->
+    <script src="{{ asset('admin/js/main.js') }}"></script>
+    
+    <!-- Custom Admin Scripts -->
+    <script src="{{ asset('js/admin/utils.js') }}"></script>
+    <script src="{{ asset('js/admin/api.js') }}"></script>
+    <script src="{{ asset('js/admin/auth.js') }}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== DASHBOARD AUTHENTICATION DEBUG START ===');
+            console.log('Time:', new Date().toISOString());
+            
+            // Check localStorage contents
+            console.log('=== LOCALSTORAGE CONTENTS ===');
+            console.log('All localStorage keys:', Object.keys(localStorage));
+            console.log('admin_token:', localStorage.getItem('admin_token'));
+            console.log('admin_user:', localStorage.getItem('admin_user'));
+            
+            // Parse user data if exists
+            const userDataRaw = localStorage.getItem('admin_user');
+            if (userDataRaw) {
+                try {
+                    const userData = JSON.parse(userDataRaw);
+                    console.log('Parsed user data:', userData);
+                    console.log('User roles:', userData.roles);
+                } catch (e) {
+                    console.error('Failed to parse user data:', e);
+                }
+            }
+            
+            function isTokenExpired(token) {
+                console.log('=== TOKEN VALIDATION START ===');
+                if (!token) {
+                    console.log('No token provided');
+                    return true;
+                }
+                
+                console.log('Token:', token);
+                console.log('Token length:', token.length);
+                
+                try {
+                    // Check if it's a JWT token (format: header.payload.signature)
+                    if (token.includes('.')) {
+                        console.log('Detected JWT token format');
+                        const parts = token.split('.');
+                        console.log('JWT parts count:', parts.length);
+                        
+                        if (parts.length !== 3) {
+                            console.log('Invalid JWT format - expected 3 parts');
+                            return true;
+                        }
+                        
+                        try {
+                            // Decode JWT payload (second part)
+                            const payload = JSON.parse(atob(parts[1]));
+                            console.log('JWT payload:', payload);
+                            
+                            // Check expiration (exp is in seconds, Date.now() is in milliseconds)
+                            if (payload.exp) {
+                                const expirationTime = payload.exp * 1000; // Convert to milliseconds
+                                const currentTime = Date.now();
+                                console.log('JWT expiration time:', expirationTime);
+                                console.log('Current time:', currentTime);
+                                console.log('Time until expiration (ms):', expirationTime - currentTime);
+                                
+                                const isExpired = currentTime > expirationTime;
+                                console.log('Is JWT expired?', isExpired);
+                                return isExpired;
+                            } else {
+                                console.log('No expiration time in JWT payload');
+                                return false; // Assume valid if no expiration
+                            }
+                        } catch (error) {
+                            console.error('Error decoding JWT payload:', error);
+                            return true;
+                        }
+                    } else {
+                        // Legacy API token format: user_id:email:timestamp:hash
+                        console.log('Detected legacy token format');
+                        const parts = token.split(':');
+                        console.log('Token parts:', parts);
+                        console.log('Number of parts:', parts.length);
+                        
+                        if (parts.length !== 4) {
+                            console.log('Invalid token format - expected 4 parts');
+                            return true;
+                        }
+                        
+                        const timestamp = parseInt(parts[2]);
+                        console.log('Token timestamp:', timestamp);
+                        console.log('Current timestamp:', Date.now());
+                        
+                        if (isNaN(timestamp)) {
+                            console.log('Invalid timestamp in token');
+                            return true;
+                        }
+                        
+                        // Token expires after 24 hours
+                        const expirationTime = timestamp + (24 * 60 * 60 * 1000);
+                        console.log('Token expiration time:', expirationTime);
+                        console.log('Time until expiration (ms):', expirationTime - Date.now());
+                        
+                        const isExpired = Date.now() > expirationTime;
+                        console.log('Is token expired?', isExpired);
+                        
+                        return isExpired;
+                    }
+                } catch (error) {
+                    console.error('Error validating token:', error);
+                    return true;
+                }
+            }
+            
+            function checkInitialAuth() {
+                console.log('=== INITIAL AUTH CHECK ===');
+                
+                const token = localStorage.getItem('admin_token');
+                const userDataRaw = localStorage.getItem('admin_user');
+                
+                console.log('hasToken:', !!token);
+                console.log('hasUserData:', !!userDataRaw);
+                
+                if (!token || !userDataRaw) {
+                    console.log('Missing token or user data - redirecting to login');
+                    console.log('Redirect URL:', '{{ path('admin_login') }}');
+                    window.location.href = '{{ path('admin_login') }}';
+                    return false;
+                }
+                
+                if (isTokenExpired(token)) {
+                    console.log('Token is expired - clearing storage and redirecting');
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    window.location.href = '{{ path('admin_login') }}';
+                    return false;
+                }
+                
+                try {
+                    const userData = JSON.parse(userDataRaw);
+                    console.log('User data parsed successfully:', userData);
+                    
+                    if (!userData.roles || !Array.isArray(userData.roles)) {
+                        console.log('Invalid user roles - redirecting');
+                        window.location.href = '{{ path('admin_login') }}';
+                        return false;
+                    }
+                    
+                    const hasAdminRole = userData.roles.some(role => 
+                        ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'].includes(role)
+                    );
+                    console.log('Has admin role?', hasAdminRole);
+                    console.log('User roles:', userData.roles);
+                    
+                    if (!hasAdminRole) {
+                        console.log('User does not have admin role - redirecting');
+                        window.location.href = '{{ path('admin_login') }}';
+                        return false;
+                    }
+                    
+                    console.log('Initial auth check passed');
+                    return true;
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('admin_token');
+                    localStorage.removeItem('admin_user');
+                    window.location.href = '{{ path('admin_login') }}';
+                    return false;
+                }
+            }
+            
+            function waitForAdminAuth(callback, maxAttempts = 10, currentAttempt = 0) {
+                console.log(`=== WAITING FOR ADMINAUTH (Attempt ${currentAttempt + 1}/${maxAttempts}) ===`);
+                
+                if (currentAttempt >= maxAttempts) {
+                    console.error('AdminAuth not loaded after maximum attempts');
+                    return;
+                }
+                
+                if (typeof AdminAuth !== 'undefined' && AdminAuth) {
+                    console.log('AdminAuth is available:', typeof AdminAuth);
+                    console.log('AdminAuth object:', AdminAuth);
+                    
+                    try {
+                        const isAuth = AdminAuth.isAuthenticated();
+                        console.log('AdminAuth.isAuthenticated() result:', isAuth);
+                        
+                        if (isAuth === false) {
+                            console.log('AdminAuth says not authenticated - redirecting');
+                            window.location.href = '{{ path('admin_login') }}';
+                            return;
+                        }
+                        
+                        callback();
+                    } catch (error) {
+                        console.error('Error calling AdminAuth.isAuthenticated():', error);
+                    }
+                } else {
+                    console.log('AdminAuth not ready yet, waiting...');
+                    setTimeout(() => {
+                        waitForAdminAuth(callback, maxAttempts, currentAttempt + 1);
+                    }, 200);
+                }
+            }
+            
+            // Perform initial check immediately
+            console.log('=== STARTING AUTHENTICATION FLOW ===');
+            if (checkInitialAuth()) {
+                console.log('Initial auth passed, waiting for AdminAuth...');
+                waitForAdminAuth(function() {
+                    console.log('=== AUTHENTICATION COMPLETE - DASHBOARD CAN LOAD ===');
+                });
+            }
+            
+            console.log('=== DASHBOARD AUTHENTICATION DEBUG END ===');
+        });
+        
+        // Header scroll behavior (from official CoreUI demo)
+        const header = document.querySelector('header.header');
+        document.addEventListener('scroll', () => {
+            if (header) {
+                header.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0);
+            }
+        });
+    </script>
+    
+    {% block javascripts %}{% endblock %}
+</body>
+</html> 

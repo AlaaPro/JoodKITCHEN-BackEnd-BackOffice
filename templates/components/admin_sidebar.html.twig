@@ -1,0 +1,50 @@
+<ul class="sidebar-nav simplebar-scrollable-y" data-coreui="navigation" data-simplebar="init"><div class="simplebar-wrapper" style="margin: -8px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" tabindex="0" role="region" aria-label="scrollable content" style="height: 100%; overflow: hidden scroll;"><div class="simplebar-content" style="padding: 8px;">
+        <li class="nav-item"><a class="nav-link" href="{{ path('admin_dashboard') }}">
+            <i class="nav-icon bi bi-speedometer2"></i> Dashboard<span class="badge badge-sm bg-info ms-auto">NEW</span></a></li>
+        <li class="nav-title">Gestion</li>
+        <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
+            <i class="nav-icon bi bi-cart"></i> Commandes</a>
+          <ul class="nav-group-items compact">
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_orders') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Toutes les commandes</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_kitchen') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Cuisine</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_orders_tracking') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Suivi livraisons</a></li>
+          </ul>
+        </li>
+        <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
+            <i class="nav-icon bi bi-cup-hot"></i> Menu & Plats</a>
+          <ul class="nav-group-items compact">
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_dishes') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Plats</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_menus') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Menus</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_categories') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Catégories</a></li>
+          </ul>
+        </li>
+        <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
+            <i class="nav-icon bi bi-people"></i> Utilisateurs</a>
+          <ul class="nav-group-items compact">
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_users') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Clients</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_staff') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Personnel</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_admins') }}"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Administrateurs</a></li>
+          </ul>
+        </li>
+        {# <li class="nav-item"><a class="nav-link" href="{{ path('admin_analytics') }}">
+            <i class="nav-icon bi bi-bar-chart"></i> Analytics</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('admin_subscriptions') }}">
+            <i class="nav-icon bi bi-calendar-check"></i> Abonnements</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('admin_notifications') }}">
+            <i class="nav-icon bi bi-bell"></i> Notifications</a></li> #}
+        <li class="nav-divider"></li>
+        <li class="nav-title">Système</li>
+        <li class="nav-item"><a class="nav-link" href="{{ path('admin_settings') }}">
+            <i class="nav-icon bi bi-gear"></i> Paramètres</a></li>
+        <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
+            <i class="nav-icon bi bi-server"></i> Système</a>
+          <ul class="nav-group-items compact">
+            <li class="nav-item"><a class="nav-link" href="{{ path('admin_system_logs') }}">
+                <i class="nav-icon bi bi-file-text"></i> Logs</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">
+                <i class="nav-icon bi bi-arrow-clockwise"></i> Cache</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">
+                <i class="nav-icon bi bi-download"></i> Sauvegarde</a></li>
+          </ul>
+        </li>
+      </div></div></div></div><div class="simplebar-placeholder" style="width: 255px; height: 823px;"></div></div><div class="simplebar-track simplebar-horizontal" style="visibility: hidden;"><div class="simplebar-scrollbar" style="width: 0px; display: none;"></div></div><div class="simplebar-track simplebar-vertical" style="visibility: visible;"><div class="simplebar-scrollbar" style="height: 410px; transform: translate3d(0px, 0px, 0px); display: block;"></div></div></ul>

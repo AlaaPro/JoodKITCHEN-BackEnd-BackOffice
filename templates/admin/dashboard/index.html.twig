@@ -1,0 +1,282 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dashboard - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards Row -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold" id="stats-orders">156</div>
+                    <div>Commandes Aujourd'hui</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-transparent text-white p-0" type="button" data-coreui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ path('admin_orders') }}">Voir détails</a>
+                        <a class="dropdown-item" href="#">Export</a>
+                    </div>
+                </div>
+            </div>
+            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
+                <canvas id="card-chart1" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-info">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold" id="stats-revenue">2.847€</div>
+                    <div>Chiffre d'Affaires</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-transparent text-white p-0" type="button" data-coreui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ path('admin_analytics_sales') }}">Voir détails</a>
+                        <a class="dropdown-item" href="#">Export</a>
+                    </div>
+                </div>
+            </div>
+            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
+                <canvas id="card-chart2" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold" id="stats-users">89</div>
+                    <div>Nouveaux Clients</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-transparent text-white p-0" type="button" data-coreui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ path('admin_users') }}">Voir détails</a>
+                        <a class="dropdown-item" href="#">Export</a>
+                    </div>
+                </div>
+            </div>
+            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
+                <canvas id="card-chart3" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fs-4 fw-semibold" id="stats-dishes">12</div>
+                    <div>Plats Populaires</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-transparent text-white p-0" type="button" data-coreui-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="{{ path('admin_dishes') }}">Voir détails</a>
+                        <a class="dropdown-item" href="#">Export</a>
+                    </div>
+                </div>
+            </div>
+            <div class="c-chart-wrapper mt-3 mx-3" style="height:70px;">
+                <canvas id="card-chart4" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Chart Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <div>
+                <h4 class="card-title mb-0">Ventes</h4>
+                <div class="small text-body-secondary">Derniers 7 jours</div>
+            </div>
+            <div class="btn-toolbar d-none d-md-block" role="toolbar" aria-label="Toolbar with buttons">
+                <div class="btn-group btn-group-toggle mx-3" data-coreui-toggle="buttons">
+                    <input class="btn-check" id="option1" type="radio" name="options" autocomplete="off">
+                    <label class="btn btn-outline-secondary">7J</label>
+                    <input class="btn-check" id="option2" type="radio" name="options" autocomplete="off" checked="">
+                    <label class="btn btn-outline-secondary active">30J</label>
+                    <input class="btn-check" id="option3" type="radio" name="options" autocomplete="off">
+                    <label class="btn btn-outline-secondary">90J</label>
+                </div>
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </div>
+        <div class="c-chart-wrapper" style="height:300px;margin-top:40px;">
+            <canvas id="main-chart" height="300"></canvas>
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 row-cols-xl-5 g-4 mb-2 text-center">
+            <div class="col">
+                <div class="text-body-secondary">Commandes</div>
+                <div class="fw-semibold text-truncate">156 Commandes (40%)</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-body-secondary">Clients</div>
+                <div class="fw-semibold text-truncate">89 Clients (20%)</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-body-secondary">Revenus</div>
+                <div class="fw-semibold text-truncate">2.847€ (60%)</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="text-body-secondary">Plats vendus</div>
+                <div class="fw-semibold text-truncate">234 Plats (80%)</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="col d-none d-xl-block">
+                <div class="text-body-secondary">Satisfaction</div>
+                <div class="fw-semibold text-truncate">95.2%</div>
+                <div class="progress progress-thin mt-2">
+                    <div class="progress-bar" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Grid -->
+<div class="row g-4 mb-4">
+    <!-- Recent Orders -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Commandes Récentes</h4>
+                    <a href="{{ path('admin_orders') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> Voir tout
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 border">
+                        <thead class="fw-semibold text-nowrap">
+                            <tr class="align-middle">
+                                <th class="bg-body-secondary">Commande</th>
+                                <th class="bg-body-secondary">Client</th>
+                                <th class="bg-body-secondary">Montant</th>
+                                <th class="bg-body-secondary">Statut</th>
+                                <th class="bg-body-secondary">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders">
+                            <!-- Orders will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Dishes -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Top Plats</h4>
+            </div>
+            <div class="card-body">
+                <div class="c-chart-wrapper">
+                    <canvas id="doughnut-chart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kitchen Status for Kitchen Staff -->
+<div class="row g-4 mb-4" id="kitchen-section" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-fire"></i> Statut Cuisine
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-4" id="kitchen-dashboard">
+                    <!-- Kitchen orders will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Actions Rapides</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{{ path('admin_dishes_create') }}" class="btn btn-outline-primary btn-lg w-100 text-center">
+                            <i class="fas fa-plus-circle d-block mb-2" style="font-size: 2rem;"></i>
+                            <div>Nouveau Plat</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{{ path('admin_menus_create') }}" class="btn btn-outline-info btn-lg w-100 text-center">
+                            <i class="fas fa-book-open d-block mb-2" style="font-size: 2rem;"></i>
+                            <div>Nouveau Menu</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{{ path('admin_users_create') }}" class="btn btn-outline-success btn-lg w-100 text-center">
+                            <i class="fas fa-user-plus d-block mb-2" style="font-size: 2rem;"></i>
+                            <div>Nouvel Utilisateur</div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <a href="{{ path('admin_analytics_export') }}" class="btn btn-outline-warning btn-lg w-100 text-center">
+                            <i class="fas fa-download d-block mb-2" style="font-size: 2rem;"></i>
+                            <div>Export Données</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('js/admin/dashboard.js') }}"></script>
+{% endblock %} 

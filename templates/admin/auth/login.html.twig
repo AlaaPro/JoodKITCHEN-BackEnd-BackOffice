@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="JoodKitchen Admin - Connexion">
+    <title>JoodKitchen Admin - Connexion</title>
+    
+    <!-- CoreUI for Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.2.0/dist/css/coreui.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card-group d-block d-md-flex row">
+                    <div class="card col-md-7 p-4 mb-0">
+                        <div class="card-body">
+                            <h1>JoodKitchen Admin</h1>
+                            <p class="text-body-secondary">Connectez-vous à votre espace d'administration</p>
+
+                            <!-- Login Form -->
+                            <form id="loginForm">
+                                <div id="alert-container"></div>
+
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-envelope"></i>
+                                    </span>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email" 
+                                           placeholder="Email" 
+                                           required
+                                           autocomplete="email">
+                                </div>
+
+                                <div class="input-group mb-4">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="password" 
+                                           name="password" 
+                                           placeholder="Mot de passe" 
+                                           required
+                                           autocomplete="current-password">
+                                    <span class="input-group-text" style="cursor: pointer;" onclick="togglePassword()">
+                                        <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                                    </span>
+                                </div>
+
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Se souvenir de moi
+                                    </label>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button type="submit" class="btn btn-primary px-4" id="loginButton">
+                                            <span class="spinner-border spinner-border-sm me-1 d-none" id="loadingSpinner"></span>
+                                            <span id="loginText">Se connecter</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Demo Credentials -->
+                            <div class="card mt-4">
+                                <div class="card-body bg-light">
+                                    <h6 class="text-body-secondary mb-3">Identifiants de démonstration :</h6>
+                                    
+                                    <div class="demo-credential mb-2 p-2 border rounded" style="cursor: pointer;" onclick="fillCredentials('admin@joodkitchen.com', 'admin123')">
+                                        <div class="d-flex justify-content-between">
+                                            <strong class="text-dark">Super Admin:</strong>
+                                            <span class="font-monospace text-secondary">admin@joodkitchen.com</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="demo-credential mb-2 p-2 border rounded" style="cursor: pointer;" onclick="fillCredentials('chef@joodkitchen.com', 'chef123')">
+                                        <div class="d-flex justify-content-between">
+                                            <strong class="text-dark">Cuisine:</strong>
+                                            <span class="font-monospace text-secondary">chef@joodkitchen.com</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="demo-credential mb-2 p-2 border rounded" style="cursor: pointer;" onclick="fillCredentials('client@joodkitchen.com', 'client123')">
+                                        <div class="d-flex justify-content-between">
+                                            <strong class="text-dark">Client:</strong>
+                                            <span class="font-monospace text-secondary">client@joodkitchen.com</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-hand-pointer me-1"></i> Cliquez pour remplir automatiquement
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Footer Links -->
+                            <div class="text-center mt-4 pt-3 border-top">
+                                <a href="/admin/forgot-password" class="text-decoration-none me-3">Mot de passe oublié ?</a>
+                                <a href="/" class="text-decoration-none">Retour au site</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CoreUI for Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.2.0/dist/js/coreui.bundle.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Admin Scripts -->
+    <script src="{{ asset('js/admin/utils.js') }}"></script>
+    <script src="{{ asset('js/admin/api.js') }}"></script>
+    <script src="{{ asset('js/admin/auth.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for stored login message
+            const storedMessage = localStorage.getItem('login_message');
+            if (storedMessage) {
+                showAlert(storedMessage, 'warning');
+                localStorage.removeItem('login_message');
+            }
+
+            // Check if already logged in
+            if (typeof AdminAuth !== 'undefined' && AdminAuth.isAuthenticated()) {
+                window.location.href = '/admin/dashboard';
+                return;
+            }
+
+            // Initialize login form
+            initializeLoginForm();
+            
+            // Auto-focus email field
+            document.getElementById('email').focus();
+        });
+
+        function initializeLoginForm() {
+            const loginForm = document.getElementById('loginForm');
+            
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Clear previous alerts
+                clearAlerts();
+                
+                // Get form data
+                const formData = new FormData(loginForm);
+                const email = formData.get('email').trim();
+                const password = formData.get('password');
+                
+                // Validate form
+                if (!email || !password) {
+                    showAlert('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showAlert('Veuillez entrer un email valide', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                setLoadingState(true);
+                
+                try {
+                    // Attempt login via API
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.token && data.user) {
+                        // Store authentication data
+                        localStorage.setItem('admin_token', data.token);
+                        localStorage.setItem('admin_user', JSON.stringify(data.user));
+                        
+                        showAlert('Connexion réussie ! Redirection...', 'success');
+                        
+                        // Redirect based on user role
+                        setTimeout(() => {
+                            const user = data.user;
+                            if (user.roles.includes('ROLE_KITCHEN')) {
+                                window.location.href = '/admin/kitchen';
+                            } else {
+                                window.location.href = '/admin/dashboard';
+                            }
+                        }, 1000);
+                    } else {
+                        showAlert(data.error || data.message || 'Erreur de connexion', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showAlert('Erreur de connexion réseau', 'error');
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+        }
+        
+        function setLoadingState(loading) {
+            const loginButton = document.getElementById('loginButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const loginText = document.getElementById('loginText');
+            
+            if (loading) {
+                loginButton.disabled = true;
+                loadingSpinner.classList.remove('d-none');
+                loginText.textContent = 'Connexion...';
+            } else {
+                loginButton.disabled = false;
+                loadingSpinner.classList.add('d-none');
+                loginText.textContent = 'Se connecter';
+            }
+        }
+        
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+        
+        function fillCredentials(email, password) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            
+            // Focus the login button
+            const loginButton = document.getElementById('loginButton');
+            loginButton.focus();
+            
+            // Show a hint
+            showAlert('Cliquez sur "Se connecter" pour utiliser ces identifiants', 'info', 3000);
+        }
+        
+        function showAlert(message, type = 'info', duration = 5000) {
+            const alertContainer = document.getElementById('alert-container');
+            
+            const alertTypes = {
+                'success': 'alert-success',
+                'error': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            };
+            
+            const alertIcons = {
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const alert = document.createElement('div');
+            alert.className = `alert ${alertTypes[type] || alertTypes.info} alert-dismissible fade show`;
+            alert.innerHTML = `
+                <i class="${alertIcons[type] || alertIcons.info} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+            `;
+            
+            alertContainer.appendChild(alert);
+            
+            // Auto-remove after duration
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, duration);
+            }
+        }
+        
+        function clearAlerts() {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = '';
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Security: Clear any stored tokens on login page
+        if (window.location.pathname.includes('/admin/login')) {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_user');
+        }
+    </script>
+</body>
+</html> 

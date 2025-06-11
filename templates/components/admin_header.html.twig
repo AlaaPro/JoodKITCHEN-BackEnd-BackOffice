@@ -1,0 +1,170 @@
+<div class="container-fluid border-bottom px-4">
+    <button class="header-toggler" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()" style="margin-inline-start: -14px;">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <ul class="header-nav d-none d-lg-flex">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('admin_dashboard') }}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('admin_users') }}">Utilisateurs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('admin_settings') }}">Paramètres</a>
+        </li>
+    </ul>
+    
+    <ul class="header-nav ms-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="fas fa-bell"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="fas fa-list"></i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <i class="fas fa-envelope"></i>
+            </a>
+        </li>
+    </ul>
+    
+    <ul class="header-nav">
+        <li class="nav-item py-1">
+            <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+        </li>
+        <li class="nav-item dropdown">
+            <button class="btn btn-link nav-link py-2 px-2 d-flex align-items-center" type="button" aria-expanded="false" data-coreui-toggle="dropdown">
+                <i class="fas fa-sun theme-icon-active"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" style="--cui-dropdown-min-width: 8rem;">
+                <li>
+                    <button class="dropdown-item d-flex align-items-center active" type="button" data-coreui-theme-value="light">
+                        <i class="fas fa-sun me-3"></i>Light
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item d-flex align-items-center" type="button" data-coreui-theme-value="dark">
+                        <i class="fas fa-moon me-3"></i>Dark
+                    </button>
+                </li>
+                <li>
+                    <button class="dropdown-item d-flex align-items-center" type="button" data-coreui-theme-value="auto">
+                        <i class="fas fa-adjust me-3"></i>Auto
+                    </button>
+                </li>
+            </ul>
+        </li>
+        <li class="nav-item py-1">
+            <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                <div class="avatar avatar-md">
+                    <img class="avatar-img" src="https://via.placeholder.com/40x40/007bff/ffffff?text=U" alt="user@email.com" id="user-avatar">
+                </div>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end pt-0">
+                <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">Account</div>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-bell me-2"></i>
+                    Updates<span class="badge badge-sm bg-info ms-2">42</span>
+                </a>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-envelope me-2"></i>
+                    Messages<span class="badge badge-sm bg-success ms-2">42</span>
+                </a>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-tasks me-2"></i>
+                    Tasks<span class="badge badge-sm bg-danger ms-2">42</span>
+                </a>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-comments me-2"></i>
+                    Comments<span class="badge badge-sm bg-warning ms-2">42</span>
+                </a>
+                <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold my-2">
+                    <div class="fw-semibold">Settings</div>
+                </div>
+                <a class="dropdown-item" href="{{ path('admin_profile') }}">
+                    <i class="fas fa-user me-2"></i>
+                    Profile
+                </a>
+                <a class="dropdown-item" href="{{ path('admin_settings') }}">
+                    <i class="fas fa-cog me-2"></i>
+                    Settings
+                </a>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-credit-card me-2"></i>
+                    Payments<span class="badge badge-sm bg-secondary ms-2">42</span>
+                </a>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-folder me-2"></i>
+                    Projects<span class="badge badge-sm bg-primary ms-2">42</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">
+                    <i class="fas fa-lock me-2"></i>
+                    Lock Account
+                </a>
+                <a class="dropdown-item" href="#" onclick="handleLogout(); return false;">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    Logout
+                </a>
+            </div>
+        </li>
+    </ul>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Update user info
+    updateUserInfo();
+    
+    // Notifications disabled until API is implemented
+    console.log('📊 Header notifications disabled - API endpoints not yet implemented');
+});
+
+function updateUserInfo() {
+    try {
+        // Wait for AdminAuth to be available
+        if (typeof AdminAuth === 'undefined') {
+            setTimeout(updateUserInfo, 100);
+            return;
+        }
+        
+        const user = AdminAuth.getCurrentUser();
+        if (!user) return;
+        
+        console.log('👤 Updating header user info:', user);
+        
+        // Update avatar
+        const avatarEl = document.getElementById('user-avatar');
+        if (avatarEl) {
+            const avatarUrl = AdminAuth.getAvatar();
+            avatarEl.src = avatarUrl;
+        }
+        
+    } catch (error) {
+        console.error('Error updating user info in header:', error);
+    }
+}
+
+// Global logout function
+function handleLogout() {
+    if (typeof AdminAuth !== 'undefined') {
+        AdminAuth.logout();
+    } else {
+        // Fallback logout
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        window.location.href = '{{ path('admin_login') }}';
+    }
+}
+
+// Make logout function globally accessible
+window.handleLogout = handleLogout;
+</script> 
