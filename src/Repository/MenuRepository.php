@@ -47,7 +47,7 @@ class MenuRepository extends ServiceEntityRepository
     /**
      * Find menu of the day
      */
-    public function findMenuOfTheDay(\DateTime $date = null): array
+    public function findMenuOfTheDay(?\DateTime $date = null): array
     {
         if (!$date) {
             $date = new \DateTime();

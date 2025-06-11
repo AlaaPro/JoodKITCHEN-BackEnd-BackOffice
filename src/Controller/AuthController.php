@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\ClientProfile;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +21,8 @@ class AuthController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
-        private ValidatorInterface $validator
+        private ValidatorInterface $validator,
+        private JWTTokenManagerInterface $jwtManager
     ) {}
 
     #[Route('/register', name: 'api_register', methods: ['POST'])]
@@ -100,8 +102,12 @@ class AuthController extends AbstractController
 
         $this->entityManager->flush();
 
+        // Generate JWT token
+        $token = $this->jwtManager->create($user);
+
         return new JsonResponse([
             'message' => 'User registered successfully',
+            'token' => $token,
             'user' => [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
@@ -135,10 +141,8 @@ class AuthController extends AbstractController
         $user->setLastConnexion(new \DateTime());
         $this->entityManager->flush();
 
-        // Generate simple API token for mobile apps
-        $timestamp = time();
-        $hash = hash('sha256', $user->getId() . $user->getEmail() . $timestamp . 'secret_key');
-        $token = $user->getId() . ':' . $user->getEmail() . ':' . $timestamp . ':' . $hash;
+        // Generate JWT token
+        $token = $this->jwtManager->create($user);
 
         return new JsonResponse([
             'message' => 'Login successful',
@@ -190,6 +194,25 @@ class AuthController extends AbstractController
         
         return new JsonResponse([
             'message' => 'Logout successful. Please remove the token from your client.'
+        ]);
+    }
+
+    #[Route('/refresh', name: 'api_refresh_token', methods: ['POST'])]
+    public function refreshToken(): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new JsonResponse(['error' => 'Not authenticated'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Generate new JWT token
+        $token = $this->jwtManager->create($user);
+
+        return new JsonResponse([
+            'message' => 'Token refreshed successfully',
+            'token' => $token
         ]);
     }
 } 
