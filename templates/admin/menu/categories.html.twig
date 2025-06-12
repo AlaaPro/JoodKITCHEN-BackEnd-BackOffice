@@ -1,0 +1,563 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Catégories - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Catégories</li>
+{% endblock %}
+
+{% block content %}
+<!-- Categories Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Gestion des Catégories</h1>
+                <p class="text-muted">Organisez vos plats et menus par catégories</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="fas fa-plus"></i> Nouvelle Catégorie
+                </button>
+                <button class="btn btn-outline-primary">
+                    <i class="fas fa-sort"></i> Réorganiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">8</div>
+                        <div class="widget-label">Catégories</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">42</div>
+                        <div class="widget-label">Plats classés</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-utensils fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">5</div>
+                        <div class="widget-label">Plus populaires</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-fire fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">12</div>
+                        <div class="widget-label">Menus</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories Management -->
+<div class="row g-4">
+    <!-- Categories Tree -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-sitemap"></i> Hiérarchie des Catégories
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="category-tree">
+                    <!-- Main Categories -->
+                    <div class="category-item mb-3" data-category="entrees">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="category-handle me-3">
+                                <i class="fas fa-grip-vertical text-muted"></i>
+                            </div>
+                            <div class="category-icon me-3">
+                                <div class="jood-primary-bg rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-seedling text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Entrées</h6>
+                                <small class="text-muted">8 plats • Position 1</small>
+                            </div>
+                            <div class="category-stats me-3">
+                                <span class="badge jood-primary-bg">8 plats</span>
+                            </div>
+                            <div class="category-actions">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" title="Sous-catégorie">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sub-categories -->
+                        <div class="sub-categories ms-5 mt-2">
+                            <div class="d-flex align-items-center p-2 border rounded mb-2">
+                                <div class="category-icon me-3">
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-leaf text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-semibold">Salades</span>
+                                    <small class="text-muted ms-2">3 plats</small>
+                                </div>
+                                <span class="badge bg-secondary">3</span>
+                            </div>
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <div class="category-icon me-3">
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-pepper-hot text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-semibold">Amuse-bouches</span>
+                                    <small class="text-muted ms-2">5 plats</small>
+                                </div>
+                                <span class="badge bg-secondary">5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-item mb-3" data-category="plats">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="category-handle me-3">
+                                <i class="fas fa-grip-vertical text-muted"></i>
+                            </div>
+                            <div class="category-icon me-3">
+                                <div class="jood-warning-bg rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-fire text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Plats Principaux</h6>
+                                <small class="text-muted">18 plats • Position 2</small>
+                            </div>
+                            <div class="category-stats me-3">
+                                <span class="badge jood-warning-bg">18 plats</span>
+                            </div>
+                            <div class="category-actions">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" title="Sous-catégorie">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sub-categories -->
+                        <div class="sub-categories ms-5 mt-2">
+                            <div class="d-flex align-items-center p-2 border rounded mb-2">
+                                <div class="category-icon me-3">
+                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-bowl-food text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-semibold">Couscous</span>
+                                    <small class="text-muted ms-2">6 plats</small>
+                                </div>
+                                <span class="badge bg-warning">6</span>
+                            </div>
+                            <div class="d-flex align-items-center p-2 border rounded mb-2">
+                                <div class="category-icon me-3">
+                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-mortar-pestle text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-semibold">Tajines</span>
+                                    <small class="text-muted ms-2">8 plats</small>
+                                </div>
+                                <span class="badge bg-warning">8</span>
+                            </div>
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <div class="category-icon me-3">
+                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-drumstick-bite text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fw-semibold">Grillades</span>
+                                    <small class="text-muted ms-2">4 plats</small>
+                                </div>
+                                <span class="badge bg-warning">4</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-item mb-3" data-category="desserts">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="category-handle me-3">
+                                <i class="fas fa-grip-vertical text-muted"></i>
+                            </div>
+                            <div class="category-icon me-3">
+                                <div class="jood-secondary-bg rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-birthday-cake text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Desserts</h6>
+                                <small class="text-muted">10 plats • Position 3</small>
+                            </div>
+                            <div class="category-stats me-3">
+                                <span class="badge jood-secondary-bg">10 plats</span>
+                            </div>
+                            <div class="category-actions">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" title="Sous-catégorie">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-item mb-3" data-category="boissons">
+                        <div class="d-flex align-items-center p-3 border rounded">
+                            <div class="category-handle me-3">
+                                <i class="fas fa-grip-vertical text-muted"></i>
+                            </div>
+                            <div class="category-icon me-3">
+                                <div class="jood-info-bg rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-glass-water text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">Boissons</h6>
+                                <small class="text-muted">6 plats • Position 4</small>
+                            </div>
+                            <div class="category-stats me-3">
+                                <span class="badge jood-info-bg">6 plats</span>
+                            </div>
+                            <div class="category-actions">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" title="Sous-catégorie">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Supprimer">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Analytics -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header jood-primary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-chart-pie"></i> Performances
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Plats Principaux</span>
+                    <div>
+                        <span class="fw-bold jood-primary">45%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-primary-bg" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Entrées</span>
+                    <div>
+                        <span class="fw-bold jood-primary">25%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-secondary-bg" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Desserts</span>
+                    <div>
+                        <span class="fw-bold jood-primary">20%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-warning-bg" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Boissons</span>
+                    <div>
+                        <span class="fw-bold jood-primary">10%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-info-bg" style="width: 10%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header jood-info-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-trophy"></i> Top Catégories
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="fas fa-fire jood-warning me-2"></i>
+                            <span class="fw-semibold">Tajines</span>
+                        </div>
+                        <span class="badge jood-primary-bg">156 cmd</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="fas fa-bowl-food jood-primary me-2"></i>
+                            <span class="fw-semibold">Couscous</span>
+                        </div>
+                        <span class="badge jood-primary-bg">142 cmd</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="fas fa-seedling jood-secondary me-2"></i>
+                            <span class="fw-semibold">Salades</span>
+                        </div>
+                        <span class="badge jood-primary-bg">89 cmd</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="fas fa-birthday-cake jood-info me-2"></i>
+                            <span class="fw-semibold">Desserts</span>
+                        </div>
+                        <span class="badge jood-primary-bg">76 cmd</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header jood-primary-bg">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-plus"></i> Nouvelle Catégorie
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCategoryForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nom de la catégorie *</label>
+                            <input type="text" class="form-control" placeholder="Ex: Plats végétariens">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" placeholder="Description de la catégorie..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie parent</label>
+                            <select class="form-select">
+                                <option value="">Aucune (catégorie principale)</option>
+                                <option value="entrees">Entrées</option>
+                                <option value="plats">Plats Principaux</option>
+                                <option value="desserts">Desserts</option>
+                                <option value="boissons">Boissons</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Icône</label>
+                            <select class="form-select">
+                                <option value="utensils">🍴 Utensiles</option>
+                                <option value="fire">🔥 Feu</option>
+                                <option value="leaf">🌿 Feuille</option>
+                                <option value="cake">🎂 Gâteau</option>
+                                <option value="glass">🥤 Verre</option>
+                                <option value="bowl">🍲 Bol</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Couleur</label>
+                            <select class="form-select">
+                                <option value="primary">Vert (Principal)</option>
+                                <option value="secondary">Rouge (Secondaire)</option>
+                                <option value="warning">Orange (Attention)</option>
+                                <option value="info">Bleu (Information)</option>
+                                <option value="success">Vert clair</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Position</label>
+                            <input type="number" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="categoryVisible" checked>
+                                <label class="form-check-label" for="categoryVisible">
+                                    Visible sur le site
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Créer la catégorie
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Drag and drop functionality for categories
+    const categoryItems = document.querySelectorAll('.category-item');
+    categoryItems.forEach(item => {
+        item.draggable = true;
+        
+        item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', this.dataset.category);
+            this.style.opacity = '0.5';
+        });
+        
+        item.addEventListener('dragend', function() {
+            this.style.opacity = '1';
+        });
+        
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#a9b73e';
+        });
+        
+        item.addEventListener('dragleave', function() {
+            this.style.borderColor = '';
+        });
+        
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const draggedCategory = e.dataTransfer.getData('text/plain');
+            console.log('Moved', draggedCategory, 'to position of', this.dataset.category);
+            this.style.borderColor = '';
+            // Here you would update the category order
+        });
+    });
+    
+    // Category creation form
+    document.querySelector('#addCategoryModal .btn-primary').addEventListener('click', function() {
+        const form = document.getElementById('addCategoryForm');
+        const formData = new FormData(form);
+        
+        // Show loading state
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+        this.disabled = true;
+        
+        // Simulate category creation
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-check"></i> Catégorie créée!';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+                this.innerHTML = '<i class="fas fa-save"></i> Créer la catégorie';
+                this.disabled = false;
+                form.reset();
+                
+                // Show success notification
+                showNotification('Catégorie créée avec succès!', 'success');
+            }, 1500);
+        }, 2000);
+    });
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

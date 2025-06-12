@@ -1,0 +1,556 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Logs Système - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Logs Système</li>
+{% endblock %}
+
+{% block content %}
+<!-- System Logs Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Logs Système</h1>
+                <p class="text-muted">Surveillez l'activité et les erreurs du système</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" id="refreshLogs">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportLogsModal">
+                    <i class="fas fa-download"></i> Exporter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">1.247</div>
+                        <div class="widget-label">Logs aujourd'hui</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-secondary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">23</div>
+                        <div class="widget-label">Erreurs</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">156</div>
+                        <div class="widget-label">Avertissements</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">1.068</div>
+                        <div class="widget-label">Info</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0">Filtres des Logs</h4>
+            <button class="btn btn-outline-secondary btn-sm" id="toggleFilters">
+                <i class="fas fa-filter"></i> Filtres
+            </button>
+        </div>
+    </div>
+    <div class="card-body" id="filtersPanel">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Niveau</label>
+                <select class="form-select" id="logLevel">
+                    <option value="">Tous les niveaux</option>
+                    <option value="error">Erreur</option>
+                    <option value="warning">Avertissement</option>
+                    <option value="info">Information</option>
+                    <option value="debug">Debug</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Composant</label>
+                <select class="form-select" id="logComponent">
+                    <option value="">Tous les composants</option>
+                    <option value="auth">Authentification</option>
+                    <option value="orders">Commandes</option>
+                    <option value="kitchen">Cuisine</option>
+                    <option value="delivery">Livraison</option>
+                    <option value="payment">Paiement</option>
+                    <option value="database">Base de données</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Date début</label>
+                <input type="datetime-local" class="form-control" id="dateStart">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Date fin</label>
+                <input type="datetime-local" class="form-control" id="dateEnd">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" id="applyFilters">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="clearFilters">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Logs -->
+<div class="row g-4">
+    <!-- Logs Table -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-stream"></i> Logs en Temps Réel
+                    </h4>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                            <label class="form-check-label" for="autoRefresh">
+                                Auto-actualisation
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="log-container" style="height: 600px; overflow-y: auto; font-family: 'Courier New', monospace;">
+                    <div id="logsContent">
+                        <!-- Log Entry 1 -->
+                        <div class="log-entry p-2 border-bottom" data-level="info">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:42:31.245</span>
+                                <span class="badge bg-primary me-3">INFO</span>
+                                <span class="log-component text-muted me-3">[orders]</span>
+                                <span class="log-message">Nouvelle commande créée: #CMD-001</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Log Entry 2 -->
+                        <div class="log-entry p-2 border-bottom" data-level="error">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:41:15.892</span>
+                                <span class="badge jood-secondary-bg me-3">ERROR</span>
+                                <span class="log-component text-muted me-3">[payment]</span>
+                                <span class="log-message">Échec du paiement pour la commande #CMD-002: Carte expirée</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Log Entry 3 -->
+                        <div class="log-entry p-2 border-bottom" data-level="warning">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:40:22.156</span>
+                                <span class="badge jood-warning-bg me-3">WARN</span>
+                                <span class="log-component text-muted me-3">[kitchen]</span>
+                                <span class="log-message">Stock bas détecté: Couscous Royal (5 portions restantes)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Log Entry 4 -->
+                        <div class="log-entry p-2 border-bottom" data-level="info">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:39:45.789</span>
+                                <span class="badge bg-primary me-3">INFO</span>
+                                <span class="log-component text-muted me-3">[auth]</span>
+                                <span class="log-message">Connexion utilisateur: fatima.alaoui@joodkitchen.fr</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Log Entry 5 -->
+                        <div class="log-entry p-2 border-bottom" data-level="info">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:38:12.334</span>
+                                <span class="badge bg-primary me-3">INFO</span>
+                                <span class="log-component text-muted me-3">[delivery]</span>
+                                <span class="log-message">Livraison démarrée: #CMD-003 -> 123 Rue de la Paix</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Log Entry 6 -->
+                        <div class="log-entry p-2 border-bottom" data-level="error">
+                            <div class="d-flex">
+                                <span class="log-time text-muted me-3" style="min-width: 120px;">15:37:58.667</span>
+                                <span class="badge jood-secondary-bg me-3">ERROR</span>
+                                <span class="log-component text-muted me-3">[database]</span>
+                                <span class="log-message">Connexion base de données lente: 2.5s (seuil: 1s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Log Analytics -->
+    <div class="col-lg-4">
+        <!-- Recent Errors -->
+        <div class="card mb-4">
+            <div class="card-header jood-secondary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-bug"></i> Erreurs Récentes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                        <div>
+                            <div class="fw-semibold">Paiement échoué</div>
+                            <small class="text-muted">15:41 - payment</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">3x</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                        <div>
+                            <div class="fw-semibold">Timeout base de données</div>
+                            <small class="text-muted">15:37 - database</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">1x</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-start px-0">
+                        <div>
+                            <div class="fw-semibold">API livraison indisponible</div>
+                            <small class="text-muted">14:22 - delivery</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">2x</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Health -->
+        <div class="card mb-4">
+            <div class="card-header jood-primary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-heartbeat"></i> Santé du Système
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>CPU</span>
+                    <div>
+                        <span class="fw-bold jood-primary">45%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-primary-bg" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Mémoire</span>
+                    <div>
+                        <span class="fw-bold jood-warning">72%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-warning-bg" style="width: 72%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Disque</span>
+                    <div>
+                        <span class="fw-bold jood-primary">34%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-primary-bg" style="width: 34%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Réseau</span>
+                    <div>
+                        <span class="fw-bold jood-primary">12%</span>
+                        <div class="progress mt-1" style="height: 4px; width: 60px;">
+                            <div class="progress-bar jood-primary-bg" style="width: 12%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Distribution -->
+        <div class="card">
+            <div class="card-header jood-info-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-chart-pie"></i> Répartition (24h)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        <span>Info</span>
+                    </div>
+                    <span class="fw-bold">68%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <i class="fas fa-exclamation-circle jood-warning me-2"></i>
+                        <span>Warning</span>
+                    </div>
+                    <span class="fw-bold">20%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <i class="fas fa-exclamation-triangle jood-secondary me-2"></i>
+                        <span>Error</span>
+                    </div>
+                    <span class="fw-bold">10%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-bug text-dark me-2"></i>
+                        <span>Debug</span>
+                    </div>
+                    <span class="fw-bold">2%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Logs Modal -->
+<div class="modal fade" id="exportLogsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header jood-primary-bg">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-download"></i> Exporter les Logs
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportLogsForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Format d'export</label>
+                            <select class="form-select">
+                                <option value="csv">CSV</option>
+                                <option value="json">JSON</option>
+                                <option value="txt">Fichier texte</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date début</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date fin</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Niveaux à inclure</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportError" checked>
+                                <label class="form-check-label" for="exportError">Erreurs</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportWarning" checked>
+                                <label class="form-check-label" for="exportWarning">Avertissements</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportInfo">
+                                <label class="form-check-label" for="exportInfo">Informations</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="exportDebug">
+                                <label class="form-check-label" for="exportDebug">Debug</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Exporter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logsContent = document.getElementById('logsContent');
+    const autoRefresh = document.getElementById('autoRefresh');
+    let refreshInterval;
+    
+    // Auto-refresh logs
+    function startAutoRefresh() {
+        if (autoRefresh.checked) {
+            refreshInterval = setInterval(addRandomLog, 3000);
+        } else {
+            clearInterval(refreshInterval);
+        }
+    }
+    
+    autoRefresh.addEventListener('change', startAutoRefresh);
+    startAutoRefresh();
+    
+    // Add random log entry
+    function addRandomLog() {
+        const levels = ['info', 'warning', 'error'];
+        const components = ['orders', 'kitchen', 'payment', 'delivery', 'auth', 'database'];
+        const messages = [
+            'Nouvelle commande créée',
+            'Paiement traité avec succès',
+            'Utilisateur connecté',
+            'Livraison terminée',
+            'Stock mis à jour',
+            'Cache vidé',
+            'Session expirée',
+            'Erreur de validation'
+        ];
+        
+        const level = levels[Math.floor(Math.random() * levels.length)];
+        const component = components[Math.floor(Math.random() * components.length)];
+        const message = messages[Math.floor(Math.random() * messages.length)];
+        
+        const now = new Date();
+        const timeStr = now.toTimeString().substring(0, 12);
+        
+        let badgeClass = 'bg-primary';
+        let levelText = 'INFO';
+        
+        switch(level) {
+            case 'error':
+                badgeClass = 'jood-secondary-bg';
+                levelText = 'ERROR';
+                break;
+            case 'warning':
+                badgeClass = 'jood-warning-bg';
+                levelText = 'WARN';
+                break;
+        }
+        
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry p-2 border-bottom';
+        logEntry.dataset.level = level;
+        logEntry.innerHTML = `
+            <div class="d-flex">
+                <span class="log-time text-muted me-3" style="min-width: 120px;">${timeStr}</span>
+                <span class="badge ${badgeClass} me-3">${levelText}</span>
+                <span class="log-component text-muted me-3">[${component}]</span>
+                <span class="log-message">${message}</span>
+            </div>
+        `;
+        
+        logsContent.insertBefore(logEntry, logsContent.firstChild);
+        
+        // Keep only last 50 entries
+        while (logsContent.children.length > 50) {
+            logsContent.removeChild(logsContent.lastChild);
+        }
+    }
+    
+    // Filter functionality
+    document.getElementById('applyFilters').addEventListener('click', function() {
+        const level = document.getElementById('logLevel').value;
+        const component = document.getElementById('logComponent').value;
+        
+        const entries = document.querySelectorAll('.log-entry');
+        entries.forEach(entry => {
+            let show = true;
+            
+            if (level && entry.dataset.level !== level) {
+                show = false;
+            }
+            
+            if (component) {
+                const entryComponent = entry.querySelector('.log-component').textContent;
+                if (!entryComponent.includes(component)) {
+                    show = false;
+                }
+            }
+            
+            entry.style.display = show ? 'block' : 'none';
+        });
+    });
+    
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        document.getElementById('logLevel').value = '';
+        document.getElementById('logComponent').value = '';
+        document.getElementById('dateStart').value = '';
+        document.getElementById('dateEnd').value = '';
+        
+        document.querySelectorAll('.log-entry').forEach(entry => {
+            entry.style.display = 'block';
+        });
+    });
+    
+    // Toggle filters panel
+    document.getElementById('toggleFilters').addEventListener('click', function() {
+        const panel = document.getElementById('filtersPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Manual refresh
+    document.getElementById('refreshLogs').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
+            addRandomLog();
+        }, 1000);
+    });
+});
+</script>
+{% endblock %} 

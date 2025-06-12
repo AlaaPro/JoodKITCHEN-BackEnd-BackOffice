@@ -1,0 +1,428 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Cuisine - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item"><a href="{{ path('admin_orders') }}">Commandes</a></li>
+<li class="breadcrumb-item active">Cuisine</li>
+{% endblock %}
+
+{% block content %}
+<!-- Kitchen Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">
+                    <i class="fas fa-fire jood-warning"></i> Gestion Cuisine
+                </h1>
+                <p class="text-muted">Suivi en temps réel des commandes en cours</p>
+            </div>
+            <div>
+                <button class="btn btn-success me-2">
+                    <i class="fas fa-play"></i> Service Actif
+                </button>
+                <button class="btn btn-outline-primary">
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kitchen Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-secondary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">8</div>
+                        <div class="widget-label">Urgentes</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">15</div>
+                        <div class="widget-label">En préparation</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-fire fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">12 min</div>
+                        <div class="widget-label">Temps moyen</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">45</div>
+                        <div class="widget-label">Terminées</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kitchen Dashboard -->
+<div class="row g-4">
+    <!-- New Orders Column -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-secondary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-bell"></i> Nouvelles Commandes (8)
+                </h5>
+            </div>
+            <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                <!-- Order Card -->
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card" data-order="001">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-001</h6>
+                            <small class="text-muted">14:30 - Table 5</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">Urgent</span>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 2x Couscous Royal</li>
+                            <li>• 1x Tajine Agneau</li>
+                            <li>• 1x Pastilla Poulet</li>
+                        </ul>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Temps: <span class="fw-bold text-danger">18 min</span></small>
+                        <button class="btn btn-primary btn-sm start-cooking">
+                            <i class="fas fa-play"></i> Commencer
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card" data-order="002">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-002</h6>
+                            <small class="text-muted">14:45 - Livraison</small>
+                        </div>
+                        <span class="badge jood-warning-bg">Normal</span>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 1x Salade Marocaine</li>
+                            <li>• 2x Brick à l'œuf</li>
+                        </ul>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Temps: <span class="fw-bold jood-primary">5 min</span></small>
+                        <button class="btn btn-primary btn-sm start-cooking">
+                            <i class="fas fa-play"></i> Commencer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress Column -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-warning-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-fire"></i> En Préparation (15)
+                </h5>
+            </div>
+            <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                <!-- Order Card -->
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card cooking" data-order="003">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-003</h6>
+                            <small class="text-muted">14:25 - Table 2</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="small text-muted">Temps restant</div>
+                            <div class="fw-bold jood-warning timer">03:45</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 1x Couscous Merguez ✓</li>
+                            <li>• 1x Harira (en cours)</li>
+                        </ul>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar jood-warning-bg" style="width: 75%"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success btn-sm flex-fill mark-ready">
+                            <i class="fas fa-check"></i> Terminé
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card cooking" data-order="004">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-004</h6>
+                            <small class="text-muted">14:20 - À emporter</small>
+                        </div>
+                        <div class="text-center">
+                            <div class="small text-muted">Temps restant</div>
+                            <div class="fw-bold jood-primary timer">01:20</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 2x Tajine Légumes</li>
+                            <li>• 1x Thé à la menthe</li>
+                        </ul>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar jood-primary-bg" style="width: 90%"></div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success btn-sm flex-fill mark-ready">
+                            <i class="fas fa-check"></i> Terminé
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ready Column -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-primary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-check-circle"></i> Prêtes (6)
+                </h5>
+            </div>
+            <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
+                <!-- Order Card -->
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card ready" data-order="005">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-005</h6>
+                            <small class="text-muted">14:15 - Table 1</small>
+                        </div>
+                        <span class="badge jood-primary-bg">Prête</span>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 1x Menu Découverte ✓</li>
+                            <li>• 2x Jus d'orange ✓</li>
+                        </ul>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-success fw-bold">
+                            <i class="fas fa-clock"></i> Prête depuis 2 min
+                        </small>
+                        <button class="btn btn-success btn-sm mark-served">
+                            <i class="fas fa-utensils"></i> Servie
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 border-bottom border-jood-primary kitchen-order-card ready" data-order="006">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-006</h6>
+                            <small class="text-muted">14:10 - Livraison</small>
+                        </div>
+                        <span class="badge jood-primary-bg">Prête</span>
+                    </div>
+                    <div class="mb-2">
+                        <div class="small fw-semibold mb-1">Plats:</div>
+                        <ul class="list-unstyled mb-0 small">
+                            <li>• 3x Couscous Royal ✓</li>
+                        </ul>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-success fw-bold">
+                            <i class="fas fa-clock"></i> Prête depuis 5 min
+                        </small>
+                        <button class="btn btn-success btn-sm mark-served">
+                            <i class="fas fa-truck"></i> Expédiée
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kitchen Tools -->
+<div class="row g-4 mt-2">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock"></i> Minuteurs Actifs
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="mobile-card text-center">
+                            <div class="fw-bold">Couscous</div>
+                            <div class="fs-4 fw-bold">08:30</div>
+                            <button class="btn btn-sm btn-light mt-2">Arrêter</button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-center p-3 border rounded">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Nouveau minuteur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bell"></i> Notifications
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Commande #CMD-007</div>
+                            <small class="text-muted">Nouvelle commande urgente</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">Nouveau</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Stock bas</div>
+                            <small class="text-muted">Merguez - 5 portions restantes</small>
+                        </div>
+                        <span class="badge jood-warning-bg">Alert</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Timer functionality
+    function updateTimers() {
+        document.querySelectorAll('.timer').forEach(timer => {
+            const timeText = timer.textContent;
+            const [minutes, seconds] = timeText.split(':').map(Number);
+            let totalSeconds = minutes * 60 + seconds;
+            
+            if (totalSeconds > 0) {
+                totalSeconds--;
+                const newMinutes = Math.floor(totalSeconds / 60);
+                const newSeconds = totalSeconds % 60;
+                timer.textContent = `${newMinutes.toString().padStart(2, '0')}:${newSeconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is low
+                if (totalSeconds < 60) {
+                    timer.classList.add('text-danger');
+                    timer.classList.remove('jood-warning', 'jood-primary');
+                }
+            }
+        });
+    }
+    
+    // Update timers every second
+    setInterval(updateTimers, 1000);
+    
+    // Start cooking buttons
+    document.querySelectorAll('.start-cooking').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderCard = this.closest('.kitchen-order-card');
+            // Move to "In Progress" column
+            // This would be handled by backend/WebSocket in real app
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Démarrée';
+        });
+    });
+    
+    // Mark ready buttons
+    document.querySelectorAll('.mark-ready').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderCard = this.closest('.kitchen-order-card');
+            // Move to "Ready" column
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-check"></i> Prête';
+        });
+    });
+    
+    // Mark served buttons
+    document.querySelectorAll('.mark-served').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderCard = this.closest('.kitchen-order-card');
+            // Remove from board or move to completed
+            orderCard.style.opacity = '0.5';
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-check"></i> Servie';
+        });
+    });
+    
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        // In real app, this would fetch new orders from backend
+        console.log('Refreshing kitchen orders...');
+    }, 30000);
+});
+</script>
+{% endblock %} 

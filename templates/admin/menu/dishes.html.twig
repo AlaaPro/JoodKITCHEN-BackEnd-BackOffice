@@ -1,0 +1,562 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Plats - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Plats</li>
+{% endblock %}
+
+{% block content %}
+<!-- Dishes Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Gestion des Plats</h1>
+                <p class="text-muted">Gérez votre carte et vos spécialités</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addDishModal">
+                    <i class="fas fa-plus"></i> Nouveau Plat
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="gridViewBtn">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="listViewBtn">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dishes Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">42</div>
+                        <div class="widget-label">Total Plats</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-utensils fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">38</div>
+                        <div class="widget-label">Disponibles</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">4</div>
+                        <div class="widget-label">En rupture</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">18.50€</div>
+                        <div class="widget-label">Prix moyen</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-euro-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">Toutes les catégories</option>
+                    <option value="entrees">Entrées</option>
+                    <option value="plats">Plats principaux</option>
+                    <option value="desserts">Desserts</option>
+                    <option value="boissons">Boissons</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="available">Disponible</option>
+                    <option value="unavailable">Indisponible</option>
+                    <option value="out_of_stock">En rupture</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Rechercher un plat..." id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                    <i class="fas fa-times"></i> Effacer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dishes Grid -->
+<div id="dishesContainer">
+    <!-- Grid View -->
+    <div id="gridView" class="row g-4">
+        <!-- Dish Card 1 -->
+        <div class="col-lg-4 col-md-6 dish-card" data-category="plats" data-status="available">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <img src="https://via.placeholder.com/300x200/a9b73e/ffffff?text=Couscous+Royal" 
+                         class="card-img-top" alt="Couscous Royal" style="height: 200px; object-fit: cover;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge jood-primary-bg">Bestseller</span>
+                    </div>
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-success">Disponible</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">Couscous Royal</h5>
+                        <span class="fw-bold jood-primary fs-5">16.90€</span>
+                    </div>
+                    <p class="card-text text-muted small mb-3">
+                        Couscous traditionnel aux légumes avec agneau, merguez et poulet, accompagné de bouillon parfumé.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> 4.8 (23 avis)
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-shopping-cart"></i> 45 commandes
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-secondary">Plats principaux</span>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Dupliquer">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish Card 2 -->
+        <div class="col-lg-4 col-md-6 dish-card" data-category="plats" data-status="available">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <img src="https://via.placeholder.com/300x200/202d5b/ffffff?text=Tajine+Agneau" 
+                         class="card-img-top" alt="Tajine Agneau" style="height: 200px; object-fit: cover;">
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-success">Disponible</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">Tajine Agneau aux Pruneaux</h5>
+                        <span class="fw-bold jood-primary fs-5">18.50€</span>
+                    </div>
+                    <p class="card-text text-muted small mb-3">
+                        Agneau fondant mijoté aux pruneaux, amandes et épices marocaines, servi avec du pain traditionnel.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> 4.6 (18 avis)
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-shopping-cart"></i> 32 commandes
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-secondary">Plats principaux</span>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Dupliquer">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish Card 3 -->
+        <div class="col-lg-4 col-md-6 dish-card" data-category="entrees" data-status="available">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <img src="https://via.placeholder.com/300x200/da3c33/ffffff?text=Pastilla+Poulet" 
+                         class="card-img-top" alt="Pastilla Poulet" style="height: 200px; object-fit: cover;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge jood-secondary-bg">Spécialité</span>
+                    </div>
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-success">Disponible</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">Pastilla au Poulet</h5>
+                        <span class="fw-bold jood-primary fs-5">12.90€</span>
+                    </div>
+                    <p class="card-text text-muted small mb-3">
+                        Feuilleté croustillant farci au poulet, amandes, œufs et épices, saupoudré de cannelle et sucre glace.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> 4.9 (31 avis)
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-shopping-cart"></i> 28 commandes
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-primary">Entrées</span>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Dupliquer">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dish Card 4 - Out of Stock -->
+        <div class="col-lg-4 col-md-6 dish-card" data-category="desserts" data-status="out_of_stock">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <img src="https://via.placeholder.com/300x200/c0c4ba/666666?text=Baklawa" 
+                         class="card-img-top" alt="Baklawa" style="height: 200px; object-fit: cover; filter: grayscale(50%);">
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-danger">En rupture</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0 text-muted">Baklawa</h5>
+                        <span class="fw-bold text-muted fs-5">8.50€</span>
+                    </div>
+                    <p class="card-text text-muted small mb-3">
+                        Pâtisserie orientale aux amandes et miel, feuilletée et délicatement parfumée à l'eau de fleur d'oranger.
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-star text-warning"></i> 4.7 (15 avis)
+                        </small>
+                        <small class="text-muted">
+                            <i class="fas fa-shopping-cart"></i> 12 commandes
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-warning">Desserts</span>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Dupliquer">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- List View (Hidden by default) -->
+    <div id="listView" class="d-none">
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Plat</th>
+                                <th>Catégorie</th>
+                                <th>Prix</th>
+                                <th>Statut</th>
+                                <th>Commandes</th>
+                                <th>Note</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://via.placeholder.com/50x50/a9b73e/ffffff?text=CR" 
+                                             class="rounded me-3" alt="Couscous Royal">
+                                        <div>
+                                            <div class="fw-semibold">Couscous Royal</div>
+                                            <small class="text-muted">Plat traditionnel</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-secondary">Plats principaux</span></td>
+                                <td><span class="fw-bold jood-primary">16.90€</span></td>
+                                <td><span class="badge bg-success">Disponible</span></td>
+                                <td>45</td>
+                                <td>
+                                    <i class="fas fa-star text-warning"></i> 4.8
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" title="Dupliquer">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- More rows would be here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Dish Modal -->
+<div class="modal fade" id="addDishModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header jood-primary-bg">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-plus"></i> Nouveau Plat
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDishForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nom du plat *</label>
+                            <input type="text" class="form-control" placeholder="Ex: Couscous Royal">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prix (€) *</label>
+                            <input type="number" class="form-control" step="0.10" placeholder="16.90">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" placeholder="Description du plat..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select">
+                                <option value="">Sélectionner...</option>
+                                <option value="entrees">Entrées</option>
+                                <option value="plats">Plats principaux</option>
+                                <option value="desserts">Desserts</option>
+                                <option value="boissons">Boissons</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select">
+                                <option value="available">Disponible</option>
+                                <option value="unavailable">Indisponible</option>
+                                <option value="out_of_stock">En rupture</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Image du plat</label>
+                            <input type="file" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Créer le plat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    
+    gridViewBtn.addEventListener('click', function() {
+        gridView.classList.remove('d-none');
+        listView.classList.add('d-none');
+        gridViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+    });
+    
+    listViewBtn.addEventListener('click', function() {
+        listView.classList.remove('d-none');
+        gridView.classList.add('d-none');
+        listViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+    });
+    
+    // Set default active view
+    gridViewBtn.classList.add('active');
+    
+    // Filter functionality
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const clearFilters = document.getElementById('clearFilters');
+    
+    function filterDishes() {
+        const dishes = document.querySelectorAll('.dish-card');
+        const categoryValue = categoryFilter.value;
+        const statusValue = statusFilter.value;
+        const searchValue = searchInput.value.toLowerCase();
+        
+        dishes.forEach(dish => {
+            let show = true;
+            
+            // Category filter
+            if (categoryValue && dish.dataset.category !== categoryValue) {
+                show = false;
+            }
+            
+            // Status filter
+            if (statusValue && dish.dataset.status !== statusValue) {
+                show = false;
+            }
+            
+            // Search filter
+            if (searchValue) {
+                const dishName = dish.querySelector('.card-title').textContent.toLowerCase();
+                if (!dishName.includes(searchValue)) {
+                    show = false;
+                }
+            }
+            
+            dish.style.display = show ? 'block' : 'none';
+        });
+    }
+    
+    categoryFilter.addEventListener('change', filterDishes);
+    statusFilter.addEventListener('change', filterDishes);
+    searchInput.addEventListener('input', filterDishes);
+    
+    clearFilters.addEventListener('click', function() {
+        categoryFilter.value = '';
+        statusFilter.value = '';
+        searchInput.value = '';
+        filterDishes();
+    });
+    
+    // Dish creation form
+    document.querySelector('#addDishModal .btn-primary').addEventListener('click', function() {
+        const form = document.getElementById('addDishForm');
+        const formData = new FormData(form);
+        
+        // Show loading state
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+        this.disabled = true;
+        
+        // Simulate dish creation
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-check"></i> Plat créé!';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('addDishModal')).hide();
+                this.innerHTML = '<i class="fas fa-save"></i> Créer le plat';
+                this.disabled = false;
+                form.reset();
+                
+                // Show success notification
+                showNotification('Plat créé avec succès!', 'success');
+            }, 1500);
+        }, 2000);
+    });
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

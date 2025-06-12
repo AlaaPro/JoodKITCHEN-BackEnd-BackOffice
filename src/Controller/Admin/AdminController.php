@@ -42,10 +42,10 @@ class AdminController extends AbstractController
     /**
      * Users management
      */
-    #[Route('/users', name: 'admin_users', methods: ['GET'])]
-    public function users(): Response
+    #[Route('/clients', name: 'admin_clients', methods: ['GET'])]
+    public function clients(): Response
     {
-        return $this->render('admin/users/index.html.twig');
+        return $this->render('admin/users/clients.html.twig');
     }
 
     #[Route('/users/create', name: 'admin_users_create', methods: ['GET'])]

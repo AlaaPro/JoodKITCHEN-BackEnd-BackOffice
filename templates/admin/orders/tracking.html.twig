@@ -1,0 +1,396 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Suivi Livraisons - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item"><a href="{{ path('admin_orders') }}">Commandes</a></li>
+<li class="breadcrumb-item active">Suivi Livraisons</li>
+{% endblock %}
+
+{% block content %}
+<!-- Delivery Tracking Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">
+                    <i class="fas fa-truck jood-primary"></i> Suivi des Livraisons
+                </h1>
+                <p class="text-muted">Suivi en temps réel des commandes en livraison</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" id="refreshTracking">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+                <button class="btn btn-outline-primary">
+                    <i class="fas fa-map"></i> Vue Carte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delivery Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">12</div>
+                        <div class="widget-label">En cours</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shipping-fast fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">8</div>
+                        <div class="widget-label">En route</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-route fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">25 min</div>
+                        <div class="widget-label">Temps moyen</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">45</div>
+                        <div class="widget-label">Livrées</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delivery Map & List -->
+<div class="row g-4">
+    <!-- Map Section -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-map-marked-alt"></i> Carte des Livraisons
+                </h4>
+            </div>
+            <div class="card-body p-0">
+                <div id="deliveryMap" style="height: 500px; background: linear-gradient(135deg, #a9b73e, #c0c4ba); display: flex; align-items: center; justify-content: center;">
+                    <div class="text-center text-white">
+                        <i class="fas fa-map fa-4x mb-3 opacity-75"></i>
+                        <h4>Carte Interactive</h4>
+                        <p>Intégration Google Maps/OpenStreetMap</p>
+                        <div class="row text-center mt-4">
+                            <div class="col-4">
+                                <div class="position-relative d-inline-block">
+                                    <i class="fas fa-map-marker-alt fa-2x text-warning"></i>
+                                    <small class="d-block mt-1">Restaurant</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="position-relative d-inline-block">
+                                    <i class="fas fa-truck fa-2x text-primary"></i>
+                                    <small class="d-block mt-1">En cours</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="position-relative d-inline-block">
+                                    <i class="fas fa-home fa-2x text-success"></i>
+                                    <small class="d-block mt-1">Destination</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery List -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Livraisons Actives
+                </h4>
+            </div>
+            <div class="card-body p-0" style="max-height: 500px; overflow-y: auto;">
+                <!-- Delivery Item 1 -->
+                <div class="p-3 border-bottom delivery-item" data-order="001">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-001</h6>
+                            <small class="text-muted">Marie Dubois</small>
+                        </div>
+                        <span class="badge jood-warning-bg">En route</span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            123 Rue de la Paix, Paris 1er
+                        </small>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar jood-primary-bg" style="width: 75%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> ETA: 8 min
+                        </small>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Suivre">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Appeler">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Item 2 -->
+                <div class="p-3 border-bottom delivery-item" data-order="002">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-002</h6>
+                            <small class="text-muted">Jean Martin</small>
+                        </div>
+                        <span class="badge jood-secondary-bg">Urgente</span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            45 Avenue des Champs, Paris 8e
+                        </small>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar jood-warning-bg" style="width: 45%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> ETA: 15 min
+                        </small>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Suivre">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Appeler">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Item 3 -->
+                <div class="p-3 border-bottom delivery-item" data-order="003">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1 fw-bold">#CMD-003</h6>
+                            <small class="text-muted">Sophie Bernard</small>
+                        </div>
+                        <span class="badge jood-primary-bg">Presque arrivée</span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            78 Rue Montmartre, Paris 2e
+                        </small>
+                    </div>
+                    <div class="progress mb-2" style="height: 6px;">
+                        <div class="progress-bar jood-success-bg" style="width: 95%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> ETA: 2 min
+                        </small>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="Suivre">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-success" title="Appeler">
+                                <i class="fas fa-phone"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delivery Analytics -->
+<div class="row g-4 mt-2">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-primary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-chart-pie"></i> Performance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Taux de réussite</span>
+                    <span class="fw-bold jood-primary">97.2%</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Temps moyen</span>
+                    <span class="fw-bold jood-primary">24 min</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Satisfaction client</span>
+                    <span class="fw-bold jood-primary">4.6/5</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-info-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-users"></i> Livreurs
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>En service</span>
+                    <span class="fw-bold jood-primary">5/8</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Occupés</span>
+                    <span class="fw-bold text-warning">3</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Disponibles</span>
+                    <span class="fw-bold text-success">2</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header jood-warning-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-exclamation-triangle"></i> Alertes
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Retards</span>
+                    <span class="fw-bold text-danger">2</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Problèmes</span>
+                    <span class="fw-bold text-warning">0</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>En cours</span>
+                    <span class="fw-bold jood-primary">12</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh tracking every 30 seconds
+    setInterval(function() {
+        updateDeliveryStatus();
+    }, 30000);
+    
+    // Manual refresh
+    document.getElementById('refreshTracking').addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
+            updateDeliveryStatus();
+        }, 1500);
+    });
+    
+    // Update delivery status
+    function updateDeliveryStatus() {
+        // Simulate real-time updates
+        const deliveryItems = document.querySelectorAll('.delivery-item');
+        deliveryItems.forEach(item => {
+            const progressBar = item.querySelector('.progress-bar');
+            const currentProgress = parseInt(progressBar.style.width);
+            if (currentProgress < 100) {
+                const newProgress = Math.min(currentProgress + Math.random() * 10, 100);
+                progressBar.style.width = newProgress + '%';
+                
+                // Update ETA
+                const etaElement = item.querySelector('.fa-clock').parentElement;
+                const currentETA = parseInt(etaElement.textContent.match(/\d+/)[0]);
+                const newETA = Math.max(currentETA - 1, 0);
+                etaElement.innerHTML = `<i class="fas fa-clock"></i> ETA: ${newETA} min`;
+            }
+        });
+    }
+    
+    // Mock real-time notifications
+    setTimeout(() => {
+        showNotification('Livraison #CMD-003 terminée avec succès!', 'success');
+    }, 5000);
+    
+    function showNotification(message, type) {
+        // Create notification toast
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 

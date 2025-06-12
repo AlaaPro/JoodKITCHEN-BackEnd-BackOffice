@@ -1,0 +1,613 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Paramètres - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Paramètres</li>
+{% endblock %}
+
+{% block content %}
+<!-- Settings Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Paramètres Système</h1>
+                <p class="text-muted">Configuration générale de JoodKitchen</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" id="saveAllSettings">
+                    <i class="fas fa-save"></i> Sauvegarder tout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Settings Navigation -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header jood-primary-bg">
+                <h5 class="card-title mb-0 text-white">
+                    <i class="fas fa-cog"></i> Catégories
+                </h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="#general" class="list-group-item list-group-item-action active" data-bs-toggle="pill">
+                    <i class="fas fa-home me-2"></i> Général
+                </a>
+                <a href="#restaurant" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-utensils me-2"></i> Restaurant
+                </a>
+                <a href="#delivery" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-truck me-2"></i> Livraison
+                </a>
+                <a href="#payment" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-credit-card me-2"></i> Paiement
+                </a>
+                <a href="#notifications" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-bell me-2"></i> Notifications
+                </a>
+                <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-shield-alt me-2"></i> Sécurité
+                </a>
+                <a href="#advanced" class="list-group-item list-group-item-action" data-bs-toggle="pill">
+                    <i class="fas fa-wrench me-2"></i> Avancé
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="col-md-9">
+        <div class="tab-content">
+            <!-- General Settings -->
+            <div class="tab-pane fade show active" id="general">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Paramètres Généraux</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="generalForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nom du restaurant</label>
+                                    <input type="text" class="form-control" value="JoodKitchen">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Slogan</label>
+                                    <input type="text" class="form-control" value="Saveurs authentiques du Maroc">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    <textarea class="form-control" rows="3">Restaurant marocain proposant des plats traditionnels préparés avec des ingrédients frais et des épices authentiques.</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Adresse</label>
+                                    <input type="text" class="form-control" value="123 Rue de la Paix, 75001 Paris">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" value="+33 1 42 34 56 78">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="contact@joodkitchen.fr">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Devise</label>
+                                    <select class="form-select">
+                                        <option value="EUR" selected>Euro (€)</option>
+                                        <option value="USD">Dollar ($)</option>
+                                        <option value="MAD">Dirham (DH)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Fuseau horaire</label>
+                                    <select class="form-select">
+                                        <option value="Europe/Paris" selected>Europe/Paris</option>
+                                        <option value="UTC">UTC</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Langue</label>
+                                    <select class="form-select">
+                                        <option value="fr" selected>Français</option>
+                                        <option value="en">English</option>
+                                        <option value="ar">العربية</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Sauvegarder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restaurant Settings -->
+            <div class="tab-pane fade" id="restaurant">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Paramètres du Restaurant</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="restaurantForm">
+                            <div class="row g-4">
+                                <!-- Horaires -->
+                                <div class="col-12">
+                                    <h5 class="jood-primary">Horaires d'ouverture</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Lundi</label>
+                                            <div class="d-flex gap-2">
+                                                <input type="time" class="form-control" value="11:00">
+                                                <span class="align-self-center">-</span>
+                                                <input type="time" class="form-control" value="22:00">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Mardi</label>
+                                            <div class="d-flex gap-2">
+                                                <input type="time" class="form-control" value="11:00">
+                                                <span class="align-self-center">-</span>
+                                                <input type="time" class="form-control" value="22:00">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Mercredi</label>
+                                            <div class="d-flex gap-2">
+                                                <input type="time" class="form-control" value="11:00">
+                                                <span class="align-self-center">-</span>
+                                                <input type="time" class="form-control" value="22:00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Capacité -->
+                                <div class="col-12">
+                                    <h5 class="jood-primary">Capacité</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Tables disponibles</label>
+                                            <input type="number" class="form-control" value="15">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Places assises</label>
+                                            <input type="number" class="form-control" value="60">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Commandes simultanées max</label>
+                                            <input type="number" class="form-control" value="25">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Temps préparation moyen (min)</label>
+                                            <input type="number" class="form-control" value="15">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Options -->
+                                <div class="col-12">
+                                    <h5 class="jood-primary">Options de service</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="takeaway" checked>
+                                                <label class="form-check-label" for="takeaway">
+                                                    À emporter
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="delivery" checked>
+                                                <label class="form-check-label" for="delivery">
+                                                    Livraison
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="dinein" checked>
+                                                <label class="form-check-label" for="dinein">
+                                                    Sur place
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="reservations">
+                                                <label class="form-check-label" for="reservations">
+                                                    Réservations
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="loyalty" checked>
+                                                <label class="form-check-label" for="loyalty">
+                                                    Programme fidélité
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="reviews" checked>
+                                                <label class="form-check-label" for="reviews">
+                                                    Avis clients
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Sauvegarder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Settings -->
+            <div class="tab-pane fade" id="delivery">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Paramètres de Livraison</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="deliveryForm">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Zone de livraison (km)</label>
+                                    <input type="number" class="form-control" value="5" step="0.5">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Frais de livraison (€)</label>
+                                    <input type="number" class="form-control" value="3.50" step="0.50">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Commande minimum (€)</label>
+                                    <input type="number" class="form-control" value="15.00" step="0.50">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Livraison gratuite à partir de (€)</label>
+                                    <input type="number" class="form-control" value="30.00" step="0.50">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Temps de préparation (min)</label>
+                                    <input type="number" class="form-control" value="20">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Temps de livraison estimé (min)</label>
+                                    <input type="number" class="form-control" value="30">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Sauvegarder
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Settings -->
+            <div class="tab-pane fade" id="payment">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Moyens de Paiement</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Carte bancaire</h5>
+                                                <p class="card-text small text-muted">Visa, Mastercard, Amex</p>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">PayPal</h5>
+                                                <p class="card-text small text-muted">Paiement sécurisé PayPal</p>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Espèces</h5>
+                                                <p class="card-text small text-muted">Paiement à la livraison</p>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Chèques restaurant</h5>
+                                                <p class="card-text small text-muted">Tickets restaurant acceptés</p>
+                                            </div>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Settings -->
+            <div class="tab-pane fade" id="notifications">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Notifications</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h5 class="jood-primary">Email</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="emailOrders" checked>
+                                            <label class="form-check-label" for="emailOrders">
+                                                Nouvelles commandes
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="emailUsers" checked>
+                                            <label class="form-check-label" for="emailUsers">
+                                                Nouveaux clients
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="emailReviews">
+                                            <label class="form-check-label" for="emailReviews">
+                                                Nouveaux avis
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="emailStock" checked>
+                                            <label class="form-check-label" for="emailStock">
+                                                Alertes stock
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <h5 class="jood-primary">SMS</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="smsUrgent" checked>
+                                            <label class="form-check-label" for="smsUrgent">
+                                                Commandes urgentes
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="smsStock">
+                                            <label class="form-check-label" for="smsStock">
+                                                Ruptures de stock
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="tab-pane fade" id="security">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Sécurité</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Dernière connexion: 15/12/2023 à 14:30 depuis 192.168.1.100
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="twoFactor" checked>
+                                    <label class="form-check-label" for="twoFactor">
+                                        Authentification à deux facteurs
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="loginNotifications" checked>
+                                    <label class="form-check-label" for="loginNotifications">
+                                        Notifications de connexion
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <h5 class="jood-primary">Changer le mot de passe</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Mot de passe actuel</label>
+                                        <input type="password" class="form-control">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nouveau mot de passe</label>
+                                        <input type="password" class="form-control">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Confirmer le mot de passe</label>
+                                        <input type="password" class="form-control">
+                                    </div>
+                                </div>
+                                <button class="btn btn-warning mt-3">
+                                    <i class="fas fa-key"></i> Changer le mot de passe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Settings -->
+            <div class="tab-pane fade" id="advanced">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Paramètres Avancés</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Attention: Ces paramètres sont destinés aux utilisateurs avancés.
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Mode maintenance</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="maintenance">
+                                    <label class="form-check-label" for="maintenance">
+                                        Activer le mode maintenance
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label">Cache système</label>
+                                <button class="btn btn-outline-secondary">
+                                    <i class="fas fa-trash"></i> Vider le cache
+                                </button>
+                            </div>
+                            
+                            <div class="col-12">
+                                <h5 class="jood-primary">Sauvegarde automatique</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                                            <label class="form-check-label" for="autoBackup">
+                                                Sauvegarde automatique
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Fréquence</label>
+                                        <select class="form-select">
+                                            <option value="daily" selected>Quotidienne</option>
+                                            <option value="weekly">Hebdomadaire</option>
+                                            <option value="monthly">Mensuelle</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Heure</label>
+                                        <input type="time" class="form-control" value="03:00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Save all settings
+    document.getElementById('saveAllSettings').addEventListener('click', function() {
+        // Show loading state
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sauvegarde...';
+        this.disabled = true;
+        
+        // Simulate save
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-check"></i> Sauvegardé!';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-save"></i> Sauvegarder tout';
+                this.disabled = false;
+            }, 2000);
+        }, 1500);
+    });
+    
+    // Individual form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sauvegarde...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Sauvegardé!';
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 2000);
+            }, 1000);
+        });
+    });
+});
+</script>
+{% endblock %} 

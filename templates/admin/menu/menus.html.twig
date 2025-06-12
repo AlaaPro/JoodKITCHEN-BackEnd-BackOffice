@@ -1,0 +1,461 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Menus - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Menus</li>
+{% endblock %}
+
+{% block content %}
+<!-- Menus Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Gestion des Menus</h1>
+                <p class="text-muted">Créez et gérez vos menus et formules</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMenuModal">
+                    <i class="fas fa-plus"></i> Nouveau Menu
+                </button>
+                <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-download"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf"></i> Menu PDF</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-image"></i> Menu Image</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="fas fa-print"></i> Imprimer</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">12</div>
+                        <div class="widget-label">Menus actifs</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">3</div>
+                        <div class="widget-label">Menus du jour</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar-day fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">28.50€</div>
+                        <div class="widget-label">Prix moyen</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-euro-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">156</div>
+                        <div class="widget-label">Commandes</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu Categories Tabs -->
+<div class="card mb-4">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="menuTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    Tous les menus
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dejeuner-tab" data-bs-toggle="tab" data-bs-target="#dejeuner" type="button" role="tab">
+                    Déjeuner
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="diner-tab" data-bs-toggle="tab" data-bs-target="#diner" type="button" role="tab">
+                    Dîner
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="familial-tab" data-bs-toggle="tab" data-bs-target="#familial" type="button" role="tab">
+                    Familial
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="decouverte-tab" data-bs-toggle="tab" data-bs-target="#decouverte" type="button" role="tab">
+                    Découverte
+                </button>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="card-body">
+        <div class="tab-content" id="menuTabsContent">
+            <!-- All Menus Tab -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                <div class="row g-4" id="menusGrid">
+                    <!-- Menu Card 1 -->
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                <img src="https://via.placeholder.com/350x200/a9b73e/ffffff?text=Menu+Royal" 
+                                     class="card-img-top" alt="Menu Royal" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge jood-primary-bg">Bestseller</span>
+                                </div>
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-success">Disponible</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">Menu Royal</h5>
+                                    <span class="fw-bold jood-primary fs-5">35.90€</span>
+                                </div>
+                                <p class="card-text text-muted small mb-3">
+                                    Entrée + Plat + Dessert. Découvrez nos spécialités marocaines dans un menu complet.
+                                </p>
+                                
+                                <!-- Menu Composition -->
+                                <div class="mb-3">
+                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
+                                    <div class="menu-items">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge bg-secondary me-2">Entrée</span>
+                                            <small>Salade Marocaine ou Pastilla</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge jood-primary-bg me-2">Plat</span>
+                                            <small>Couscous Royal ou Tajine</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge jood-warning-bg me-2">Dessert</span>
+                                            <small>Pâtisserie ou Thé à la menthe</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users"></i> 23 commandes
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" title="Dupliquer">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Card 2 -->
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                <img src="https://via.placeholder.com/350x200/202d5b/ffffff?text=Menu+Découverte" 
+                                     class="card-img-top" alt="Menu Découverte" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge jood-secondary-bg">Nouveau</span>
+                                </div>
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-success">Disponible</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">Menu Découverte</h5>
+                                    <span class="fw-bold jood-primary fs-5">24.90€</span>
+                                </div>
+                                <p class="card-text text-muted small mb-3">
+                                    Parfait pour découvrir nos saveurs. Entrée et plat principal de votre choix.
+                                </p>
+                                
+                                <!-- Menu Composition -->
+                                <div class="mb-3">
+                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
+                                    <div class="menu-items">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge bg-secondary me-2">Entrée</span>
+                                            <small>Au choix parmi 4 options</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge jood-primary-bg me-2">Plat</span>
+                                            <small>Au choix parmi 6 plats</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users"></i> 18 commandes
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" title="Dupliquer">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Card 3 -->
+                    <div class="col-lg-6 col-xl-4">
+                        <div class="card h-100">
+                            <div class="position-relative">
+                                <img src="https://via.placeholder.com/350x200/da3c33/ffffff?text=Menu+Familial" 
+                                     class="card-img-top" alt="Menu Familial" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge jood-info-bg">Familial</span>
+                                </div>
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-success">Disponible</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">Menu Familial</h5>
+                                    <span class="fw-bold jood-primary fs-5">89.90€</span>
+                                </div>
+                                <p class="card-text text-muted small mb-3">
+                                    Menu pour 4 personnes. Idéal pour partager un moment convivial en famille.
+                                </p>
+                                
+                                <!-- Menu Composition -->
+                                <div class="mb-3">
+                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
+                                    <div class="menu-items">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge bg-secondary me-2">Entrées</span>
+                                            <small>Assortiment de 4 entrées</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <span class="badge jood-primary-bg me-2">Plats</span>
+                                            <small>Couscous Familial + Tajine</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge jood-warning-bg me-2">Desserts</span>
+                                            <small>Pâtisseries orientales + Thé</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users"></i> 12 commandes
+                                    </small>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success" title="Dupliquer">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other tabs would have filtered content -->
+            <div class="tab-pane fade" id="dejeuner" role="tabpanel">
+                <p class="text-center text-muted">Menus déjeuner disponibles de 11h30 à 15h00</p>
+            </div>
+            
+            <div class="tab-pane fade" id="diner" role="tabpanel">
+                <p class="text-center text-muted">Menus dîner disponibles de 18h00 à 23h00</p>
+            </div>
+            
+            <div class="tab-pane fade" id="familial" role="tabpanel">
+                <p class="text-center text-muted">Menus familiaux pour 4 personnes et plus</p>
+            </div>
+            
+            <div class="tab-pane fade" id="decouverte" role="tabpanel">
+                <p class="text-center text-muted">Menus découverte pour les nouveaux clients</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Menu Modal -->
+<div class="modal fade" id="addMenuModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header jood-primary-bg">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-plus"></i> Nouveau Menu
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMenuForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nom du menu *</label>
+                            <input type="text" class="form-control" placeholder="Ex: Menu Royal">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prix (€) *</label>
+                            <input type="number" class="form-control" step="0.10" placeholder="35.90">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" placeholder="Description du menu..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select">
+                                <option value="">Sélectionner...</option>
+                                <option value="dejeuner">Déjeuner</option>
+                                <option value="diner">Dîner</option>
+                                <option value="familial">Familial</option>
+                                <option value="decouverte">Découverte</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Disponibilité</label>
+                            <select class="form-select">
+                                <option value="always">Toujours disponible</option>
+                                <option value="lunch">Déjeuner uniquement</option>
+                                <option value="dinner">Dîner uniquement</option>
+                                <option value="weekend">Week-end uniquement</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Image du menu</label>
+                            <input type="file" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Créer le menu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter menus by category
+    const tabButtons = document.querySelectorAll('#menuTabs button[data-bs-toggle="tab"]');
+    tabButtons.forEach(button => {
+        button.addEventListener('shown.bs.tab', function(event) {
+            const targetTab = event.target.getAttribute('data-bs-target');
+            console.log('Switched to tab:', targetTab);
+            // Here you would filter the menus based on category
+        });
+    });
+    
+    // Menu creation form
+    document.querySelector('#addMenuModal .btn-primary').addEventListener('click', function() {
+        const form = document.getElementById('addMenuForm');
+        const formData = new FormData(form);
+        
+        // Show loading state
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+        this.disabled = true;
+        
+        // Simulate menu creation
+        setTimeout(() => {
+            this.innerHTML = '<i class="fas fa-check"></i> Menu créé!';
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('addMenuModal')).hide();
+                this.innerHTML = '<i class="fas fa-save"></i> Créer le menu';
+                this.disabled = false;
+                form.reset();
+                
+                // Show success notification
+                showNotification('Menu créé avec succès!', 'success');
+            }, 1500);
+        }, 2000);
+    });
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+});
+</script>
+{% endblock %} 
