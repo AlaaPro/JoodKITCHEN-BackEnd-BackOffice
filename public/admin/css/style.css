@@ -670,3 +670,11 @@ h1, h2, h3, h4, h5, h6,
 .green-accent-border {
   border-left: 4px solid var(--cui-jood-primary);
 } 
+
+
+/* sidebar admin */
+
+.sidebar-header {
+  background: white;
+  flex-direction: column;
+}

@@ -165,16 +165,25 @@
             return this.request('GET', `/users${queryString ? '?' + queryString : ''}`);
         }
 
+        async getAdminUsers(params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            return this.request('GET', `/admin/users${queryString ? '?' + queryString : ''}`);
+        }
+
         async getUser(id) {
             return this.request('GET', `/users/${id}`);
         }
 
         async createUser(userData) {
-            return this.request('POST', '/users', userData);
+            return this.request('POST', '/admin/create-user', userData);
         }
 
         async updateUser(id, userData) {
             return this.request('PUT', `/users/${id}`, userData);
+        }
+
+        async updateAdminUser(id, userData) {
+            return this.request('PUT', `/admin/update-user/${id}`, userData);
         }
 
         async deleteUser(id) {
@@ -184,6 +193,70 @@
         async getUserOrders(userId, params = {}) {
             const queryString = new URLSearchParams(params).toString();
             return this.request('GET', `/users/${userId}/orders${queryString ? '?' + queryString : ''}`);
+        }
+
+        // ==================== ADMIN PROFILES ====================
+
+        // ==================== ADMIN PROFILES (DEPRECATED - USE EMBEDDED DATA) ====================
+        
+        async getAdminProfiles(params = {}) {
+            // Deprecated: Use getAdminUsers() which includes embedded profile data
+            console.warn('getAdminProfiles is deprecated. Use getAdminUsers() which includes embedded profile data.');
+            const response = await this.getAdminUsers(params);
+            return response.data || [];
+        }
+
+        async getAdminProfile(userId) {
+            // Deprecated: Use getAdminUsers() and find the specific user
+            console.warn('getAdminProfile is deprecated. Use getAdminUsers() which includes embedded profile data.');
+            const response = await this.getAdminUsers();
+            if (response && response.success && response.data) {
+                const user = response.data.find(u => u.id == userId);
+                return user ? user.admin_profile : null;
+            }
+            throw new Error('Admin profile not found');
+        }
+
+        async createAdminProfile(profileData) {
+            // Deprecated: Admin profiles are now created automatically with users
+            console.warn('createAdminProfile is deprecated. Admin profiles are created automatically with users.');
+            throw new Error('Use createUser() instead - profiles are created automatically');
+        }
+
+        async updateAdminProfile(userId, profileData) {
+            // For now, we'll continue to support this method until we create a unified update endpoint
+            // TODO: Create unified update endpoint like we did for creation
+            return this.request('PUT', `/admin_profiles/${userId}`, profileData);
+        }
+
+        async deleteAdminProfile(userId) {
+            // Deprecated: Admin profiles are deleted automatically when users are deleted
+            console.warn('deleteAdminProfile is deprecated. Admin profiles are deleted automatically with users.');
+            throw new Error('Use deleteUser() instead - profiles are deleted automatically');
+        }
+
+        async getInternalRoles() {
+            const cacheKey = 'internal_roles';
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', '/admin/roles/internal');
+            this.cache.set(cacheKey, response);
+            return response;
+        }
+
+        async getAvailablePermissions() {
+            const cacheKey = 'available_permissions';
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', '/admin/permissions');
+            this.cache.set(cacheKey, response);
+            return response;
         }
 
         // ==================== DISHES & MENUS ====================

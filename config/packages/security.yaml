@@ -47,6 +47,7 @@ security:
         - { path: ^/admin, roles: PUBLIC_ACCESS }
         
         # API endpoints - role-based access
+        - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api/users, roles: ROLE_ADMIN, methods: [GET, POST, PUT, PATCH, DELETE] }
         - { path: ^/api/admin_profiles, roles: ROLE_SUPER_ADMIN }
         - { path: ^/api/kitchen_profiles, roles: [ROLE_ADMIN, ROLE_KITCHEN] }
