@@ -1,0 +1,18 @@
+data_dog_audit:
+    # Configure which entities to audit
+    audited_entities:
+        - App\Entity\User
+        - App\Entity\AdminProfile
+        - App\Entity\Client
+        - App\Entity\Order
+        - App\Entity\Product
+        - App\Entity\Category
+        - App\Entity\Permission
+        - App\Entity\Role
+        
+    # Exclude sensitive or system entities
+    unaudited_entities:
+        - App\Entity\RefreshToken
+        
+    # Track the user who made changes (impersonation support)
+    blame_impersonator: false  # Set to true if you want to track impersonators 

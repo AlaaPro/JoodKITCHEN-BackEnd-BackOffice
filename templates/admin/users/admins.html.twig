@@ -18,21 +18,28 @@
                 <p class="text-muted">Gérez les comptes administrateurs et leurs permissions</p>
             </div>
             <div>
+                {% if is_granted('manage_admins') %}
                 <button class="btn btn-primary me-2" id="createAdminBtn">
                     <i class="fas fa-user-shield"></i> Nouvel Administrateur
                 </button>
+                {% endif %}
+                {% if is_granted('manage_permissions') %}
                 <button class="btn btn-outline-primary" id="managePermissionsBtn">
                     <i class="fas fa-key"></i> Permissions
                 </button>
+                {% endif %}
+                {% if is_granted('view_admins') %}
                 <button class="btn btn-outline-success" id="exportAdminsBtn">
                     <i class="fas fa-download"></i> Exporter
                 </button>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
 <!-- Security Alert -->
+{% if is_granted('ROLE_SUPER_ADMIN') %}
 <div class="alert alert-warning mb-4">
     <div class="d-flex align-items-center">
         <i class="fas fa-shield-alt me-3 fs-4"></i>
@@ -42,6 +49,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <!-- Admin Stats -->
 <div class="row g-4 mb-4">
@@ -50,7 +58,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">1</div>
+                        <div class="widget-value" id="superAdminCount">-</div>
                         <div class="widget-label">Super Admin</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -66,7 +74,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">3</div>
+                        <div class="widget-value" id="totalAdmins">-</div>
                         <div class="widget-label">Administrateurs</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -82,7 +90,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">3</div>
+                        <div class="widget-value" id="activeAdmins">-</div>
                         <div class="widget-label">Actifs</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -98,7 +106,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">1</div>
+                        <div class="widget-value" id="suspendedAdmins">-</div>
                         <div class="widget-label">Suspendu</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -110,8 +118,16 @@
     </div>
 </div>
 
+<!-- Loading State -->
+<div id="loadingState" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 text-muted">Chargement des administrateurs...</p>
+</div>
+
 <!-- Administrators List -->
-<div class="card">
+<div class="card" id="adminTableCard">
     <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
             <h4 class="card-title mb-0">
@@ -153,238 +169,8 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Super Admin -->
-                    <tr data-admin-id="1">
-                        <td>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" disabled title="Non sélectionnable">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-crown text-warning"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Alaa Benabbou</div>
-                                    <small class="text-muted">alaa.benabbou@joodkitchen.fr</small>
-                                    <div class="mt-1">
-                                        <span class="badge bg-warning">Fondateur</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge jood-secondary-bg fs-6">
-                                <i class="fas fa-crown"></i> Super Admin
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge bg-success">
-                                <i class="fas fa-circle"></i> En ligne
-                            </span>
-                        </td>
-                        <td>
-                            <div>
-                                <div class="fw-semibold">En cours</div>
-                                <small class="text-success">Connecté depuis 2h</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-dark">Toutes permissions</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Voir profil" disabled>
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary" title="Non modifiable" disabled>
-                                    <i class="fas fa-lock"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Admin 1 -->
-                    <tr data-admin-id="2">
-                        <td>
-                            <div class="form-check">
-                                <input class="form-check-input admin-select-checkbox" type="checkbox" data-id="2">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-user-shield"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Ahmed Benali</div>
-                                    <small class="text-muted">ahmed.benali@joodkitchen.fr</small>
-                                    <div class="mt-1">
-                                        <span class="badge bg-info">Manager Général</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge jood-primary-bg">
-                                <i class="fas fa-user-shield"></i> Administrateur
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge bg-success">
-                                <i class="fas fa-circle"></i> En ligne
-                            </span>
-                        </td>
-                        <td>
-                            <div>
-                                <div class="fw-semibold">Il y a 15 min</div>
-                                <small class="text-muted">10:45</small>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge bg-primary">Commandes</span>
-                                <span class="badge bg-success">Cuisine</span>
-                                <span class="badge bg-info">Utilisateurs</span>
-                                <span class="badge bg-warning">Rapports</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary admin-view-btn" title="Voir profil" data-id="2">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success admin-edit-btn" title="Modifier" data-id="2">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-warning admin-permissions-btn" title="Permissions" data-id="2">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                                <button class="btn btn-outline-danger admin-suspend-btn" title="Suspendre" data-id="2">
-                                    <i class="fas fa-user-times"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Admin 2 -->
-                    <tr data-admin-id="3">
-                        <td>
-                            <div class="form-check">
-                                <input class="form-check-input admin-select-checkbox" type="checkbox" data-id="3">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-user-shield"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Fatima Alaoui</div>
-                                    <small class="text-muted">fatima.alaoui@joodkitchen.fr</small>
-                                    <div class="mt-1">
-                                        <span class="badge bg-success">Chef de Cuisine</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge jood-primary-bg">
-                                <i class="fas fa-user-shield"></i> Administrateur
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge bg-warning">
-                                <i class="fas fa-moon"></i> Hors ligne
-                            </span>
-                        </td>
-                        <td>
-                            <div>
-                                <div class="fw-semibold">Hier 23:30</div>
-                                <small class="text-muted">Fin de service</small>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex flex-wrap gap-1">
-                                <span class="badge bg-success">Cuisine</span>
-                                <span class="badge bg-secondary">Menu</span>
-                                <span class="badge bg-info">Stock</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary admin-view-btn" title="Voir profil" data-id="3">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success admin-edit-btn" title="Modifier" data-id="3">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-warning admin-permissions-btn" title="Permissions" data-id="3">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                                <button class="btn btn-outline-danger admin-suspend-btn" title="Suspendre" data-id="3">
-                                    <i class="fas fa-user-times"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- Admin 3 - Suspended -->
-                    <tr class="table-secondary" data-admin-id="4">
-                        <td>
-                            <div class="form-check">
-                                <input class="form-check-input admin-select-checkbox" type="checkbox" data-id="4">
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="fas fa-user-times text-white"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold text-muted">Omar Kaddouri</div>
-                                    <small class="text-muted">omar.kaddouri@joodkitchen.fr</small>
-                                    <div class="mt-1">
-                                        <span class="badge bg-secondary">Ex-Responsable IT</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-secondary">
-                                <i class="fas fa-user-shield"></i> Administrateur
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge bg-danger">
-                                <i class="fas fa-ban"></i> Suspendu
-                            </span>
-                        </td>
-                        <td>
-                            <div>
-                                <div class="fw-semibold text-muted">15 Nov 2024</div>
-                                <small class="text-danger">Compte suspendu</small>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge bg-danger">Accès révoqué</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary admin-view-btn" title="Voir profil" data-id="4">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success admin-reactivate-btn" title="Réactiver" data-id="4">
-                                    <i class="fas fa-user-check"></i>
-                                </button>
-                                <button class="btn btn-outline-danger admin-delete-btn" title="Supprimer définitivement" data-id="4">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                <tbody id="adminTableBody">
+                    <!-- Dynamic content will be loaded here -->
                 </tbody>
             </table>
         </div>
@@ -400,26 +186,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the AdminProfile CRUD manager
     window.adminProfileManager = new AdminProfileManager();
     
-    console.log('AdminProfile CRUD Manager initialized');
+    console.log('🚀 AdminProfile CRUD Manager initialized with new permission system integration');
     
-    // Update stats display
-    adminProfileManager.updateStats({
-        total: 4,
-        super_admins: 1,
-        active: 3,
-        suspended: 1
-    });
+    // Connect header buttons based on permissions
+    {% if is_granted('manage_admins') %}
+    // Create button is already handled by AdminProfileManager
+    console.log('✅ Create admin permissions granted');
+    {% endif %}
     
-    // Connect header buttons to CRUD operations
-    // Note: AdminProfileManager already handles this button click
-    
+    {% if is_granted('manage_permissions') %}
     document.getElementById('managePermissionsBtn').addEventListener('click', () => {
-        alert('Gestion des permissions bientôt disponible');
+        // Redirect to permission management interface
+        window.location.href = '{{ path('admin_dashboard') }}#permissions';
     });
+    {% else %}
+    // Hide permissions button if no access
+    const permBtn = document.getElementById('managePermissionsBtn');
+    if (permBtn) permBtn.style.display = 'none';
+    {% endif %}
     
+    {% if is_granted('view_admins') %}
     document.getElementById('exportAdminsBtn').addEventListener('click', () => {
-        alert('Export des administrateurs bientôt disponible');
+        adminProfileManager.exportAdmins();
     });
+    {% else %}
+    // Hide export button if no access
+    const exportBtn = document.getElementById('exportAdminsBtn');
+    if (exportBtn) exportBtn.style.display = 'none';
+    {% endif %}
     
     // Connect search and filters
     document.getElementById('adminSearchInput').addEventListener('input', (e) => {
@@ -459,41 +253,36 @@ document.addEventListener('DOMContentLoaded', function() {
         checkboxes.forEach(cb => cb.checked = e.target.checked);
     });
     
-    // Connect table action buttons using event delegation
-    document.addEventListener('click', function(e) {
-        const target = e.target.closest('button');
-        if (!target) return;
-        
-        const adminId = target.getAttribute('data-id');
-        if (!adminId) return;
-        
-        if (target.classList.contains('admin-view-btn')) {
-            alert(`Affichage des détails de l'administrateur ID: ${adminId}`);
-        } else if (target.classList.contains('admin-edit-btn')) {
-            alert(`Modification de l'administrateur ID: ${adminId}`);
-        } else if (target.classList.contains('admin-permissions-btn')) {
-            alert(`Gestion des permissions pour l'administrateur ID: ${adminId}`);
-        } else if (target.classList.contains('admin-suspend-btn')) {
-            if (confirm(`Voulez-vous vraiment suspendre cet administrateur?`)) {
-                alert(`Administrateur ${adminId} suspendu avec succès`);
-            }
-        } else if (target.classList.contains('admin-reactivate-btn')) {
-            if (confirm(`Voulez-vous vraiment réactiver cet administrateur?`)) {
-                alert(`Administrateur ${adminId} réactivé avec succès`);
-            }
-        } else if (target.classList.contains('admin-delete-btn')) {
-            if (confirm(`Voulez-vous vraiment supprimer définitivement cet administrateur?`)) {
-                alert(`Administrateur ${adminId} supprimé avec succès`);
-            }
-        }
-    });
-    
-    // Initial load of admin profiles from API
-    // adminProfileManager.loadAdminProfiles(); // Temporarily disabled - API issues
-    console.log('AdminProfile manager initialized - using static data for now');
-    
-    // Removed simple modal - using comprehensive AdminProfileManager modal instead
+    // AdminProfileManager automatically loads data in constructor
+    // No need to call loadAdminProfiles() again
 });
+
+// Global helper functions for permission-aware UI
+window.AdminPermissions = {
+    // Current user's permissions (populated from backend)
+    userPermissions: {% if app.user and app.user.adminProfile and app.user.adminProfile.allPermissionNames %}{{ app.user.adminProfile.allPermissionNames|json_encode|raw }}{% else %}[]{% endif %},
+    
+    // Check if current user has specific permission
+    hasPermission: function(permission) {
+        return this.userPermissions.includes(permission) || {{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }};
+    },
+    
+    // Check if user can edit specific admin
+    canEdit: function(targetUserRoles) {
+        if ({{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }}) return true;
+        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) return false;
+        return this.hasPermission('edit_admin_user');
+    },
+    
+    // Check if user can delete specific admin
+    canDelete: function(targetUserRoles) {
+        if ({{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }}) return true;
+        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) return false;
+        return this.hasPermission('delete_admin_user');
+    }
+};
+
+console.log('🔐 Permission system initialized:', window.AdminPermissions);
 </script>
 
 <!-- Recent Activity -->
@@ -506,44 +295,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </h5>
             </div>
             <div class="card-body">
-                <div class="activity-timeline">
-                    <div class="activity-item mb-3">
-                        <div class="d-flex align-items-start">
-                            <div class="activity-icon bg-success rounded-circle me-3">
-                                <i class="fas fa-sign-in-alt text-white"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">Ahmed Benali</div>
-                                <small class="text-muted">Connexion à l'administration</small>
-                                <div class="text-muted small">Il y a 15 min</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="activity-item mb-3">
-                        <div class="d-flex align-items-start">
-                            <div class="activity-icon jood-warning-bg rounded-circle me-3">
-                                <i class="fas fa-key text-white"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">Alaa Benabbou</div>
-                                <small class="text-muted">Modification permissions Fatima Alaoui</small>
-                                <div class="text-muted small">Il y a 2h</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="activity-item">
-                        <div class="d-flex align-items-start">
-                            <div class="activity-icon bg-danger rounded-circle me-3">
-                                <i class="fas fa-ban text-white"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-semibold">Alaa Benabbou</div>
-                                <small class="text-muted">Suspension compte Omar Kaddouri</small>
-                                <div class="text-muted small">15 Nov 2024</div>
-                            </div>
-                        </div>
+                <div class="activity-timeline" id="activityTimeline">
+                    <!-- Dynamic content will be loaded here -->
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-clock"></i> Chargement de l'activité...
                     </div>
                 </div>
             </div>
@@ -558,42 +313,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 </h5>
             </div>
             <div class="card-body">
-                <div class="security-metrics">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Connexions sécurisées</span>
-                        <span class="badge bg-success">100%</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Double authentification</span>
-                        <span class="badge jood-primary-bg">3/4 activée</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span>Tentatives de connexion</span>
-                        <span class="badge bg-warning">2 échouées</span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>Dernière audit</span>
-                        <span class="badge bg-info">Aujourd'hui</span>
+                <div class="security-metrics" id="securityMetrics">
+                    <!-- Dynamic content will be loaded here -->
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-shield-alt"></i> Chargement des métriques de sécurité...
                     </div>
                 </div>
                 
                 <hr>
                 
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary btn-sm">
+                    {% if is_granted('manage_system') %}
+                    <button class="btn btn-outline-primary btn-sm" onclick="AdminPermissions.showSecurityAudit()">
                         <i class="fas fa-shield-alt"></i> Audit sécurité
                     </button>
-                    <button class="btn btn-outline-warning btn-sm">
+                    {% endif %}
+                    {% if is_granted('manage_admins') %}
+                    <button class="btn btn-outline-warning btn-sm" onclick="AdminPermissions.forcePasswordReset()">
                         <i class="fas fa-key"></i> Forcer nouveau mot de passe
                     </button>
-                    <button class="btn btn-outline-info btn-sm">
+                    {% endif %}
+                    {% if is_granted('view_activity_logs') %}
+                    <button class="btn btn-outline-info btn-sm" onclick="AdminPermissions.showConnectionLog()">
                         <i class="fas fa-history"></i> Journal des connexions
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Permission Matrix Modal (if user has permission) -->
+{% if is_granted('view_permission_matrix') %}
+<div class="modal fade" id="permissionMatrixModal" tabindex="-1" aria-labelledby="permissionMatrixModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="permissionMatrixModalLabel">
+                    <i class="fas fa-table"></i> Matrice des Permissions
+                </h5>
+                <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="permissionMatrix">
+                    <!-- Dynamic permission matrix will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-{% endblock %} 
+{% endblock %}

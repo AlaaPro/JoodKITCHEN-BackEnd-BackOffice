@@ -16,6 +16,8 @@ class AdminProfileManager {
     init() {
         this.bindEvents();
         this.loadAdminProfiles();
+        // TODO: Enable when activity endpoint is ready
+        // this.loadActivityFeed();
         this.setupRealTimeUpdates();
     }
 
@@ -58,74 +60,144 @@ class AdminProfileManager {
 
     async loadAdminProfiles() {
         try {
-            // Show loading indicator
-            const tbody = document.querySelector('#adminsTable tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Chargement...</span>
-                            </div>
-                            <p class="mt-2 text-muted">Chargement des administrateurs...</p>
-                        </td>
-                    </tr>
-                `;
-            }
-
-            // Get admin users with their profiles
+            // Show loading state
+            this.showLoadingState();
+            
+            console.log('🔄 Loading admin profiles from API...');
+            
+            // Load admin users from our unified API
             const response = await AdminAPI.getAdminUsers();
-            console.log('Admin users API response:', response);
             
             if (response && response.success && response.data) {
-                // Use API data with profiles
-                this.renderAdminProfilesTable(response.data);
-                
-                // Update stats
-                const adminUsers = response.data;
-                this.updateStats({
-                    total_admins: adminUsers.length,
-                    active_admins: adminUsers.filter(u => u.is_active).length,
-                    recent_logins: adminUsers.filter(u => {
-                        if (!u.last_connexion) return false;
-                        const lastLogin = new Date(u.last_connexion);
-                        const now = new Date();
-                        return (now - lastLogin) < (24 * 60 * 60 * 1000);
-                    }).length
-                });
-                
+                this.admins = response.data;
+                this.renderAdminProfiles(this.admins);
+                this.updateStats();
+                console.log(`📊 Loaded ${this.admins.length} admin profiles`);
             } else {
-                // Fallback to static data
-                this.renderStaticAdminData();
+                console.error('❌ Invalid API response format');
+                throw new Error('Invalid API response format');
             }
-
-        } catch (error) {
-            console.error('Error loading admin profiles:', error);
             
-            // Show error in table
-            const tbody = document.querySelector('#adminsTable tbody');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Erreur lors du chargement des administrateurs: ${error.message}
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }
+        } catch (error) {
+            console.error('❌ Error loading admin profiles:', error);
+            this.handleLoadError(error);
+        } finally {
+            this.hideLoadingState();
         }
     }
+
+    showLoadingState() {
+        const loadingElement = document.getElementById('loadingState');
+        const tableElement = document.getElementById('adminTableCard');
+        
+        if (loadingElement) loadingElement.style.display = 'block';
+        if (tableElement) tableElement.style.display = 'none';
+    }
+
+    hideLoadingState() {
+        const loadingElement = document.getElementById('loadingState');
+        const tableElement = document.getElementById('adminTableCard');
+        
+        if (loadingElement) loadingElement.style.display = 'none';
+        if (tableElement) tableElement.style.display = 'block';
+    }
+
+    handleLoadError(error) {
+        console.error('Failed to load admin profiles:', error);
+        
+        // Show error message in the table
+        const tbody = document.getElementById('adminTableBody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                            <h5>Erreur de chargement</h5>
+                            <p class="text-muted">Impossible de charger les administrateurs.</p>
+                            <button class="btn btn-outline-primary" onclick="adminProfileManager.loadAdminProfiles()">
+                                <i class="fas fa-refresh"></i> Réessayer
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Show alert
+        AdminUtils.showAlert('Erreur lors du chargement des administrateurs', 'error');
+    }
+
+    renderAdminProfiles(admins) {
+        const tbody = document.getElementById('adminTableBody');
+        if (!tbody) {
+            console.error('❌ Admin table body not found');
+            return;
+        }
+
+        if (!admins || admins.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <div class="text-muted">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h5>Aucun administrateur trouvé</h5>
+                            <p>Commencez par créer un administrateur.</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Clear existing content
+        tbody.innerHTML = '';
+        
+        // Render each admin
+        admins.forEach((admin, index) => {
+            try {
+                const rowHtml = this.createAdminRow(admin, admin.admin_profile);
+                
+                // Create a temporary table to properly parse the TR element
+                const tempTable = document.createElement('table');
+                const tempTbody = document.createElement('tbody');
+                tempTbody.innerHTML = rowHtml;
+                tempTable.appendChild(tempTbody);
+                
+                const row = tempTbody.firstElementChild;
+                
+                if (row && row.tagName === 'TR') {
+                    tbody.appendChild(row);
+                } else {
+                    console.error(`❌ Failed to create TR element for admin ${admin.id}`);
+                }
+            } catch (error) {
+                console.error(`❌ Error processing admin ${admin.id}:`, error);
+            }
+        });
+        
+        // Re-bind events after DOM update
+        this.bindRowEvents();
+        
+        console.log(`✅ Rendered ${admins.length} admin profiles successfully`);
+    }
+
+    // ==================== STATIC DATA FALLBACK ====================
     
     renderStaticAdminData() {
-        const tbody = document.querySelector('#adminsTable tbody');
-        if (!tbody) return;
+        console.warn('🚨 Using static data fallback - API not available');
         
         // For now, just keep the existing static data and remove loading
         // The static admin data is already in the template
         console.log('Loaded admin profiles successfully - displaying static data');
+        
+        // Update stats with static data
+        this.updateStats({
+            total: 4,
+            super_admins: 1,
+            active: 3,
+            suspended: 1
+        });
     }
 
     renderAdminProfilesTable(users) {
@@ -781,15 +853,20 @@ class AdminProfileManager {
 
     async loadRolesAndPermissions(formSelector) {
         try {
+            console.log('🔄 Loading roles and permissions from database...');
             const roles = await AdminAPI.getInternalRoles();
             const permissions = await AdminAPI.getAvailablePermissions();
+
+            console.log('✅ Loaded roles from database:', roles);
+            console.log('✅ Loaded permissions from database:', permissions);
 
             this.populateRolesSelect(formSelector, roles);
             this.populatePermissionsSelect(formSelector, permissions);
 
         } catch (error) {
-            console.error('Error loading roles and permissions:', error);
+            console.error('❌ Error loading roles and permissions:', error);
             // Use fallback data if API fails
+            console.log('🔄 Using fallback data...');
             this.populateRolesSelect(formSelector, this.getFallbackRoles());
             this.populatePermissionsSelect(formSelector, this.getFallbackPermissions());
         }
@@ -898,11 +975,59 @@ class AdminProfileManager {
         });
     }
 
-    updateStats(stats) {
-        $('#totalAdmins').text(stats.total || 0);
-        $('#activeAdmins').text(stats.active || 0);
-        $('#superAdmins').text(stats.super_admins || 0);
-        $('#suspendedAdmins').text(stats.suspended || 0);
+    updateStats(providedStats = null) {
+        if (providedStats) {
+            // Use provided stats (for backward compatibility)
+            const totalElement = document.getElementById('totalAdmins');
+            const activeElement = document.getElementById('activeAdmins');
+            const superAdminElement = document.getElementById('superAdminCount');
+            const suspendedElement = document.getElementById('suspendedAdmins');
+
+            if (totalElement) totalElement.textContent = providedStats.total || providedStats.total_admins || 0;
+            if (activeElement) activeElement.textContent = providedStats.active || providedStats.active_admins || 0;
+            if (superAdminElement) superAdminElement.textContent = providedStats.super_admins || 0;
+            if (suspendedElement) suspendedElement.textContent = providedStats.suspended || 0;
+            
+            return;
+        }
+
+        // Calculate stats from loaded admin data
+        if (!this.admins || !Array.isArray(this.admins)) {
+            console.warn('No admin data available for stats calculation');
+            return;
+        }
+
+        const stats = {
+            total: this.admins.length,
+            active: this.admins.filter(admin => admin.is_active).length,
+            super_admins: this.admins.filter(admin => admin.roles && admin.roles.includes('ROLE_SUPER_ADMIN')).length,
+            suspended: this.admins.filter(admin => !admin.is_active).length
+        };
+
+        // Update DOM elements
+        const totalElement = document.getElementById('totalAdmins');
+        const activeElement = document.getElementById('activeAdmins');
+        const superAdminElement = document.getElementById('superAdminCount');
+        const suspendedElement = document.getElementById('suspendedAdmins');
+
+        if (totalElement) {
+            totalElement.textContent = stats.total;
+            totalElement.parentElement.parentElement.classList.toggle('animate__pulse', stats.total > 0);
+        }
+        if (activeElement) {
+            activeElement.textContent = stats.active;
+            activeElement.parentElement.parentElement.classList.toggle('animate__pulse', stats.active > 0);
+        }
+        if (superAdminElement) {
+            superAdminElement.textContent = stats.super_admins;
+            superAdminElement.parentElement.parentElement.classList.toggle('animate__pulse', stats.super_admins > 0);
+        }
+        if (suspendedElement) {
+            suspendedElement.textContent = stats.suspended;
+            suspendedElement.parentElement.parentElement.classList.toggle('animate__pulse', stats.suspended > 0);
+        }
+
+        console.log('📊 Updated admin statistics:', stats);
     }
 
     resetCreateForm() {
@@ -972,25 +1097,41 @@ class AdminProfileManager {
         
         // Set roles and permissions if profile exists
         if (profile) {
+            console.log('📝 Setting profile data:', profile);
+            
             // Set internal roles
             if (profile.roles_internes && Array.isArray(profile.roles_internes)) {
+                console.log('🎭 Setting internal roles:', profile.roles_internes);
                 profile.roles_internes.forEach(role => {
                     const checkbox = document.querySelector(`#editAdminRolesInternes input[value="${role}"]`);
-                    if (checkbox) checkbox.checked = true;
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        console.log(`✅ Checked role: ${role}`);
+                    } else {
+                        console.warn(`❌ Role checkbox not found: ${role}`);
+                    }
                 });
             }
             
             // Set advanced permissions
             if (profile.permissions_avancees && Array.isArray(profile.permissions_avancees)) {
+                console.log('🔐 Setting permissions:', profile.permissions_avancees);
                 profile.permissions_avancees.forEach(permission => {
                     const checkbox = document.querySelector(`#editAdminPermissions input[value="${permission}"]`);
-                    if (checkbox) checkbox.checked = true;
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        console.log(`✅ Checked permission: ${permission}`);
+                    } else {
+                        console.warn(`❌ Permission checkbox not found: ${permission}`);
+                    }
                 });
             }
             
             // Set notes
             const notesField = document.getElementById('editAdminNotes');
             if (notesField) notesField.value = profile.notes_interne || '';
+        } else {
+            console.warn('❌ No profile data provided to populate form');
         }
         
         console.log('Form populated with data:', { user, profile });
@@ -1044,6 +1185,110 @@ class AdminProfileManager {
         // Update visible count
         const visibleRows = document.querySelectorAll('#adminsTable tbody tr[data-admin-id]:not([style*="display: none"])');
         console.log(`Filtered to ${visibleRows.length} visible admins`);
+    }
+
+    // ==================== ACTIVITY FEED ====================
+    // TODO: Implement when activity endpoint is ready
+
+    async loadActivityFeed() {
+        // Temporarily disabled - endpoint not ready
+        console.log('🔄 Activity feed temporarily disabled');
+        this.showActivityError('Fonctionnalité en cours de développement');
+        return;
+    }
+
+    renderActivityFeed(activities) {
+        const timeline = document.getElementById('activityTimeline');
+        if (!timeline) return;
+
+        if (!activities || activities.length === 0) {
+            timeline.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-info-circle"></i>
+                    Aucune activité récente
+                </div>
+            `;
+            return;
+        }
+
+        const activityHtml = activities.map(activity => {
+            const actionIcon = this.getActionIcon(activity.action);
+            const actionColor = this.getActionColor(activity.action);
+            
+            return `
+                <div class="activity-item d-flex align-items-start mb-3">
+                    <div class="activity-icon me-3">
+                        <div class="rounded-circle bg-${actionColor} text-white d-flex align-items-center justify-content-center" 
+                             style="width: 32px; height: 32px; font-size: 12px;">
+                            <i class="${actionIcon}"></i>
+                        </div>
+                    </div>
+                    <div class="activity-content flex-grow-1">
+                        <div class="activity-text">
+                            <strong>${activity.user_name}</strong> 
+                            ${this.getActionText(activity.action)} 
+                            <span class="text-primary">${activity.entity_type}</span>
+                            ${activity.entity_label ? `"${activity.entity_label}"` : ''}
+                        </div>
+                        <div class="activity-time text-muted small">
+                            <i class="fas fa-clock me-1"></i>
+                            ${activity.logged_at_formatted}
+                        </div>
+                        ${activity.changes && Object.keys(activity.changes).length > 0 ? `
+                            <div class="activity-changes mt-1">
+                                <small class="text-muted">
+                                    ${Object.keys(activity.changes).length} champ(s) modifié(s)
+                                </small>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        timeline.innerHTML = activityHtml;
+    }
+
+    getActionIcon(action) {
+        const icons = {
+            'insert': 'fas fa-plus',
+            'update': 'fas fa-edit',
+            'remove': 'fas fa-trash',
+            'delete': 'fas fa-trash'
+        };
+        return icons[action] || 'fas fa-circle';
+    }
+
+    getActionColor(action) {
+        const colors = {
+            'insert': 'success',
+            'update': 'warning',
+            'remove': 'danger',
+            'delete': 'danger'
+        };
+        return colors[action] || 'secondary';
+    }
+
+    getActionText(action) {
+        const texts = {
+            'insert': 'a créé',
+            'update': 'a modifié',
+            'remove': 'a supprimé',
+            'delete': 'a supprimé'
+        };
+        return texts[action] || 'a effectué une action sur';
+    }
+
+    showActivityError(message) {
+        const timeline = document.getElementById('activityTimeline');
+        if (timeline) {
+            timeline.innerHTML = `
+                <div class="text-center text-danger py-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${message}
+                </div>
+            `;
+        }
     }
 }
 

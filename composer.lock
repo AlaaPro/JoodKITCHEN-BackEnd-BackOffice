@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "92339f44dbab55bf1f4dbd8fa3b9ef41",
+    "content-hash": "ed990d745310aa863ab76eae44a2d46c",
     "packages": [
         {
             "name": "api-platform/doctrine-common",
@@ -1094,6 +1094,74 @@
                 "source": "https://github.com/api-platform/validator/tree/v3.4.17"
             },
             "time": "2024-10-30T09:51:13+00:00"
+        },
+        {
+            "name": "data-dog/audit-bundle",
+            "version": "v1.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DATA-DOG/DataDogAuditBundle.git",
+                "reference": "c85c0cf8596181376a9f00e44da9950572067743"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DATA-DOG/DataDogAuditBundle/zipball/c85c0cf8596181376a9f00e44da9950572067743",
+                "reference": "c85c0cf8596181376a9f00e44da9950572067743",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": "^3.2|^4.0",
+                "doctrine/doctrine-bundle": "^2.9",
+                "doctrine/orm": "^2.13|^3.0",
+                "php": ">=8.1",
+                "symfony/console": "^6.4 | ^7.0",
+                "symfony/framework-bundle": "^6.4 | ^7.0",
+                "symfony/security-bundle": "^6.4 | ^7.0"
+            },
+            "require-dev": {
+                "ext-pdo": "*",
+                "ext-pdo_sqlite": "*",
+                "phpunit/phpunit": "^9",
+                "symfony/phpunit-bridge": "^6.4 | ^7.0"
+            },
+            "type": "symfony-bundle",
+            "autoload": {
+                "files": [
+                    "src/aliases.php"
+                ],
+                "psr-4": {
+                    "DataDog\\AuditBundle\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "DataDog Team",
+                    "homepage": "https://datadog.lt"
+                },
+                {
+                    "name": "Symfony2 Community",
+                    "homepage": "https://github.com/DATA-DOG/DataDogAuditBundle/contributors"
+                }
+            ],
+            "description": "Audit bundle for symfony2 and doctrine orm, logs any database change",
+            "homepage": "https://github.com/DATA-DOG/DataDogAuditBundle",
+            "keywords": [
+                "Audit",
+                "Symfony2",
+                "bundle",
+                "doctrine",
+                "log",
+                "orm"
+            ],
+            "support": {
+                "issues": "https://github.com/DATA-DOG/DataDogAuditBundle/issues",
+                "source": "https://github.com/DATA-DOG/DataDogAuditBundle/tree/v1.2.1"
+            },
+            "time": "2025-03-03T17:39:04+00:00"
         },
         {
             "name": "doctrine/cache",

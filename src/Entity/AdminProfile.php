@@ -10,6 +10,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\AdminProfileRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -71,9 +73,22 @@ class AdminProfile
     #[Groups(['admin_profile:read'])]
     private ?\DateTimeInterface $updatedAt = null;
 
+    // New normalized relationships
+    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'adminProfiles')]
+    #[ORM\JoinTable(name: 'admin_profile_roles')]
+    #[Groups(['admin_profile:read'])]
+    private Collection $roles;
+
+    #[ORM\ManyToMany(targetEntity: Permission::class, inversedBy: 'adminProfiles')]
+    #[ORM\JoinTable(name: 'admin_profile_permissions')]
+    #[Groups(['admin_profile:read'])]
+    private Collection $permissions;
+
     public function __construct()
     {
         $this->rolesInternes = [];
+        $this->roles = new ArrayCollection();
+        $this->permissions = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -189,5 +204,126 @@ class AdminProfile
     public function hasRoleInterne(string $role): bool
     {
         return in_array($role, $this->rolesInternes);
+    }
+
+    // === NEW NORMALIZED PERMISSION METHODS ===
+
+    /**
+     * @return Collection<int, Role>
+     */
+    public function getRoles(): Collection
+    {
+        return $this->roles;
+    }
+
+    public function addRole(Role $role): static
+    {
+        if (!$this->roles->contains($role)) {
+            $this->roles->add($role);
+        }
+        return $this;
+    }
+
+    public function removeRole(Role $role): static
+    {
+        $this->roles->removeElement($role);
+        return $this;
+    }
+
+    public function hasRole(Role $role): bool
+    {
+        return $this->roles->contains($role);
+    }
+
+    public function hasRoleByName(string $roleName): bool
+    {
+        foreach ($this->roles as $role) {
+            if ($role->getName() === $roleName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return Collection<int, Permission>
+     */
+    public function getPermissions(): Collection
+    {
+        return $this->permissions;
+    }
+
+    public function addPermission(Permission $permission): static
+    {
+        if (!$this->permissions->contains($permission)) {
+            $this->permissions->add($permission);
+        }
+        return $this;
+    }
+
+    public function removePermission(Permission $permission): static
+    {
+        $this->permissions->removeElement($permission);
+        return $this;
+    }
+
+    public function hasPermission(Permission $permission): bool
+    {
+        return $this->permissions->contains($permission);
+    }
+
+    public function hasPermissionByName(string $permissionName): bool
+    {
+        // Check direct permissions
+        foreach ($this->permissions as $permission) {
+            if ($permission->getName() === $permissionName && $permission->isActive()) {
+                return true;
+            }
+        }
+        
+        // Check permissions through roles
+        foreach ($this->roles as $role) {
+            if ($role->isActive() && $role->hasPermissionByName($permissionName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get all permissions (direct + inherited from roles)
+     */
+    public function getAllPermissions(): array
+    {
+        $allPermissions = [];
+        
+        // Add direct permissions
+        foreach ($this->permissions as $permission) {
+            if ($permission->isActive()) {
+                $allPermissions[$permission->getName()] = $permission;
+            }
+        }
+        
+        // Add permissions from roles
+        foreach ($this->roles as $role) {
+            if ($role->isActive()) {
+                foreach ($role->getPermissions() as $permission) {
+                    if ($permission->isActive()) {
+                        $allPermissions[$permission->getName()] = $permission;
+                    }
+                }
+            }
+        }
+        
+        return array_values($allPermissions);
+    }
+
+    /**
+     * Get all permission names (direct + inherited from roles)
+     */
+    public function getAllPermissionNames(): array
+    {
+        return array_map(fn($p) => $p->getName(), $this->getAllPermissions());
     }
 } 

@@ -17,3 +17,43 @@ framework:
         # Namespaced pools use the above "app" backend by default
         #pools:
             #my.dedicated.cache: null
+
+        app: cache.adapter.filesystem
+        system: cache.adapter.system
+        
+        # Permission system cache pools for optimal performance
+        pools:
+            # High-performance cache for permission checks
+            permission_cache:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 3600 # 1 hour
+                
+            # User permission cache with shorter TTL for security
+            user_permission_cache:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 1800 # 30 minutes
+                
+            # Role and permission metadata cache (longer TTL)
+            permission_metadata_cache:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 7200 # 2 hours
+                
+            # API response cache for admin endpoints
+            admin_api_cache:
+                adapter: cache.adapter.filesystem
+                default_lifetime: 900 # 15 minutes
+
+# Optional: Redis configuration for production
+# Uncomment and configure for production use with Redis
+# framework:
+#     cache:
+#         pools:
+#             permission_cache:
+#                 adapter: cache.adapter.redis
+#                 provider: redis://localhost:6379/1
+#                 default_lifetime: 3600
+#             
+#             user_permission_cache:
+#                 adapter: cache.adapter.redis
+#                 provider: redis://localhost:6379/2
+#                 default_lifetime: 1800

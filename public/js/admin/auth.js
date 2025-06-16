@@ -54,6 +54,9 @@
                         return;
                     }
                     
+                    // Set cookie for Symfony authentication
+                    this.setTokenCookie(token);
+                    
                     // Update API token
                     if (window.AdminAPI) {
                         AdminAPI.updateToken(token);
@@ -164,6 +167,9 @@
             localStorage.setItem(this.tokenKey, token);
             localStorage.setItem(this.userKey, JSON.stringify(user));
             
+            // Store in cookie for Symfony authentication
+            this.setTokenCookie(token);
+            
             // Update current user
             this.currentUser = user;
             
@@ -178,6 +184,9 @@
             // Clear localStorage
             localStorage.removeItem(this.tokenKey);
             localStorage.removeItem(this.userKey);
+            
+            // Clear cookie
+            this.clearTokenCookie();
             
             // Clear current user
             this.currentUser = null;
@@ -277,6 +286,26 @@
             if (!expiration) return 0;
             
             return Math.max(0, expiration.getTime() - Date.now());
+        }
+
+        // ==================== COOKIE MANAGEMENT ====================
+
+        setTokenCookie(token) {
+            // Set HTTP-only cookie for Symfony authentication
+            // Use secure cookie if HTTPS is available
+            const isSecure = window.location.protocol === 'https:';
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (24 * 60 * 60 * 1000)); // 24 hours
+            
+            document.cookie = `admin_token=${token}; expires=${expires.toUTCString()}; path=/; ${isSecure ? 'secure; ' : ''}samesite=lax`;
+            
+            console.log('🍪 Set admin_token cookie for Symfony authentication');
+        }
+
+        clearTokenCookie() {
+            // Clear the cookie by setting it to expire in the past
+            document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            console.log('🍪 Cleared admin_token cookie');
         }
 
         // ==================== USER INFORMATION ====================

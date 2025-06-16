@@ -491,3 +491,34 @@ Stack trace:
 [11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\RouterListener::onKernelFinishRequest".
 [11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Bundle\SecurityBundle\Debug\TraceableFirewallListener::onKernelFinishRequest".
 [11-Jun-2025 10:33:04 UTC] [debug] Notified event "kernel.finish_request" to listener "Symfony\Component\HttpKernel\EventListener\LocaleAwareListener::onKernelFinishRequest".
+[16-Jun-2025 10:26:05 UTC] [critical] Error thrown while running command ""doctrine:schema:dump" --dump-sql". Message: "Command "doctrine:schema:dump" is not defined.
+
+Did you mean one of these?
+    api:json-schema:generate
+    doctrine:migrations:dump-schema
+    doctrine:schema:create
+    doctrine:schema:drop
+    doctrine:schema:update
+    doctrine:schema:validate"
+[16-Jun-2025 10:26:14 UTC] [critical] Error thrown while running command "doctrine:migrations:dump-schema". Message: "Delete any previous migrations in the namespace "DoctrineMigrations" before dumping your schema."
+[16-Jun-2025 11:00:11 UTC] PHP Deprecated:  App\Repository\AdminActivityRepository::getActivityStats(): Implicitly marking parameter $since as nullable is deprecated, the explicit nullable type must be used instead in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\src\Repository\AdminActivityRepository.php on line 104
+[16-Jun-2025 11:00:11 UTC] PHP Deprecated:  App\Repository\AdminActivityRepository::getFailedLoginAttempts(): Implicitly marking parameter $since as nullable is deprecated, the explicit nullable type must be used instead in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\src\Repository\AdminActivityRepository.php on line 141
+[16-Jun-2025 11:00:11 UTC] PHP Deprecated:  App\Repository\AdminActivityRepository::getFailedLoginAttempts(): Implicitly marking parameter $ipAddress as nullable is deprecated, the explicit nullable type must be used instead in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\src\Repository\AdminActivityRepository.php on line 141
+[16-Jun-2025 11:09:43 UTC] [critical] Error thrown while running command "doctrine:fixtures:load --append". Message: "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'admin@joodkitchen.com' for key 'UNIQ_8D93D649E7927C74'"
+[16-Jun-2025 11:10:03 UTC] [critical] Error thrown while running command "dbal:run-sql "INSERT INTO permission (name, description, category, priority, is_active) VALUES ('view_activity_logs', 'View user activity logs', 'system', 65, 1) ON DUPLICATE KEY UPDATE description = VALUES(description)"". Message: "An exception occurred while executing a query: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'joodkitchen.permission' doesn't exist"
+[16-Jun-2025 11:12:51 UTC] [critical] Error thrown while running command "lint:container". Message: "Invalid service "api_platform.action.exception": class "ApiPlatform\Action\ExceptionAction" does not exist."
+[16-Jun-2025 11:13:21 UTC] [critical] Error thrown while running command ""server:start"". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[16-Jun-2025 11:14:32 UTC] PHP Warning:  Undefined array key "DATABASE_HOST" in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_activity.php on line 13
+[16-Jun-2025 11:14:32 UTC] PHP Warning:  Undefined array key "DATABASE_NAME" in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_activity.php on line 13
+[16-Jun-2025 11:14:32 UTC] PHP Warning:  Undefined array key "DATABASE_USER" in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_activity.php on line 14
+[16-Jun-2025 11:14:32 UTC] PHP Warning:  Undefined array key "DATABASE_PASSWORD" in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_activity.php on line 15
+[16-Jun-2025 11:14:57 UTC] [critical] Error thrown while running command "dbal:run-sql "SELECT COUNT(*) as permission_count FROM permission"". Message: "An exception occurred while executing a query: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'joodkitchen.permission' doesn't exist"
+[16-Jun-2025 11:16:53 UTC] [critical] Error thrown while running command "doctrine:fixtures:load --append". Message: "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'admin@joodkitchen.com' for key 'UNIQ_8D93D649E7927C74'"
+[16-Jun-2025 11:17:12 UTC] [critical] Error thrown while running command "doctrine:query:sql "INSERT IGNORE INTO permission (name, description, category, priority, is_active, created_at, updated_at) VALUES ('view_dashboard', 'View admin dashboard', 'dashboard', 100, 1, NOW(), NOW())"". Message: "An exception occurred while executing a query: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'joodkitchen.permission' doesn't exist"
+[16-Jun-2025 11:17:21 UTC] [critical] Error thrown while running command "doctrine:schema:create". Message: "Schema-Tool failed with Error 'An exception occurred while executing a query: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'abonnement' already exists' while executing DDL: CREATE TABLE abonnement (id INT AUTO_INCREMENT NOT NULL, user_id INT NOT NULL, type VARCHAR(50) NOT NULL, repas_par_jour INT NOT NULL, date_debut DATE NOT NULL, date_fin DATE NOT NULL, statut VARCHAR(50) NOT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, INDEX IDX_351268BBA76ED395 (user_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB"
+[16-Jun-2025 11:17:36 UTC] [critical] Error thrown while running command "dbal:run-sql "SELECT COUNT(*) as count FROM permission"". Message: "An exception occurred while executing a query: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'joodkitchen.permission' doesn't exist"
+[16-Jun-2025 12:31:21 UTC] [critical] Error thrown while running command ""server:log" --lines=50". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."

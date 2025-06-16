@@ -259,6 +259,164 @@
             return response;
         }
 
+        // ==================== NEW PERMISSION MANAGEMENT ====================
+
+        /**
+         * Get permission matrix for visualization
+         */
+        async getPermissionMatrix() {
+            const cacheKey = 'permission_matrix';
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', '/admin/permission-management/matrix');
+            this.cache.set(cacheKey, response, 300); // 5 minute cache
+            return response;
+        }
+
+        /**
+         * Get all permissions grouped by category
+         */
+        async getPermissionsGrouped() {
+            const cacheKey = 'permissions_grouped';
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', '/admin/permission-management/permissions');
+            this.cache.set(cacheKey, response);
+            return response;
+        }
+
+        /**
+         * Create a new permission
+         */
+        async createPermission(permissionData) {
+            const response = await this.request('POST', '/admin/permission-management/permissions', permissionData);
+            this.clearPermissionCache();
+            return response;
+        }
+
+        /**
+         * Get all roles with their permissions
+         */
+        async getRolesWithPermissions() {
+            const cacheKey = 'roles_with_permissions';
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', '/admin/permission-management/roles');
+            this.cache.set(cacheKey, response);
+            return response;
+        }
+
+        /**
+         * Create a new role
+         */
+        async createRole(roleData) {
+            const response = await this.request('POST', '/admin/permission-management/roles', roleData);
+            this.clearPermissionCache();
+            return response;
+        }
+
+        /**
+         * Assign permissions to a user
+         */
+        async assignUserPermissions(userId, permissionData) {
+            const response = await this.request('POST', `/admin/permission-management/users/${userId}/permissions`, permissionData);
+            this.clearPermissionCache();
+            this.clearUsersCache();
+            return response;
+        }
+
+        /**
+         * Get detailed user permissions
+         */
+        async getUserPermissions(userId) {
+            const cacheKey = `user_permissions_${userId}`;
+            
+            if (this.isValidCache(cacheKey)) {
+                return this.cache.get(cacheKey);
+            }
+
+            const response = await this.request('GET', `/admin/user/${userId}/permissions`);
+            this.cache.set(cacheKey, response, 300); // 5 minute cache
+            return response;
+        }
+
+        /**
+         * Bulk update permissions for multiple users
+         */
+        async bulkUpdatePermissions(operations) {
+            const response = await this.request('POST', '/admin/permission-management/bulk-update', {
+                operations: operations
+            });
+            this.clearPermissionCache();
+            this.clearUsersCache();
+            return response;
+        }
+
+        /**
+         * Get permission system health check
+         */
+        async getPermissionSystemHealth() {
+            return this.request('GET', '/admin/permissions/health');
+        }
+
+        /**
+         * Clear all permission-related caches
+         */
+        clearPermissionCache() {
+            const permissionKeys = [
+                'permission_matrix',
+                'permissions_grouped',
+                'roles_with_permissions',
+                'available_permissions',
+                'internal_roles'
+            ];
+
+            permissionKeys.forEach(key => {
+                this.cache.delete(key);
+            });
+
+            // Clear user permission caches (pattern-based)
+            this.cache.forEach((value, key) => {
+                if (key.startsWith('user_permissions_')) {
+                    this.cache.delete(key);
+                }
+            });
+
+            console.log('Permission cache cleared');
+        }
+
+        /**
+         * Clear user-related caches
+         */
+        clearUsersCache() {
+            const userKeys = [
+                'admin_users',
+                'users'
+            ];
+
+            userKeys.forEach(key => {
+                this.cache.delete(key);
+            });
+
+            // Clear user-specific caches
+            this.cache.forEach((value, key) => {
+                if (key.startsWith('user_') || key.startsWith('admin_profile_')) {
+                    this.cache.delete(key);
+                }
+            });
+
+            console.log('Users cache cleared');
+        }
+
         // ==================== DISHES & MENUS ====================
 
         async getDishes(params = {}) {
