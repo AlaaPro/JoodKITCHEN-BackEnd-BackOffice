@@ -56,10 +56,14 @@ class Role
     #[ORM\ManyToMany(targetEntity: AdminProfile::class, mappedBy: 'roles')]
     private Collection $adminProfiles;
 
+    #[ORM\ManyToMany(targetEntity: KitchenProfile::class, mappedBy: 'roles')]
+    private Collection $kitchenProfiles;
+
     public function __construct()
     {
         $this->permissions = new ArrayCollection();
         $this->adminProfiles = new ArrayCollection();
+        $this->kitchenProfiles = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -204,6 +208,31 @@ class Role
     {
         if ($this->adminProfiles->removeElement($adminProfile)) {
             $adminProfile->removeRole($this);
+        }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, KitchenProfile>
+     */
+    public function getKitchenProfiles(): Collection
+    {
+        return $this->kitchenProfiles;
+    }
+
+    public function addKitchenProfile(KitchenProfile $kitchenProfile): static
+    {
+        if (!$this->kitchenProfiles->contains($kitchenProfile)) {
+            $this->kitchenProfiles->add($kitchenProfile);
+            $kitchenProfile->addRole($this);
+        }
+        return $this;
+    }
+
+    public function removeKitchenProfile(KitchenProfile $kitchenProfile): static
+    {
+        if ($this->kitchenProfiles->removeElement($kitchenProfile)) {
+            $kitchenProfile->removeRole($this);
         }
         return $this;
     }

@@ -1,635 +1,401 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Personnel - JoodKitchen Admin{% endblock %}
+{% block title %}Personnel de Cuisine - JoodKitchen Admin{% endblock %}
 
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
-<li class="breadcrumb-item active">Personnel</li>
+<li class="breadcrumb-item"><a href="{{ path('admin_clients') }}">Utilisateurs</a></li>
+<li class="breadcrumb-item active">Personnel de Cuisine</li>
 {% endblock %}
 
 {% block content %}
-<!-- Staff Header -->
+<!-- Kitchen Staff Header -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h1 class="h2 mb-0 jood-dark">Gestion du Personnel</h1>
-                <p class="text-muted">Gérez votre équipe et leurs permissions</p>
+                <h1 class="h2 mb-0 jood-dark">Gestion du Personnel de Cuisine</h1>
+                <p class="text-muted">
+                    Gérez le personnel de cuisine, leurs postes et compétences
+                    <span class="badge bg-info ms-2">Cuisine System</span>
+                </p>
             </div>
-            <div>
-                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-                    <i class="fas fa-user-plus"></i> Ajouter Personnel
-                </button>
-                <button class="btn btn-outline-primary">
-                    <i class="fas fa-calendar"></i> Planning
-                </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-success" id="exportStaffBtn">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <button class="btn btn-primary" id="createStaffBtn">
+                <i class="fas fa-user-shield"></i> Nouveau Personnel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-sm-6">
+            <div class="card jood-widget-card jood-primary-bg">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="widget-value" id="totalStaff">-</div>
+                            <div class="widget-label">Total Personnel</div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-sm-6">
+            <div class="card jood-widget-card jood-success-bg">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="widget-value" id="activeStaff">-</div>
+                            <div class="widget-label">En Service</div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-check fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-sm-6">
+            <div class="card jood-widget-card jood-warning-bg">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="widget-value" id="pauseStaff">-</div>
+                            <div class="widget-label">En Pause</div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-pause-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-sm-6">
+            <div class="card jood-widget-card jood-danger-bg">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="widget-value" id="absentStaff">-</div>
+                            <div class="widget-label">Absent</div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-user-times fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Rechercher du personnel..." id="staffSearchInput">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="positionFilter">
+                        <option value="">Tous les postes</option>
+                        <option value="chef_executif">Chef Exécutif</option>
+                        <option value="chef_cuisine">Chef de Cuisine</option>
+                        <option value="sous_chef">Sous Chef</option>
+                        <option value="cuisinier">Cuisinier</option>
+                        <option value="commis">Commis</option>
+                        <option value="plongeur">Plongeur</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="actif">En Service</option>
+                        <option value="pause">En Pause</option>
+                        <option value="absent">Absent</option>
+                        <option value="conge">En Congé</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" id="resetFiltersBtn">
+                        <i class="fas fa-times"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-3 text-muted">Chargement du personnel de cuisine...</p>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="card" id="staffTableCard">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> Liste du Personnel
+                </h5>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" title="Actualiser">
+                        <i class="fas fa-refresh"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Personnel</th>
+                            <th>Poste & Expérience</th>
+                            <th>Statut</th>
+                            <th>Spécialités</th>
+                            <th>Salaire & Horaires</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody">
+                        <!-- Dynamic content will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Staff Stats -->
-<div class="row g-4 mb-4">
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-primary-bg">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="widget-value">12</div>
-                        <div class="widget-label">Total Personnel</div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-users fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-success-bg">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="widget-value">8</div>
-                        <div class="widget-label">En service</div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-user-check fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-warning-bg">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="widget-value">3</div>
-                        <div class="widget-label">En pause</div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-pause-circle fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-info-bg">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="widget-value">1</div>
-                        <div class="widget-label">Absent</div>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-user-times fa-2x opacity-75"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Staff Management -->
-<div class="row g-4">
-    <!-- Staff List -->
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-users"></i> Liste du Personnel
-                    </h4>
-                    <div class="d-flex align-items-center gap-2">
-                        <select class="form-select form-select-sm" style="width: auto;">
-                            <option value="">Tous les rôles</option>
-                            <option value="manager">Manager</option>
-                            <option value="chef">Chef de cuisine</option>
-                            <option value="cook">Cuisinier</option>
-                            <option value="waiter">Serveur</option>
-                            <option value="delivery">Livreur</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Personnel</th>
-                                <th>Rôle</th>
-                                <th>Statut</th>
-                                <th>Dernière activité</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="green-icon-bg me-3">
-                                            <i class="fas fa-user-tie"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">Ahmed Benali</div>
-                                            <small class="text-muted">ahmed.benali@joodkitchen.fr</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge jood-primary-bg">
-                                        <i class="fas fa-crown"></i> Manager
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-circle"></i> En service
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">Il y a 5 min</small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Voir profil">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-warning" title="Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="green-icon-bg me-3">
-                                            <i class="fas fa-user-cog"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">Fatima Alaoui</div>
-                                            <small class="text-muted">fatima.alaoui@joodkitchen.fr</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge jood-warning-bg">
-                                        <i class="fas fa-fire"></i> Chef de cuisine
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-circle"></i> En service
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">Il y a 2 min</small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Voir profil">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-warning" title="Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="green-icon-bg me-3">
-                                            <i class="fas fa-utensils"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">Youssef Tadlaoui</div>
-                                            <small class="text-muted">youssef.tadlaoui@joodkitchen.fr</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge jood-info-bg">
-                                        <i class="fas fa-utensils"></i> Cuisinier
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-warning">
-                                        <i class="fas fa-pause"></i> En pause
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">Il y a 15 min</small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Voir profil">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-warning" title="Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="green-icon-bg me-3">
-                                            <i class="fas fa-concierge-bell"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">Aicha Mansouri</div>
-                                            <small class="text-muted">aicha.mansouri@joodkitchen.fr</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-secondary">
-                                        <i class="fas fa-concierge-bell"></i> Serveuse
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-circle"></i> En service
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">Il y a 1 min</small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Voir profil">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-warning" title="Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="green-icon-bg me-3">
-                                            <i class="fas fa-motorcycle"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold">Omar Benabdellah</div>
-                                            <small class="text-muted">omar.benabdellah@joodkitchen.fr</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge jood-secondary-bg">
-                                        <i class="fas fa-motorcycle"></i> Livreur
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times"></i> Absent
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">Il y a 2 heures</small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Voir profil">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-warning" title="Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions & Schedule -->
-    <div class="col-lg-4">
-        <!-- Today's Schedule -->
-        <div class="card mb-4">
-            <div class="card-header jood-primary-bg">
-                <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-calendar-day"></i> Planning Aujourd'hui
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="schedule-item mb-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-1">Service Matin</h6>
-                            <small class="text-muted">09:00 - 15:00</small>
-                        </div>
-                        <span class="badge jood-primary-bg">4 personnes</span>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Ahmed, Fatima, Youssef, Aicha</small>
-                    </div>
-                </div>
-                
-                <div class="schedule-item mb-3">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-1">Service Soir</h6>
-                            <small class="text-muted">18:00 - 23:00</small>
-                        </div>
-                        <span class="badge jood-warning-bg">3 personnes</span>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Ahmed, Aicha, Karim</small>
-                    </div>
-                </div>
-                
-                <div class="schedule-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="fw-bold mb-1">Livraisons</h6>
-                            <small class="text-muted">11:00 - 22:00</small>
-                        </div>
-                        <span class="badge jood-secondary-bg">2 personnes</span>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-muted">Omar, Hassan</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Role Distribution -->
-        <div class="card mb-4">
-            <div class="card-header jood-info-bg">
-                <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-users-cog"></i> Répartition des Rôles
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <i class="fas fa-crown jood-primary me-2"></i>
-                        <span>Managers</span>
-                    </div>
-                    <span class="fw-bold">1</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <i class="fas fa-fire jood-warning me-2"></i>
-                        <span>Chefs</span>
-                    </div>
-                    <span class="fw-bold">2</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <i class="fas fa-utensils jood-info me-2"></i>
-                        <span>Cuisiniers</span>
-                    </div>
-                    <span class="fw-bold">4</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div>
-                        <i class="fas fa-concierge-bell text-secondary me-2"></i>
-                        <span>Serveurs</span>
-                    </div>
-                    <span class="fw-bold">3</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <i class="fas fa-motorcycle jood-secondary me-2"></i>
-                        <span>Livreurs</span>
-                    </div>
-                    <span class="fw-bold">2</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="card">
-            <div class="card-header jood-warning-bg">
-                <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-bolt"></i> Actions Rapides
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-calendar-plus"></i> Planifier équipe
-                    </button>
-                    <button class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-user-plus"></i> Embaucher
-                    </button>
-                    <button class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-clipboard-list"></i> Évaluations
-                    </button>
-                    <button class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-chart-line"></i> Performances
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Staff Modal -->
-<div class="modal fade" id="addStaffModal" tabindex="-1">
+<!-- Create Staff Modal -->
+<div class="modal fade" id="createStaffModal" tabindex="-1" aria-labelledby="createStaffModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header jood-primary-bg">
-                <h5 class="modal-title text-white">
-                    <i class="fas fa-user-plus"></i> Ajouter un Personnel
+            <div class="modal-header jood-gradient">
+                <h5 class="modal-title text-white" id="createStaffModalLabel">
+                    <i class="fas fa-user-plus"></i> Nouveau Personnel de Cuisine
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal" aria-label="Fermer"></button>
             </div>
-            <div class="modal-body">
-                <form id="addStaffForm">
-                    <div class="row g-3">
+            <form id="createStaffForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Basic Information -->
                         <div class="col-md-6">
-                            <label class="form-label">Prénom *</label>
-                            <input type="text" class="form-control" placeholder="Prénom">
+                            <h6 class="fw-bold mb-3 jood-primary-color">Informations Personnelles</h6>
+                            <div class="mb-3">
+                                <label for="createNom" class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="createNom" name="nom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createPrenom" class="form-label">Prénom *</label>
+                                <input type="text" class="form-control" id="createPrenom" name="prenom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="createEmail" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createTelephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="createTelephone" name="telephone">
+                            </div>
+                            <div class="mb-3">
+                                <label for="createPassword" class="form-label">Mot de passe *</label>
+                                <input type="password" class="form-control" id="createPassword" name="password" required>
+                            </div>
                         </div>
+
+                        <!-- Kitchen Information -->
                         <div class="col-md-6">
-                            <label class="form-label">Nom *</label>
-                            <input type="text" class="form-control" placeholder="Nom">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Email *</label>
-                            <input type="email" class="form-control" placeholder="email@joodkitchen.fr">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Téléphone</label>
-                            <input type="tel" class="form-control" placeholder="+33 6 12 34 56 78">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Rôle *</label>
-                            <select class="form-select">
-                                <option value="">Sélectionner un rôle</option>
-                                <option value="manager">Manager</option>
-                                <option value="chef">Chef de cuisine</option>
-                                <option value="cook">Cuisinier</option>
-                                <option value="waiter">Serveur/Serveuse</option>
-                                <option value="delivery">Livreur</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date d'embauche</label>
-                            <input type="date" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Salaire horaire (€)</label>
-                            <input type="number" class="form-control" step="0.10" placeholder="15.00">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Heures/semaine</label>
-                            <input type="number" class="form-control" placeholder="35">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Adresse</label>
-                            <textarea class="form-control" rows="2" placeholder="Adresse complète..."></textarea>
-                        </div>
-                        <div class="col-12">
-                            <h6 class="fw-bold">Permissions</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permOrders">
-                                        <label class="form-check-label" for="permOrders">
-                                            Gestion des commandes
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permKitchen">
-                                        <label class="form-check-label" for="permKitchen">
-                                            Accès cuisine
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permMenu">
-                                        <label class="form-check-label" for="permMenu">
-                                            Gestion menu
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permDelivery">
-                                        <label class="form-check-label" for="permDelivery">
-                                            Gestion livraisons
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permReports">
-                                        <label class="form-check-label" for="permReports">
-                                            Rapports
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="permSettings">
-                                        <label class="form-check-label" for="permSettings">
-                                            Paramètres
-                                        </label>
-                                    </div>
-                                </div>
+                            <h6 class="fw-bold mb-3 jood-primary-color">Informations Cuisine</h6>
+                            <div class="mb-3">
+                                <label for="createPoste" class="form-label">Poste *</label>
+                                <select class="form-select" id="createPoste" name="poste_cuisine" required>
+                                    <option value="">Sélectionner un poste</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createStatut" class="form-label">Statut</label>
+                                <select class="form-select" id="createStatut" name="statut_travail">
+                                    <option value="actif">En Service</option>
+                                    <option value="pause">En Pause</option>
+                                    <option value="absent">Absent</option>
+                                    <option value="conge">En Congé</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="createExperience" class="form-label">Expérience (années)</label>
+                                <input type="number" class="form-control" id="createExperience" name="experience_annees" min="0" max="50">
+                            </div>
+                            <div class="mb-3">
+                                <label for="createSalaire" class="form-label">Salaire horaire (€)</label>
+                                <input type="number" class="form-control" id="createSalaire" name="salaire_horaire" step="0.01" min="0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="createHeures" class="form-label">Heures par semaine</label>
+                                <input type="number" class="form-control" id="createHeures" name="heures_par_semaine" min="1" max="60">
                             </div>
                         </div>
                     </div>
-                </form>
+
+                    <!-- Specialties -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Spécialités Culinaires</label>
+                        <div class="specialties-container">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Internal Notes -->
+                    <div class="mb-3">
+                        <label for="createNotes" class="form-label">Notes internes</label>
+                        <textarea class="form-control" id="createNotes" name="notes_interne" rows="3" placeholder="Notes privées pour l'administration..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Créer le Personnel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Staff Modal -->
+<div class="modal fade" id="editStaffModal" tabindex="-1" aria-labelledby="editStaffModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header jood-gradient">
+                <h5 class="modal-title text-white" id="editStaffModalLabel">
+                    <i class="fas fa-user-edit"></i> Modifier le Personnel
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal" aria-label="Fermer"></button>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Ajouter le personnel
-                </button>
-            </div>
+            <form id="editStaffForm">
+                <input type="hidden" name="staff_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 jood-primary-color">Informations Personnelles</h6>
+                            <div class="mb-3">
+                                <label for="editNom" class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="editNom" name="nom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPrenom" class="form-label">Prénom *</label>
+                                <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="editEmail" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTelephone" class="form-label">Téléphone</label>
+                                <input type="tel" class="form-control" id="editTelephone" name="telephone">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPassword" class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-control" id="editPassword" name="password" placeholder="Laisser vide pour ne pas changer">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="editActive" name="is_active">
+                                    <label class="form-check-label" for="editActive">
+                                        Compte actif
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kitchen Information -->
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 jood-primary-color">Informations Cuisine</h6>
+                            <div class="mb-3">
+                                <label for="editPoste" class="form-label">Poste *</label>
+                                <select class="form-select" id="editPoste" name="poste_cuisine" required>
+                                    <option value="">Sélectionner un poste</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editStatut" class="form-label">Statut</label>
+                                <select class="form-select" id="editStatut" name="statut_travail">
+                                    <option value="actif">En Service</option>
+                                    <option value="pause">En Pause</option>
+                                    <option value="absent">Absent</option>
+                                    <option value="conge">En Congé</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editExperience" class="form-label">Expérience (années)</label>
+                                <input type="number" class="form-control" id="editExperience" name="experience_annees" min="0" max="50">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editSalaire" class="form-label">Salaire horaire (€)</label>
+                                <input type="number" class="form-control" id="editSalaire" name="salaire_horaire" step="0.01" min="0">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editHeures" class="form-label">Heures par semaine</label>
+                                <input type="number" class="form-control" id="editHeures" name="heures_par_semaine" min="1" max="60">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specialties -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Spécialités Culinaires</label>
+                        <div class="specialties-container">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Internal Notes -->
+                    <div class="mb-3">
+                        <label for="editNotes" class="form-label">Notes internes</label>
+                        <textarea class="form-control" id="editNotes" name="notes_interne" rows="3" placeholder="Notes privées pour l'administration..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Mettre à jour
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Real-time status updates
-    setInterval(updateStaffStatus, 30000);
-    
-    function updateStaffStatus() {
-        // Simulate real-time updates
-        console.log('Updating staff status...');
-        // In real app, this would fetch current staff status
-    }
-    
-    // Staff creation form
-    document.querySelector('#addStaffModal .btn-primary').addEventListener('click', function() {
-        const form = document.getElementById('addStaffForm');
-        const formData = new FormData(form);
+    {{ parent() }}
+    <script src="{{ asset('js/admin/managers/kitchen-staff.js') }}"></script>
+    <script>
+        // Initialize Kitchen Staff Manager
+        let kitchenStaffManager;
         
-        // Show loading state
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ajout...';
-        this.disabled = true;
-        
-        // Simulate staff creation
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-check"></i> Personnel ajouté!';
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
-                this.innerHTML = '<i class="fas fa-save"></i> Ajouter le personnel';
-                this.disabled = false;
-                form.reset();
-                
-                // Show success notification
-                showNotification('Personnel ajouté avec succès!', 'success');
-            }, 1500);
-        }, 2000);
-    });
-    
-    function showNotification(message, type) {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        toast.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-            </div>
-        `;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
-            }
-        }, 5000);
-    }
-});
-</script>
-{% endblock %} 
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🍽️ Initializing Kitchen Staff Management...');
+            kitchenStaffManager = new KitchenStaffManager();
+            console.log('✅ Kitchen Staff Manager initialized');
+        });
+    </script>
+{% endblock %}

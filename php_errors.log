@@ -524,3 +524,9 @@ You may be looking for a command provided by the "Debug Bundle" which is current
 You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
 [17-Jun-2025 09:49:19 UTC] [critical] Error thrown while running command "make:migration". Message: "An exception occurred in the driver: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it"
 [17-Jun-2025 10:52:34 UTC] [critical] Error thrown while running command "doctrine:migrations:diff". Message: "No changes detected in your mapping information."
+[17-Jun-2025 11:43:27 UTC] [critical] Error thrown while running command ""server:log" --env=dev". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[17-Jun-2025 12:20:02 UTC] [critical] Error thrown while running command ""server:start"". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
