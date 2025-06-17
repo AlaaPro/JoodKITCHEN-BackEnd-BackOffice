@@ -196,6 +196,9 @@ class AdminController extends AbstractController
                         'telephone' => $user->getTelephone(),
                         'roles' => $user->getRoles(),
                         'is_active' => $user->getIsActive(),
+                        // ✨ Profile picture data
+                        'photo_profil' => $user->getPhotoProfil(),
+                        'photo_profil_url' => $user->getPhotoProfilUrl(),
                         'created_at' => $user->getCreatedAt()->format('Y-m-d H:i:s')
                     ],
                     'admin_profile' => [
@@ -449,6 +452,9 @@ class AdminController extends AbstractController
                     'last_connexion' => $user->getLastConnexion()?->format('Y-m-d H:i:s'),
                     'created_at' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
                     'updated_at' => $user->getUpdatedAt()->format('Y-m-d H:i:s'),
+                    // ✨ Profile picture data
+                    'photo_profil' => $user->getPhotoProfil(),
+                    'photo_profil_url' => $user->getPhotoProfilUrl(),
                     'can_edit' => $this->isGranted('EDIT_ADMIN_USER', $user),
                     'can_delete' => $this->isGranted('DELETE_ADMIN_USER', $user),
                     'contextual_permissions' => $this->permissionService->getUserContextualPermissions($currentUser, $user),
@@ -644,6 +650,9 @@ class AdminController extends AbstractController
                         'telephone' => $user->getTelephone(),
                         'roles' => $user->getRoles(),
                         'is_active' => $user->getIsActive(),
+                        // ✨ Profile picture data
+                        'photo_profil' => $user->getPhotoProfil(),
+                        'photo_profil_url' => $user->getPhotoProfilUrl(),
                         'updated_at' => $user->getUpdatedAt()->format('Y-m-d H:i:s')
                     ],
                     'admin_profile' => [

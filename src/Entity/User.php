@@ -18,10 +18,13 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\HasLifecycleCallbacks]
+#[Vich\Uploadable]
 #[ApiResource(
     operations: [
         new GetCollection(),
@@ -84,8 +87,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $telephone = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read'])]
     private ?string $photoProfil = null;
+
+    #[Vich\UploadableField(mapping: 'profile_pictures', fileNameProperty: 'photoProfil')]
+    #[Assert\File(
+        maxSize: '2M',
+        mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        mimeTypesMessage: 'Veuillez uploader un fichier image valide (JPEG, PNG, GIF, WebP)'
+    )]
+    private ?File $photoProfilFile = null;
 
     #[ORM\Column(length: 10, nullable: true)]
     #[Groups(['user:read', 'user:write'])]
@@ -264,6 +275,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->photoProfil = $photoProfil;
         return $this;
+    }
+
+    public function getPhotoProfilFile(): ?File
+    {
+        return $this->photoProfilFile;
+    }
+
+    public function setPhotoProfilFile(?File $photoProfilFile = null): static
+    {
+        $this->photoProfilFile = $photoProfilFile;
+
+        if (null !== $photoProfilFile) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->updatedAt = new \DateTime();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the profile picture URL for API responses
+     */
+    #[Groups(['user:read'])]
+    public function getPhotoProfilUrl(): ?string
+    {
+        return $this->photoProfil ? '/uploads/profile_pictures/' . $this->photoProfil : null;
     }
 
     public function getGenre(): ?string

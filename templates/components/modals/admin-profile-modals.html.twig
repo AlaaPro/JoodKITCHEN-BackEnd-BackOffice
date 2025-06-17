@@ -16,6 +16,20 @@
                         <strong>Zone sécurisée :</strong> Vous créez un compte administrateur avec des privilèges élevés.
                     </div>
 
+                    <!-- Profile Picture Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-camera"></i> Photo de Profil</h6>
+                            <div class="form-group-profile-picture">
+                                <div id="createAdminProfilePictureContainer"></div>
+                                <p class="text-muted small mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Formats acceptés : JPEG, PNG, GIF, WebP (max 2MB)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <!-- Basic Information -->
                         <div class="col-md-6">
@@ -139,15 +153,31 @@
                 <input type="hidden" id="editAdminId" name="admin_id">
                 
                 <div class="modal-body">
-                    <!-- Admin Info Header -->
+                    <!-- Admin Info Header with Profile Picture -->
                     <div class="alert alert-info mb-4">
                         <div class="d-flex align-items-center">
-                            <div class="avatar-circle me-3">
-                                <i class="fas fa-user-shield"></i>
+                            <div id="editAdminProfilePictureDisplay" class="me-3">
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
                             </div>
                             <div>
                                 <strong id="editAdminFullName">Nom Complet</strong><br>
                                 <small id="editAdminCurrentEmail">email@example.com</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Picture Management Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="fw-bold mb-3"><i class="fas fa-camera"></i> Photo de Profil</h6>
+                            <div class="form-group-profile-picture">
+                                <div id="editAdminProfilePictureContainer"></div>
+                                <p class="text-muted small mt-2">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Formats acceptés : JPEG, PNG, GIF, WebP (max 2MB)
+                                </p>
                             </div>
                         </div>
                     </div>

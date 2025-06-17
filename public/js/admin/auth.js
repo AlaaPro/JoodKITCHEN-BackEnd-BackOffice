@@ -329,6 +329,10 @@
             return result;
         }
 
+        getToken() {
+            return localStorage.getItem(this.tokenKey);
+        }
+
         getCurrentUser() {
             return this.currentUser;
         }

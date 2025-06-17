@@ -245,11 +245,31 @@ class AdminProfileManager {
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
-                        <div class="avatar-circle me-3">
-                            ${user.photo_profil ? 
-                                `<img src="${user.photo_profil}" alt="${user.nom}">` :
-                                `<i class="fas fa-user-shield"></i>`
-                            }
+                        <div class="me-3">
+                            <div class="profile-picture-container profile-picture-sm" data-user-id="${user.id}">
+                                <div class="profile-picture-wrapper ${user.can_edit ? 'profile-picture-upload-trigger' : ''}">
+                                    ${user.photo_profil_url || user.photoProfilUrl ? 
+                                        `<img src="${user.photo_profil_url || user.photoProfilUrl}" alt="${user.nom}" class="profile-picture-img">` :
+                                        `<div class="profile-picture-placeholder">
+                                            <span class="profile-picture-initials">${user.nom?.charAt(0) || ''}${user.prenom?.charAt(0) || ''}</span>
+                                        </div>`
+                                    }
+                                    ${user.can_edit ? `
+                                        <div class="profile-picture-overlay">
+                                            <i class="fas fa-camera"></i>
+                                            <span>Changer</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${user.can_edit ? `
+                                    <input type="file" class="profile-picture-input" accept="image/*" style="display: none;" data-user-id="${user.id}">
+                                ` : ''}
+                                <div class="profile-picture-loading" style="display: none;">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Upload...</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <div class="fw-semibold">${user.nom} ${user.prenom}</div>
@@ -370,6 +390,34 @@ class AdminProfileManager {
         if (modal) {
             const modalInstance = new coreui.Modal(modal);
             modalInstance.show();
+            
+            // Initialize profile picture upload container
+            setTimeout(() => {
+                const container = document.getElementById('createAdminProfilePictureContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="profile-picture-container profile-picture-lg profile-picture-dropzone">
+                            <div class="dropzone-content">
+                                <div class="profile-picture-wrapper profile-picture-upload-trigger">
+                                    <div class="profile-picture-placeholder">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                                    </div>
+                                    <div class="profile-picture-overlay">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Ajouter une photo</span>
+                                    </div>
+                                </div>
+                                <input type="file" class="profile-picture-input" accept="image/*" style="display: none;">
+                                <div class="profile-picture-loading" style="display: none;">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Upload...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }, 100);
         }
         this.loadRolesAndPermissions('#createAdminForm');
     }
@@ -514,6 +562,22 @@ class AdminProfileManager {
                             <button type="button" class="btn-close" data-coreui-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
+                            <!-- Profile Picture Section -->
+                            <div class="text-center mb-4">
+                                <div class="profile-picture-container profile-picture-lg" data-user-id="${adminData.id}">
+                                    <div class="profile-picture-wrapper">
+                                        ${adminData.photo_profil_url || adminData.photoProfilUrl ? 
+                                            `<img src="${adminData.photo_profil_url || adminData.photoProfilUrl}" alt="${adminData.nom}" class="profile-picture-img">` :
+                                            `<div class="profile-picture-placeholder">
+                                                <span class="profile-picture-initials">${adminData.nom?.charAt(0) || ''}${adminData.prenom?.charAt(0) || ''}</span>
+                                            </div>`
+                                        }
+                                    </div>
+                                </div>
+                                <h5 class="mt-3 mb-1">${adminData.nom} ${adminData.prenom}</h5>
+                                <p class="text-muted mb-0">${adminData.email}</p>
+                            </div>
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="card">
@@ -706,6 +770,11 @@ class AdminProfileManager {
                     if (modal) {
                         const modalInstance = new coreui.Modal(modal);
                         modalInstance.show();
+                        
+                        // Initialize profile picture components
+                        setTimeout(() => {
+                            this.initializeProfilePictureForEdit(adminData);
+                        }, 100);
                     }
                 } else {
                     AdminUtils.showAlert('Administrateur non trouvé dans les données chargées', 'warning');
@@ -838,6 +907,169 @@ class AdminProfileManager {
     }
 
     // ==================== UTILITY METHODS ====================
+
+    /**
+     * Initialize profile picture display and management for edit modal
+     */
+    initializeProfilePictureForEdit(adminData) {
+        console.log('🖼️ Initializing profile picture for edit modal:', adminData);
+        
+        // Update the profile picture display in the header
+        const displayContainer = document.getElementById('editAdminProfilePictureDisplay');
+        if (displayContainer) {
+            displayContainer.innerHTML = `
+                <div class="profile-picture-container profile-picture-md" data-user-id="${adminData.id}">
+                    <div class="profile-picture-wrapper">
+                        ${adminData.photo_profil_url || adminData.photoProfilUrl ? 
+                            `<img src="${adminData.photo_profil_url || adminData.photoProfilUrl}" alt="${adminData.nom}" class="profile-picture-img">` :
+                            `<div class="profile-picture-placeholder">
+                                <span class="profile-picture-initials">${adminData.nom?.charAt(0) || ''}${adminData.prenom?.charAt(0) || ''}</span>
+                            </div>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Initialize the profile picture management container with upload functionality
+        const managementContainer = document.getElementById('editAdminProfilePictureContainer');
+        if (managementContainer) {
+            managementContainer.innerHTML = `
+                <div class="profile-picture-container profile-picture-lg" data-user-id="${adminData.id}">
+                    <div class="profile-picture-wrapper profile-picture-upload-trigger">
+                        ${adminData.photo_profil_url || adminData.photoProfilUrl ? 
+                            `<img src="${adminData.photo_profil_url || adminData.photoProfilUrl}" alt="${adminData.nom}" class="profile-picture-img">` :
+                            `<div class="profile-picture-placeholder">
+                                <span class="profile-picture-initials">${adminData.nom?.charAt(0) || ''}${adminData.prenom?.charAt(0) || ''}</span>
+                            </div>`
+                        }
+                        <div class="profile-picture-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Changer la photo</span>
+                        </div>
+                    </div>
+                    ${adminData.photo_profil_url || adminData.photoProfilUrl ? `
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-profile-picture" 
+                                data-user-id="${adminData.id}" title="Supprimer la photo">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                    <input type="file" class="profile-picture-input" accept="image/*" style="display: none;" data-user-id="${adminData.id}">
+                    <div class="profile-picture-loading" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Upload...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Listen for profile picture updates to refresh the display
+        document.addEventListener('profilePictureUpdated', (event) => {
+            if (event.detail.userId == adminData.id) {
+                console.log('🔄 Profile picture updated for user:', adminData.id, event.detail.data);
+                
+                // Update header display
+                if (displayContainer) {
+                    const headerImg = displayContainer.querySelector('.profile-picture-img');
+                    const headerPlaceholder = displayContainer.querySelector('.profile-picture-placeholder');
+                    
+                    if (event.detail.data.photo_url) {
+                        if (headerImg) {
+                            headerImg.src = event.detail.data.photo_url;
+                            headerImg.style.display = 'block';
+                        } else if (headerPlaceholder) {
+                            headerPlaceholder.parentElement.innerHTML = `<img src="${event.detail.data.photo_url}" alt="${adminData.nom}" class="profile-picture-img">`;
+                        }
+                        if (headerPlaceholder) headerPlaceholder.style.display = 'none';
+                    } else {
+                        if (headerImg) headerImg.style.display = 'none';
+                        if (headerPlaceholder) {
+                            headerPlaceholder.style.display = 'flex';
+                        } else {
+                            const wrapper = displayContainer.querySelector('.profile-picture-wrapper');
+                            if (wrapper) {
+                                wrapper.innerHTML = `<div class="profile-picture-placeholder">
+                                    <span class="profile-picture-initials">${adminData.nom?.charAt(0) || ''}${adminData.prenom?.charAt(0) || ''}</span>
+                                </div>`;
+                            }
+                        }
+                    }
+                }
+                
+                // Update management container
+                if (managementContainer) {
+                    const managementImg = managementContainer.querySelector('.profile-picture-img');
+                    const managementPlaceholder = managementContainer.querySelector('.profile-picture-placeholder');
+                    const removeBtn = managementContainer.querySelector('.remove-profile-picture');
+                    
+                    if (event.detail.data.photo_url) {
+                        if (managementImg) {
+                            managementImg.src = event.detail.data.photo_url;
+                            managementImg.style.display = 'block';
+                        } else if (managementPlaceholder) {
+                            managementPlaceholder.parentElement.innerHTML = `<img src="${event.detail.data.photo_url}" alt="${adminData.nom}" class="profile-picture-img">
+                                <div class="profile-picture-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Changer la photo</span>
+                                </div>`;
+                        }
+                        if (managementPlaceholder) managementPlaceholder.style.display = 'none';
+                        if (removeBtn) {
+                            removeBtn.style.display = 'block';
+                        } else {
+                            // Add remove button if it doesn't exist
+                            const container = managementContainer.querySelector('.profile-picture-container');
+                            if (container) {
+                                const newRemoveBtn = document.createElement('button');
+                                newRemoveBtn.type = 'button';
+                                newRemoveBtn.className = 'btn btn-sm btn-outline-danger remove-profile-picture';
+                                newRemoveBtn.dataset.userId = adminData.id;
+                                newRemoveBtn.title = 'Supprimer la photo';
+                                newRemoveBtn.innerHTML = '<i class="fas fa-times"></i>';
+                                container.appendChild(newRemoveBtn);
+                            }
+                        }
+                    } else {
+                        if (managementImg) managementImg.style.display = 'none';
+                        if (managementPlaceholder) {
+                            managementPlaceholder.style.display = 'flex';
+                        } else {
+                            const wrapper = managementContainer.querySelector('.profile-picture-wrapper');
+                            if (wrapper) {
+                                wrapper.innerHTML = `<div class="profile-picture-placeholder">
+                                    <span class="profile-picture-initials">${adminData.nom?.charAt(0) || ''}${adminData.prenom?.charAt(0) || ''}</span>
+                                </div>
+                                <div class="profile-picture-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Changer la photo</span>
+                                </div>`;
+                            }
+                        }
+                        if (removeBtn) removeBtn.style.display = 'none';
+                    }
+                }
+                
+                // Also update the table row if visible
+                const tableRow = document.querySelector(`tr[data-admin-id="${adminData.id}"]`);
+                if (tableRow) {
+                    const tableImg = tableRow.querySelector('.profile-picture-img');
+                    const tablePlaceholder = tableRow.querySelector('.profile-picture-placeholder');
+                    
+                    if (event.detail.data.photo_url) {
+                        if (tableImg) {
+                            tableImg.src = event.detail.data.photo_url;
+                            tableImg.style.display = 'block';
+                        }
+                        if (tablePlaceholder) tablePlaceholder.style.display = 'none';
+                    } else {
+                        if (tableImg) tableImg.style.display = 'none';
+                        if (tablePlaceholder) tablePlaceholder.style.display = 'flex';
+                    }
+                }
+            }
+        });
+    }
 
     /**
      * ✨ NEW: Close all open modals to prevent stacking

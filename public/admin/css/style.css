@@ -678,3 +678,332 @@ h1, h2, h3, h4, h5, h6,
   background: white;
   flex-direction: column;
 }
+
+/* ==================== PROFILE PICTURE MANAGEMENT STYLES ==================== */
+
+/* Profile Picture Container Base */
+.profile-picture-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Profile Picture Wrapper */
+.profile-picture-wrapper {
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--cui-gray-100);
+    border: 2px solid var(--cui-border-color);
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.profile-picture-wrapper.profile-picture-upload-trigger {
+    cursor: pointer;
+}
+
+.profile-picture-wrapper:hover.profile-picture-upload-trigger {
+    border-color: var(--cui-primary);
+    transform: scale(1.05);
+}
+
+/* Profile Picture Image */
+.profile-picture-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Profile Picture Placeholder */
+.profile-picture-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--cui-primary), var(--cui-primary-dark));
+    color: white;
+    font-weight: 600;
+}
+
+.profile-picture-initials {
+    font-size: 0.8em;
+    letter-spacing: 1px;
+}
+
+/* Profile Picture Overlay for Upload */
+.profile-picture-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 0.75em;
+}
+
+.profile-picture-upload-trigger:hover .profile-picture-overlay {
+    opacity: 1;
+}
+
+.profile-picture-overlay i {
+    font-size: 1.2em;
+    margin-bottom: 2px;
+}
+
+/* Size Variants */
+.profile-picture-sm .profile-picture-wrapper {
+    width: 48px;
+    height: 48px;
+}
+
+.profile-picture-sm .profile-picture-initials {
+    font-size: 0.8em;
+}
+
+.profile-picture-sm .profile-picture-overlay {
+    font-size: 0.6em;
+}
+
+.profile-picture-md .profile-picture-wrapper {
+    width: 80px;
+    height: 80px;
+}
+
+.profile-picture-md .profile-picture-initials {
+    font-size: 1em;
+}
+
+.profile-picture-lg .profile-picture-wrapper {
+    width: 120px;
+    height: 120px;
+}
+
+.profile-picture-lg .profile-picture-initials {
+    font-size: 1.5em;
+}
+
+/* Remove Button */
+.remove-profile-picture {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    z-index: 10;
+}
+
+/* Profile Picture Loading */
+.profile-picture-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 20;
+}
+
+/* Profile Picture Messages */
+.profile-picture-message {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    min-width: 200px;
+    text-align: center;
+    font-size: 0.8em;
+    z-index: 30;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Dropzone Styles */
+.profile-picture-dropzone {
+    border: 2px dashed var(--cui-border-color);
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background: var(--cui-gray-50);
+    transition: all 0.3s ease;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-picture-dropzone:hover,
+.profile-picture-dropzone.dragover {
+    border-color: var(--cui-primary);
+    background: var(--cui-primary-bg);
+    color: var(--cui-primary);
+}
+
+.dropzone-content {
+    text-align: center;
+}
+
+.dropzone-content i {
+    color: var(--cui-gray-500);
+}
+
+.profile-picture-dropzone:hover .dropzone-content i,
+.profile-picture-dropzone.dragover .dropzone-content i {
+    color: var(--cui-primary);
+}
+
+/* Avatar Circle for Table Display */
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--cui-primary), var(--cui-primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    position: relative;
+    border: 2px solid var(--cui-border-color);
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-circle i {
+    font-size: 1.2em;
+}
+
+/* Admin Profile Avatar Sizes */
+.avatar-lg {
+    width: 80px;
+    height: 80px;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8em;
+}
+
+.avatar-sm i {
+    font-size: 1em;
+}
+
+/* Profile Picture in Forms */
+.form-group-profile-picture {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.form-group-profile-picture .profile-picture-container {
+    margin-bottom: 1rem;
+}
+
+/* Modal Profile Picture */
+.modal-profile-picture {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.modal-profile-picture .profile-picture-lg {
+    margin: 0 auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-picture-lg .profile-picture-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .profile-picture-md .profile-picture-wrapper {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .profile-picture-dropzone {
+        padding: 1.5rem;
+        min-height: 120px;
+    }
+    
+    .profile-picture-message {
+        min-width: 150px;
+        font-size: 0.75em;
+    }
+}
+
+/* Animation for Upload Success */
+@keyframes profilePictureSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.profile-picture-success {
+    animation: profilePictureSuccess 0.6s ease;
+}
+
+/* Hover Effects for Interactive Elements */
+.profile-picture-upload-trigger .profile-picture-wrapper {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-picture-upload-trigger:hover .profile-picture-wrapper {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Focus States for Accessibility */
+.profile-picture-input:focus + .profile-picture-wrapper {
+    outline: 2px solid var(--cui-primary);
+    outline-offset: 2px;
+}
+
+/* Loading Animation */
+.profile-picture-loading .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.2em;
+}
+
+.profile-picture-sm .profile-picture-loading .spinner-border {
+    width: 1.2rem;
+    height: 1.2rem;
+    border-width: 0.15em;
+}
+
+/* Error State */
+.profile-picture-error .profile-picture-wrapper {
+    border-color: var(--cui-danger);
+}
+
+.profile-picture-error .profile-picture-placeholder {
+    background: var(--cui-danger);
+}
+
+/* Success State */
+.profile-picture-success-state .profile-picture-wrapper {
+    border-color: var(--cui-success);
+}
