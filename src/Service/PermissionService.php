@@ -178,24 +178,37 @@ class PermissionService
             return false;
         }
 
-        $targetRoles = $targetUser->getRoles();
-
-        // Super admin can edit everyone
-        if (in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
-            return true;
+        // Can't edit yourself through this permission (use separate profile editing)
+        if ($currentUser->getId() === $targetUser->getId()) {
+            return false;
         }
 
-        // Check if target user is SUPER_ADMIN
+        $targetRoles = $targetUser->getRoles();
+
+        // ✨ NEW APPROACH: Use advanced permissions instead of hardcoded role checks
+        
+        // 1. Super admin can edit everyone if they have the super admin edit permission
+        if (in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
+            // Super admins get universal access, but still check for the permission for consistency
+            return $this->hasPermission($currentUser, 'manage_admins') || 
+                   $this->hasPermission($currentUser, 'edit_admin') ||
+                   $this->hasPermission($currentUser, 'edit_super_admin');
+        }
+
+        // 2. Check specific permissions based on target user's role
         if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+            // Editing super admin requires special permission
             return $this->hasPermission($currentUser, 'edit_super_admin');
         }
         
-        // Check if target user is ADMIN
         if (in_array('ROLE_ADMIN', $targetRoles)) {
-            return $this->hasPermission($currentUser, 'edit_admin');
+            // Editing regular admin requires basic admin edit permission
+            return $this->hasPermission($currentUser, 'edit_admin') || 
+                   $this->hasPermission($currentUser, 'manage_admins');
         }
 
-        return false;
+        // 3. For any other users, check general admin management permission
+        return $this->hasPermission($currentUser, 'manage_admins');
     }
 
     /**
@@ -203,17 +216,48 @@ class PermissionService
      */
     private function canDeleteUser(User $currentUser, User $targetUser): bool
     {
-        // More restrictive than edit - only super admins can delete other admins
-        if (!in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
-            return false;
-        }
-
         // Can't delete yourself
         if ($currentUser->getId() === $targetUser->getId()) {
             return false;
         }
 
-        return $this->hasPermission($currentUser, 'delete_admin');
+        $currentProfile = $currentUser->getAdminProfile();
+        if (!$currentProfile) {
+            return false;
+        }
+
+        $targetRoles = $targetUser->getRoles();
+
+        // ✨ NEW APPROACH: Use advanced permissions for deletion control
+        
+        // 1. Super admin can delete if they have the right permissions
+        if (in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
+            // Even super admins need explicit delete permission for safety
+            if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+                // Deleting super admin requires special permission (very restrictive)
+                return $this->hasPermission($currentUser, 'delete_admin') && 
+                       $this->hasPermission($currentUser, 'edit_super_admin');
+            } else {
+                // Deleting regular admin
+                return $this->hasPermission($currentUser, 'delete_admin');
+            }
+        }
+
+        // 2. Regular admins can only delete if they have explicit permission
+        if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+            // Regular admins can't delete super admins
+            return false;
+        }
+        
+        if (in_array('ROLE_ADMIN', $targetRoles)) {
+            // Can delete admin only with proper permission
+            return $this->hasPermission($currentUser, 'delete_admin') && 
+                   $this->hasPermission($currentUser, 'edit_admin');
+        }
+
+        // 3. For other users, check if they can manage admins and delete
+        return $this->hasPermission($currentUser, 'delete_admin') && 
+               $this->hasPermission($currentUser, 'manage_admins');
     }
 
     /**

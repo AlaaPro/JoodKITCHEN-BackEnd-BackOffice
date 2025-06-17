@@ -47,10 +47,14 @@ class Payment
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'payments')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['payment:read', 'payment:write'])]
     private ?Commande $commande = null;
+
+    #[ORM\ManyToOne(targetEntity: Abonnement::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['payment:read', 'payment:write'])]
+    private ?Abonnement $abonnement = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\PositiveOrZero]
@@ -59,9 +63,14 @@ class Payment
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['carte', 'especes', 'cheque', 'virement', 'cmi'])]
+    #[Assert\Choice(choices: ['carte', 'especes', 'cheque', 'virement', 'cmi', 'cash_on_delivery'])]
     #[Groups(['payment:read', 'payment:write', 'commande:read'])]
     private ?string $methodePaiement = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Choice(choices: ['abonnement', 'commande'])]
+    #[Groups(['payment:read', 'payment:write', 'commande:read'])]
+    private ?string $typePaiement = 'commande';
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
@@ -94,6 +103,7 @@ class Payment
         $this->montant = '0.00';
         $this->statut = 'en_attente';
         $this->datePaiement = new \DateTime();
+        $this->typePaiement = 'commande';
     }
 
     #[ORM\PrePersist]
@@ -214,5 +224,59 @@ class Payment
     {
         $this->updatedAt = $updatedAt;
         return $this;
+    }
+
+    public function getAbonnement(): ?Abonnement
+    {
+        return $this->abonnement;
+    }
+
+    public function setAbonnement(?Abonnement $abonnement): static
+    {
+        $this->abonnement = $abonnement;
+        return $this;
+    }
+
+    public function getTypePaiement(): ?string
+    {
+        return $this->typePaiement;
+    }
+
+    public function setTypePaiement(string $typePaiement): static
+    {
+        $this->typePaiement = $typePaiement;
+        return $this;
+    }
+
+    /**
+     * Get payment method label
+     */
+    public function getMethodePaiementLabel(): string
+    {
+        return match($this->methodePaiement) {
+            'carte' => 'Carte bancaire',
+            'especes' => 'Espèces',
+            'cheque' => 'Chèque',
+            'virement' => 'Virement',
+            'cmi' => 'CMI (Maroc)',
+            'cash_on_delivery' => 'Espèces à la livraison',
+            default => 'Méthode inconnue'
+        };
+    }
+
+    /**
+     * Check if this is a subscription payment
+     */
+    public function isSubscriptionPayment(): bool
+    {
+        return $this->typePaiement === 'abonnement' || $this->abonnement !== null;
+    }
+
+    /**
+     * Check if payment supports CMI
+     */
+    public function supportsCMI(): bool
+    {
+        return $this->methodePaiement === 'cmi';
     }
 } 

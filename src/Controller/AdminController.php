@@ -631,16 +631,16 @@ class AdminController extends AbstractController
                 
                 // ✨ NEW: Invalidate permission cache after user update
                 $this->permissionService->invalidateUserCache($user);
-                
-                return new JsonResponse([
-                    'success' => true,
+            
+            return new JsonResponse([
+                'success' => true,
                     'message' => 'Administrateur modifié avec succès',
                     'type' => 'success',
-                    'user' => [
-                        'id' => $user->getId(),
-                        'nom' => $user->getNom(),
-                        'prenom' => $user->getPrenom(),
-                        'email' => $user->getEmail(),
+                'user' => [
+                    'id' => $user->getId(),
+                    'nom' => $user->getNom(),
+                    'prenom' => $user->getPrenom(),
+                    'email' => $user->getEmail(),
                         'telephone' => $user->getTelephone(),
                         'roles' => $user->getRoles(),
                         'is_active' => $user->getIsActive(),
@@ -749,5 +749,213 @@ class AdminController extends AbstractController
             'contextual_permissions' => $contextualPermissions,
             'permission_count' => count($permissions)
         ]);
+    }
+
+    #[Route('/api/admin/check-permissions/{targetUserId}', name: 'api_admin_check_permissions', methods: ['GET'])]
+    #[IsGranted('view_permissions')]
+    public function checkUserPermissions(int $targetUserId, EntityManagerInterface $entityManager): JsonResponse
+    {
+        try {
+            /** @var User $currentUser */
+            $currentUser = $this->getUser();
+            
+            $targetUser = $entityManager->getRepository(User::class)->find($targetUserId);
+            if (!$targetUser) {
+                return new JsonResponse([
+                    'error' => 'Utilisateur non trouvé',
+                    'message' => 'L\'utilisateur cible n\'existe pas.',
+                    'type' => 'not_found'
+                ], 404);
+            }
+
+            // Get detailed permissions for the target user
+            $permissions = [
+                'can_view_details' => $this->isGranted('VIEW_ADMIN_DETAILS', $targetUser),
+                'can_edit' => $this->isGranted('EDIT_ADMIN_USER', $targetUser),
+                'can_delete' => $this->isGranted('DELETE_ADMIN_USER', $targetUser),
+                'can_manage_permissions' => $this->isGranted('MANAGE_ADMIN_PERMISSIONS', $targetUser),
+            ];
+
+            // Get specific permission breakdown
+            $specificPermissions = [
+                'manage_admins' => $this->permissionService->hasPermission($currentUser, 'manage_admins'),
+                'edit_admin' => $this->permissionService->hasPermission($currentUser, 'edit_admin'),
+                'edit_super_admin' => $this->permissionService->hasPermission($currentUser, 'edit_super_admin'),
+                'delete_admin' => $this->permissionService->hasPermission($currentUser, 'delete_admin'),
+                'view_permissions' => $this->permissionService->hasPermission($currentUser, 'view_permissions'),
+            ];
+
+            // Get user role information
+            $currentUserRoles = $currentUser->getRoles();
+            $targetUserRoles = $targetUser->getRoles();
+
+            return new JsonResponse([
+                'success' => true,
+                'current_user' => [
+                    'id' => $currentUser->getId(),
+                    'email' => $currentUser->getEmail(),
+                    'roles' => $currentUserRoles,
+                    'is_super_admin' => in_array('ROLE_SUPER_ADMIN', $currentUserRoles)
+                ],
+                'target_user' => [
+                    'id' => $targetUser->getId(),
+                    'email' => $targetUser->getEmail(),
+                    'roles' => $targetUserRoles,
+                    'is_super_admin' => in_array('ROLE_SUPER_ADMIN', $targetUserRoles)
+                ],
+                'voter_permissions' => $permissions,
+                'specific_permissions' => $specificPermissions,
+                'permission_explanation' => [
+                    'edit_logic' => $this->explainEditPermission($currentUser, $targetUser),
+                    'delete_logic' => $this->explainDeletePermission($currentUser, $targetUser),
+                ],
+                'system_info' => [
+                    'permission_system_version' => '2.0',
+                    'uses_advanced_permissions' => true,
+                    'fallback_to_roles' => false
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => 'Erreur lors de la vérification des permissions',
+                'message' => 'Une erreur s\'est produite lors de la vérification.',
+                'type' => 'server_error',
+                'debug' => $this->getParameter('kernel.environment') === 'dev' ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Explain why user can or cannot edit target user
+     */
+    private function explainEditPermission(User $currentUser, User $targetUser): array
+    {
+        $explanation = [];
+        $currentRoles = $currentUser->getRoles();
+        $targetRoles = $targetUser->getRoles();
+
+        if ($currentUser->getId() === $targetUser->getId()) {
+            $explanation[] = "Cannot edit yourself through admin management";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $currentRoles)) {
+            $explanation[] = "User is SUPER_ADMIN";
+            
+            $hasManageAdmins = $this->permissionService->hasPermission($currentUser, 'manage_admins');
+            $hasEditAdmin = $this->permissionService->hasPermission($currentUser, 'edit_admin');
+            $hasEditSuperAdmin = $this->permissionService->hasPermission($currentUser, 'edit_super_admin');
+            
+            if ($hasManageAdmins || $hasEditAdmin || $hasEditSuperAdmin) {
+                $explanation[] = "Has required permissions: " . 
+                    ($hasManageAdmins ? 'manage_admins ' : '') .
+                    ($hasEditAdmin ? 'edit_admin ' : '') .
+                    ($hasEditSuperAdmin ? 'edit_super_admin' : '');
+                return ['allowed' => true, 'reasons' => $explanation];
+            } else {
+                $explanation[] = "Missing required permissions (manage_admins, edit_admin, or edit_super_admin)";
+                return ['allowed' => false, 'reasons' => $explanation];
+            }
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+            $hasEditSuperAdmin = $this->permissionService->hasPermission($currentUser, 'edit_super_admin');
+            if ($hasEditSuperAdmin) {
+                $explanation[] = "Target is SUPER_ADMIN but user has edit_super_admin permission";
+                return ['allowed' => true, 'reasons' => $explanation];
+            } else {
+                $explanation[] = "Target is SUPER_ADMIN and user lacks edit_super_admin permission";
+                return ['allowed' => false, 'reasons' => $explanation];
+            }
+        }
+
+        if (in_array('ROLE_ADMIN', $targetRoles)) {
+            $hasEditAdmin = $this->permissionService->hasPermission($currentUser, 'edit_admin');
+            $hasManageAdmins = $this->permissionService->hasPermission($currentUser, 'manage_admins');
+            
+            if ($hasEditAdmin || $hasManageAdmins) {
+                $explanation[] = "Target is ADMIN and user has " . 
+                    ($hasEditAdmin ? 'edit_admin' : '') .
+                    ($hasManageAdmins ? ($hasEditAdmin ? ' or manage_admins' : 'manage_admins') : '');
+                return ['allowed' => true, 'reasons' => $explanation];
+            } else {
+                $explanation[] = "Target is ADMIN but user lacks edit_admin or manage_admins permission";
+                return ['allowed' => false, 'reasons' => $explanation];
+            }
+        }
+
+        $hasManageAdmins = $this->permissionService->hasPermission($currentUser, 'manage_admins');
+        if ($hasManageAdmins) {
+            $explanation[] = "User has manage_admins permission for general users";
+            return ['allowed' => true, 'reasons' => $explanation];
+        } else {
+            $explanation[] = "User lacks manage_admins permission";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
+    }
+
+    /**
+     * Explain why user can or cannot delete target user
+     */
+    private function explainDeletePermission(User $currentUser, User $targetUser): array
+    {
+        $explanation = [];
+        $currentRoles = $currentUser->getRoles();
+        $targetRoles = $targetUser->getRoles();
+
+        if ($currentUser->getId() === $targetUser->getId()) {
+            $explanation[] = "Cannot delete yourself";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
+
+        $hasDeleteAdmin = $this->permissionService->hasPermission($currentUser, 'delete_admin');
+        if (!$hasDeleteAdmin) {
+            $explanation[] = "User lacks delete_admin permission";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $currentRoles)) {
+            $explanation[] = "User is SUPER_ADMIN with delete_admin permission";
+            
+            if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+                $hasEditSuperAdmin = $this->permissionService->hasPermission($currentUser, 'edit_super_admin');
+                if ($hasEditSuperAdmin) {
+                    $explanation[] = "Target is SUPER_ADMIN and user has edit_super_admin permission";
+                    return ['allowed' => true, 'reasons' => $explanation];
+                } else {
+                    $explanation[] = "Target is SUPER_ADMIN but user lacks edit_super_admin permission";
+                    return ['allowed' => false, 'reasons' => $explanation];
+                }
+            } else {
+                $explanation[] = "Target is regular admin - deletion allowed";
+                return ['allowed' => true, 'reasons' => $explanation];
+            }
+        }
+
+        if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+            $explanation[] = "Regular admin cannot delete super admin";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
+
+        if (in_array('ROLE_ADMIN', $targetRoles)) {
+            $hasEditAdmin = $this->permissionService->hasPermission($currentUser, 'edit_admin');
+            if ($hasEditAdmin) {
+                $explanation[] = "Target is ADMIN and user has both delete_admin and edit_admin permissions";
+                return ['allowed' => true, 'reasons' => $explanation];
+            } else {
+                $explanation[] = "Target is ADMIN but user lacks edit_admin permission (needed along with delete_admin)";
+                return ['allowed' => false, 'reasons' => $explanation];
+            }
+        }
+
+        $hasManageAdmins = $this->permissionService->hasPermission($currentUser, 'manage_admins');
+        if ($hasManageAdmins) {
+            $explanation[] = "User has both delete_admin and manage_admins permissions";
+            return ['allowed' => true, 'reasons' => $explanation];
+        } else {
+            $explanation[] = "User has delete_admin but lacks manage_admins permission";
+            return ['allowed' => false, 'reasons' => $explanation];
+        }
     }
 } 

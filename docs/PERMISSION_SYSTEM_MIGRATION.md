@@ -1,8 +1,150 @@
-# 🚀 Permission System Modernization - Complete Guide
+# 🚀 Permission System Modernization - Complete Guide (v2.0)
 
 ## 📋 **Overview**
 
-This document outlines the **enterprise-grade permission system modernization** implemented for the JoodKitchen Admin System. The new system transforms the previous JSON-based permissions into a **normalized, cached, and voter-based architecture** following Symfony best practices.
+This document outlines the **enterprise-grade permission system modernization** implemented for the JoodKitchen Admin System. The system has evolved through two major versions:
+
+- **v1.0**: Normalized permissions with voter system and caching
+- **v2.0**: **Advanced permissions replacing hardcoded role checks** ✨ **NEW**
+
+The v2.0 system completely eliminates hardcoded role checks in favor of flexible, database-driven permission logic.
+
+## 🎯 **What's New in v2.0**
+
+### **Before v2.0 (Hardcoded Role Checks)**
+```php
+// ❌ Old approach: Hardcoded role-based logic
+private function canEditUser(User $currentUser, User $targetUser): bool
+{
+    // Super admin can edit everyone
+    if (in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
+        return true;
+    }
+    
+    // Regular admin can't edit super admin
+    if (in_array('ROLE_SUPER_ADMIN', $targetUser->getRoles())) {
+        return false;
+    }
+    
+    return in_array('ROLE_ADMIN', $currentUser->getRoles());
+}
+```
+
+### **After v2.0 (Advanced Permission Logic)**
+```php
+// ✅ New approach: Permission-based logic with flexibility
+private function canEditUser(User $currentUser, User $targetUser): bool
+{
+    if (in_array('ROLE_SUPER_ADMIN', $targetRoles)) {
+        // Editing super admin requires special permission
+        return $this->hasPermission($currentUser, 'edit_super_admin');
+    }
+    
+    if (in_array('ROLE_ADMIN', $targetRoles)) {
+        // Editing regular admin requires basic permissions
+        return $this->hasPermission($currentUser, 'edit_admin') || 
+               $this->hasPermission($currentUser, 'manage_admins');
+    }
+    
+    // For other users, check general management permission
+    return $this->hasPermission($currentUser, 'manage_admins');
+}
+```
+
+## 🔥 **Key Benefits of v2.0**
+
+1. **🎛️ Granular Control**: SUPER_ADMIN role doesn't automatically grant everything
+2. **🔒 Enhanced Security**: Even super admins need explicit permissions for sensitive operations
+3. **📈 Scalability**: Easy to add new permission levels without code changes
+4. **🧪 Testability**: Permission logic can be tested independently
+5. **📊 Transparency**: Clear explanation of why permissions are granted/denied
+
+## 🔐 **Advanced Permission Examples**
+
+### **Admin Editing Scenarios**
+
+#### Scenario 1: Super Admin → Super Admin
+```
+OLD: ✅ Always allowed (hardcoded)
+NEW: ❓ Requires 'edit_super_admin' permission
+```
+
+#### Scenario 2: Super Admin → Regular Admin  
+```
+OLD: ✅ Always allowed (hardcoded)
+NEW: ❓ Requires 'edit_admin' OR 'manage_admins' permission
+```
+
+#### Scenario 3: Regular Admin → Super Admin
+```
+OLD: ❌ Always denied (hardcoded)  
+NEW: ❓ Requires 'edit_super_admin' permission (can be granted!)
+```
+
+#### Scenario 4: Regular Admin → Regular Admin
+```
+OLD: ❌ Always denied (hardcoded)
+NEW: ❓ Requires 'edit_admin' OR 'manage_admins' permission
+```
+
+### **Delete Permission Logic**
+
+Deletion requires **multiple permissions** for safety:
+
+```php
+// Super admin deleting super admin
+Requires: 'delete_admin' AND 'edit_super_admin'
+
+// Super admin deleting regular admin  
+Requires: 'delete_admin'
+
+// Regular admin deleting regular admin
+Requires: 'delete_admin' AND 'edit_admin'
+```
+
+## 🧪 **Testing Interface**
+
+A comprehensive testing interface is now available at `/admin/users/admins`:
+
+### **Features**:
+- 🔍 **Permission Checker**: Test permissions against any user
+- 🧠 **Logic Explanation**: See exactly why permissions are granted/denied
+- 👤 **Current User Permissions**: View your complete permission set
+- 📊 **System Information**: Check version and configuration
+
+### **New API Endpoint**:
+```bash
+GET /api/admin/check-permissions/{targetUserId}
+```
+
+**Response includes**:
+```json
+{
+  "voter_permissions": {
+    "can_edit": true,
+    "can_delete": false
+  },
+  "specific_permissions": {
+    "manage_admins": true,
+    "edit_admin": true,
+    "edit_super_admin": false,
+    "delete_admin": false
+  },
+  "permission_explanation": {
+    "edit_logic": {
+      "allowed": true,
+      "reasons": [
+        "User is SUPER_ADMIN",
+        "Has required permissions: manage_admins edit_admin"
+      ]
+    },
+    "delete_logic": {
+      "allowed": false,
+      "reasons": ["User lacks delete_admin permission"]
+    }
+  }
+}
+```
 
 ## 🎯 **What's Been Modernized**
 

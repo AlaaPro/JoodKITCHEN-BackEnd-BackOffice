@@ -10,6 +10,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\AbonnementRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -87,9 +89,14 @@ class Abonnement
     #[Groups(['abonnement:read'])]
     private ?\DateTimeInterface $updatedAt = null;
 
+    #[ORM\OneToMany(mappedBy: 'abonnement', targetEntity: AbonnementSelection::class, cascade: ['persist', 'remove'])]
+    #[Groups(['abonnement:read'])]
+    private Collection $selections;
+
     public function __construct()
     {
         $this->statut = 'actif';
+        $this->selections = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -254,5 +261,73 @@ class Abonnement
             'annule' => 'Annulé',
             default => 'Statut inconnu'
         };
+    }
+
+    /**
+     * @return Collection<int, AbonnementSelection>
+     */
+    public function getSelections(): Collection
+    {
+        return $this->selections;
+    }
+
+    public function addSelection(AbonnementSelection $selection): static
+    {
+        if (!$this->selections->contains($selection)) {
+            $this->selections->add($selection);
+            $selection->setAbonnement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSelection(AbonnementSelection $selection): static
+    {
+        if ($this->selections->removeElement($selection)) {
+            // set the owning side to null (unless already changed)
+            if ($selection->getAbonnement() === $this) {
+                $selection->setAbonnement(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get weekly discount rate (to be defined later)
+     */
+    public function getWeeklyDiscountRate(): float
+    {
+        // This will be configured later by admin
+        // For now, return a default 10% discount for weekly subscriptions
+        if ($this->type === 'hebdo') {
+            return 0.10; // 10% discount
+        }
+        return 0.0;
+    }
+
+    /**
+     * Calculate total weekly price with discount
+     */
+    public function calculateWeeklyPrice(): float
+    {
+        $totalPrice = 0.0;
+        
+        foreach ($this->selections as $selection) {
+            $totalPrice += (float) $selection->getPrix();
+        }
+        
+        $discountRate = $this->getWeeklyDiscountRate();
+        return $totalPrice * (1 - $discountRate);
+    }
+
+    /**
+     * Check if subscription requires CMI payment setup
+     */
+    public function requiresCMIPayment(): bool
+    {
+        // Check if user hasn't completed payment setup
+        // This will be implemented when integrating with CMI
+        return true; // For now, assume all subscriptions need payment setup
     }
 } 

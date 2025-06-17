@@ -522,3 +522,4 @@ You may be looking for a command provided by the "Debug Bundle" which is current
 [16-Jun-2025 12:31:21 UTC] [critical] Error thrown while running command ""server:log" --lines=50". Message: "There are no commands defined in the "server" namespace.
 
 You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[17-Jun-2025 09:49:19 UTC] [critical] Error thrown while running command "make:migration". Message: "An exception occurred in the driver: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it"

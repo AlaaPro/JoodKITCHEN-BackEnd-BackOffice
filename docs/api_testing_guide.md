@@ -198,6 +198,65 @@ GET /api/plats?page=2&itemsPerPage=5
 GET /api/commandes?statut=en_attente
 ```
 
+## 🔧 **Admin API Endpoints (Recent Additions)**
+
+### **Admin-Specific Endpoints** (Requires ROLE_ADMIN)
+
+#### Get Internal Roles:
+```bash
+curl -X GET "https://127.0.0.1:8000/api/admin/roles/internal" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -k
+```
+
+Expected Response:
+```json
+{
+  "manager_general": {
+    "name": "Manager Général",
+    "description": "Accès complet à toutes les fonctionnalités"
+  },
+  "chef_cuisine": {
+    "name": "Chef de Cuisine",
+    "description": "Gestion cuisine et menus"
+  },
+  "responsable_it": {
+    "name": "Responsable IT", 
+    "description": "Gestion technique et système"
+  },
+  "manager_service": {
+    "name": "Manager Service",
+    "description": "Gestion clients et commandes"
+  }
+}
+```
+
+#### Get Available Permissions:
+```bash
+curl -X GET "https://127.0.0.1:8000/api/admin/permissions" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -k
+```
+
+Expected Response:
+```json
+{
+  "dashboard": ["view_dashboard", "view_analytics"],
+  "users": ["manage_admins", "manage_clients", "manage_staff"],
+  "orders": ["view_orders", "manage_orders", "cancel_orders"],
+  "kitchen": ["manage_kitchen", "view_preparation_queue"],
+  "menu": ["manage_dishes", "manage_menus", "manage_categories"],
+  "inventory": ["view_inventory", "manage_stock"],
+  "customers": ["view_customers", "manage_customer_data"],
+  "reports": ["view_reports", "export_data"],
+  "settings": ["manage_settings", "system_configuration"],
+  "system": ["view_logs", "system_maintenance"],
+  "support": ["manage_tickets", "customer_support"]
+}
+```
+
 ## 🎪 **Advanced Testing**
 
 ### **Test Complex Relationships:**

@@ -198,7 +198,7 @@
         // ==================== ADMIN PROFILES ====================
 
         // ==================== ADMIN PROFILES (DEPRECATED - USE EMBEDDED DATA) ====================
-        
+
         async getAdminProfiles(params = {}) {
             // Deprecated: Use getAdminUsers() which includes embedded profile data
             console.warn('getAdminProfiles is deprecated. Use getAdminUsers() which includes embedded profile data.');
@@ -747,6 +747,13 @@
                 AdminAPI.instance = new AdminAPI();
             }
             return AdminAPI.instance;
+        }
+
+        /**
+         * Check detailed permissions for a specific user
+         */
+        async checkUserPermissions(targetUserId) {
+            return this.request('GET', `/admin/check-permissions/${targetUserId}`);
         }
     }
 

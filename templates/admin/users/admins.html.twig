@@ -33,6 +33,11 @@
                     <i class="fas fa-download"></i> Exporter
                 </button>
                 {% endif %}
+                {% if is_granted('view_permissions') %}
+                <button type="button" class="btn btn-outline-info" onclick="togglePermissionTestPanel()">
+                    <i class="fas fa-vial"></i> Test Permissions
+                </button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -283,6 +288,253 @@ window.AdminPermissions = {
 };
 
 console.log('🔐 Permission system initialized:', window.AdminPermissions);
+
+// ✨ NEW: Advanced Permission System Testing Functions
+async function testUserPermissions() {
+    const targetUserId = document.getElementById('targetUserSelect').value;
+    if (!targetUserId) {
+        AdminUtils.showAlert('Please select a user to test permissions', 'warning');
+        return;
+    }
+
+    try {
+        const response = await AdminAPI.checkUserPermissions(targetUserId);
+        if (response && response.success) {
+            displayPermissionResults(response);
+        } else {
+            AdminUtils.showAlert('Failed to check permissions', 'error');
+        }
+    } catch (error) {
+        console.error('Permission check error:', error);
+        AdminUtils.showAlert('Error checking permissions: ' + error.message, 'error');
+    }
+}
+
+function displayPermissionResults(data) {
+    // Show results panel
+    document.getElementById('permissionTestResults').style.display = 'block';
+
+    // Display voter permissions
+    const voterResults = document.getElementById('voterPermissionsResults');
+    voterResults.innerHTML = `
+        <div class="mb-2">
+            <strong>Current User:</strong> ${data.current_user.email}
+            <span class="badge bg-${data.current_user.is_super_admin ? 'danger' : 'primary'} ms-2">
+                ${data.current_user.is_super_admin ? 'SUPER_ADMIN' : 'ADMIN'}
+            </span>
+        </div>
+        <div class="mb-3">
+            <strong>Target User:</strong> ${data.target_user.email}
+            <span class="badge bg-${data.target_user.is_super_admin ? 'danger' : 'primary'} ms-2">
+                ${data.target_user.is_super_admin ? 'SUPER_ADMIN' : 'ADMIN'}
+            </span>
+        </div>
+        <div class="row">
+            ${Object.entries(data.voter_permissions).map(([key, value]) => `
+                <div class="col-6 mb-2">
+                    <i class="fas fa-${value ? 'check text-success' : 'times text-danger'} me-2"></i>
+                    <small>${key.replace('can_', '').replace('_', ' ')}</small>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    // Display specific permissions
+    const specificResults = document.getElementById('specificPermissionsResults');
+    specificResults.innerHTML = `
+        <div class="mb-2">
+            <strong>Advanced Permissions:</strong>
+        </div>
+        <div class="row">
+            ${Object.entries(data.specific_permissions).map(([key, value]) => `
+                <div class="col-12 mb-2">
+                    <i class="fas fa-${value ? 'check text-success' : 'times text-danger'} me-2"></i>
+                    <code class="small">${key}</code>
+                </div>
+            `).join('')}
+        </div>
+        <div class="mt-3 p-2 bg-light rounded">
+            <small class="text-muted">
+                <strong>System Info:</strong><br>
+                Version: ${data.system_info.permission_system_version}<br>
+                Uses Advanced Permissions: ${data.system_info.uses_advanced_permissions ? 'Yes' : 'No'}<br>
+                Fallback to Roles: ${data.system_info.fallback_to_roles ? 'Yes' : 'No'}
+            </small>
+        </div>
+    `;
+
+    // Store explanation data for potential display
+    window.currentPermissionExplanation = data.permission_explanation;
+}
+
+function togglePermissionExplanation() {
+    const explanationPanel = document.getElementById('permissionExplanation');
+    if (explanationPanel.style.display === 'none') {
+        if (window.currentPermissionExplanation) {
+            displayPermissionExplanation(window.currentPermissionExplanation);
+        }
+        explanationPanel.style.display = 'block';
+    } else {
+        explanationPanel.style.display = 'none';
+    }
+}
+
+function displayPermissionExplanation(explanation) {
+    const editLogic = document.getElementById('editLogicExplanation');
+    const deleteLogic = document.getElementById('deleteLogicExplanation');
+
+    editLogic.innerHTML = `
+        <div class="mb-2">
+            <strong>Allowed:</strong> 
+            <span class="badge bg-${explanation.edit_logic.allowed ? 'success' : 'danger'}">
+                ${explanation.edit_logic.allowed ? 'Yes' : 'No'}
+            </span>
+        </div>
+        <div>
+            <strong>Reasons:</strong>
+            <ul class="mb-0">
+                ${explanation.edit_logic.reasons.map(reason => `<li class="small">${reason}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+
+    deleteLogic.innerHTML = `
+        <div class="mb-2">
+            <strong>Allowed:</strong> 
+            <span class="badge bg-${explanation.delete_logic.allowed ? 'success' : 'danger'}">
+                ${explanation.delete_logic.allowed ? 'Yes' : 'No'}
+            </span>
+        </div>
+        <div>
+            <strong>Reasons:</strong>
+            <ul class="mb-0">
+                ${explanation.delete_logic.reasons.map(reason => `<li class="small">${reason}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+async function showCurrentUserPermissions() {
+    try {
+        const response = await AdminAPI.getCurrentUserPermissions();
+        if (response && response.success) {
+            displayCurrentUserPermissions(response);
+        }
+    } catch (error) {
+        console.error('Error fetching current user permissions:', error);
+        AdminUtils.showAlert('Error fetching permissions: ' + error.message, 'error');
+    }
+}
+
+function displayCurrentUserPermissions(data) {
+    const content = `
+        <div class="modal fade" id="currentUserPermissionsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title">My Permissions (Advanced System v2.0)</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-user me-2"></i>User Info</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div><strong>Roles:</strong> ${data.roles.join(', ')}</div>
+                                        <div><strong>Internal Roles:</strong> ${data.internal_roles.join(', ') || 'None'}</div>
+                                        <div><strong>Permission Count:</strong> ${data.permission_count}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-info-circle me-2"></i>System Info</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div><strong>New Permission System:</strong> ${data.system_info.new_permission_system ? 'Yes' : 'No'}</div>
+                                        <div><strong>Cached Permissions:</strong> ${data.system_info.cached_permissions ? 'Yes' : 'No'}</div>
+                                        <div><strong>Voter Based:</strong> ${data.system_info.voter_based ? 'Yes' : 'No'}</div>
+                                </div>
+                                </div>
+                                </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6><i class="fas fa-key me-2"></i>All Permissions (${data.permission_count})</h6>
+                            <div class="row">
+                                ${data.permissions.map(permission => `
+                                    <div class="col-md-4 mb-1">
+                                        <code class="small">${permission}</code>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ${data.normalized_permissions && data.normalized_permissions.length > 0 ? `
+                            <div class="mt-3">
+                                <h6><i class="fas fa-database me-2"></i>Normalized Permissions (Database)</h6>
+                                <div class="row">
+                                    ${data.normalized_permissions.map(permission => `
+                                        <div class="col-md-4 mb-1">
+                                            <code class="small text-success">${permission}</code>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+    // Remove existing modal and add new one
+    const existingModal = document.getElementById('currentUserPermissionsModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', content);
+        
+        // Show modal
+    const modal = new coreui.Modal(document.getElementById('currentUserPermissionsModal'));
+        modal.show();
+}
+
+function populateTargetUserSelect() {
+    const select = document.getElementById('targetUserSelect');
+    if (!select) return;
+
+    // Get admin data from the current table
+    const adminRows = document.querySelectorAll('#adminsTableBody tr[data-admin-id]');
+    select.innerHTML = '<option value="">Choose a user to test permissions...</option>';
+    
+    adminRows.forEach(row => {
+        const adminId = row.getAttribute('data-admin-id');
+        const adminInfo = row.querySelector('td:nth-child(2)');
+        if (adminInfo && adminId) {
+            const nameElement = adminInfo.querySelector('.fw-semibold');
+            const emailElement = adminInfo.querySelector('.text-muted');
+            if (nameElement && emailElement) {
+                const name = nameElement.textContent.trim();
+                const email = emailElement.textContent.trim();
+                select.innerHTML += `<option value="${adminId}">${name} (${email})</option>`;
+            }
+        }
+    });
+}
+
+// Show/hide permission test panel
+function togglePermissionTestPanel() {
+    const panel = document.getElementById('permissionTestPanel');
+    if (panel) {
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            populateTargetUserSelect();
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+}
 </script>
 
 <!-- Recent Activity -->
@@ -365,4 +617,96 @@ console.log('🔐 Permission system initialized:', window.AdminPermissions);
 </div>
 {% endif %}
 
-{% endblock %}
+{% if is_granted('view_permissions') %}
+<!-- Permission Testing Panel (Development/Testing) -->
+<div class="card mt-4" id="permissionTestPanel" style="display: none;">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-vial me-2"></i>Test Permissions (Advanced System v2.0)
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="togglePermissionExplanation()">
+                <i class="fas fa-info-circle"></i> Show Explanation
+            </button>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Select Target User:</label>
+                <select class="form-control" id="targetUserSelect">
+                    <option value="">Choose a user to test permissions...</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="button" class="btn btn-primary" onclick="testUserPermissions()">
+                        <i class="fas fa-search"></i> Check Permissions
+                    </button>
+                    <button type="button" class="btn btn-info ms-2" onclick="showCurrentUserPermissions()">
+                        <i class="fas fa-user"></i> My Permissions
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">System Info:</label>
+                <div class="small text-muted">
+                    Permission System: v2.0<br>
+                    Type: Advanced Permissions<br>
+                    Fallback: None (Pure Permission-Based)
+                </div>
+            </div>
+        </div>
+        
+        <!-- Permission Test Results -->
+        <div id="permissionTestResults" class="mt-4" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Voter Permissions</h6>
+                        </div>
+                        <div class="card-body" id="voterPermissionsResults">
+                            <!-- Results populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-key me-2"></i>Specific Permissions</h6>
+                        </div>
+                        <div class="card-body" id="specificPermissionsResults">
+                            <!-- Results populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Permission Logic Explanation -->
+            <div class="card mt-3" id="permissionExplanation" style="display: none;">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-brain me-2"></i>Permission Logic Explanation</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success">Edit Permission Logic</h6>
+                            <div id="editLogicExplanation" class="small">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Delete Permission Logic</h6>
+                            <div id="deleteLogicExplanation" class="small">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %} 
