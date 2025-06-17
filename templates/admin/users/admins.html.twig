@@ -15,7 +15,10 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="h2 mb-0 jood-dark">Gestion des Administrateurs</h1>
-                <p class="text-muted">Gérez les comptes administrateurs et leurs permissions</p>
+                <p class="text-muted">
+                    Gérez les comptes administrateurs et leurs permissions
+                    <span class="badge bg-secondary ms-2" id="permissionLevelBadge">Chargement...</span>
+                </p>
             </div>
             <div>
                 {% if is_granted('manage_admins') %}
@@ -34,23 +37,31 @@
                 </button>
                 {% endif %}
                 {% if is_granted('view_permissions') %}
-                <button type="button" class="btn btn-outline-info" onclick="togglePermissionTestPanel()">
+                {# <button type="button" class="btn btn-outline-info" onclick="togglePermissionTestPanel()" data-coreui-toggle="tooltip" title="Test the permission system v2.0">
                     <i class="fas fa-vial"></i> Test Permissions
-                </button>
+                    <span class="badge bg-info ms-1">v2.0</span>
+                </button> #}
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Security Alert -->
-{% if is_granted('ROLE_SUPER_ADMIN') %}
-<div class="alert alert-warning mb-4">
+<!-- Security Alert - Enhanced for Permission System v2.0 -->
+{% if is_granted('manage_admins') or is_granted('edit_super_admin') %}
+<div class="alert alert-info mb-4">
     <div class="d-flex align-items-center">
         <i class="fas fa-shield-alt me-3 fs-4"></i>
         <div>
-            <strong>Zone de sécurité élevée</strong><br>
-            <small>Seuls les Super Administrateurs peuvent gérer les comptes administrateurs. Toutes les actions sont journalisées.</small>
+            <strong>Zone de gestion avancée (Permission System v2.0)</strong><br>
+            <small>
+                {% if is_granted('edit_super_admin') %}
+                    Vous pouvez gérer tous les administrateurs, y compris les Super Admins.
+                {% elseif is_granted('manage_admins') %}
+                    Vous pouvez gérer les administrateurs réguliers.
+                {% endif %}
+                Toutes les actions sont journalisées et soumises aux permissions granulaires.
+            </small>
         </div>
     </div>
 </div>
@@ -262,32 +273,67 @@ document.addEventListener('DOMContentLoaded', function() {
     // No need to call loadAdminProfiles() again
 });
 
-// Global helper functions for permission-aware UI
+// Enhanced Permission System v2.0 - Global helper functions
 window.AdminPermissions = {
     // Current user's permissions (populated from backend)
     userPermissions: {% if app.user and app.user.adminProfile and app.user.adminProfile.allPermissionNames %}{{ app.user.adminProfile.allPermissionNames|json_encode|raw }}{% else %}[]{% endif %},
     
-    // Check if current user has specific permission
+    // Permission System v2.0 - No automatic SUPER_ADMIN privileges
     hasPermission: function(permission) {
-        return this.userPermissions.includes(permission) || {{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }};
+        return this.userPermissions.includes(permission);
     },
     
-    // Check if user can edit specific admin
+    // Enhanced contextual permission checking
     canEdit: function(targetUserRoles) {
-        if ({{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }}) return true;
-        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) return false;
-        return this.hasPermission('edit_admin_user');
+        // v2.0: Permission-based logic only
+        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) {
+            return this.hasPermission('edit_super_admin');
+        }
+        if (targetUserRoles.includes('ROLE_ADMIN')) {
+            return this.hasPermission('edit_admin') || this.hasPermission('manage_admins');
+        }
+        return this.hasPermission('manage_admins');
     },
     
-    // Check if user can delete specific admin
+    // Enhanced deletion permission logic
     canDelete: function(targetUserRoles) {
-        if ({{ is_granted('ROLE_SUPER_ADMIN') ? 'true' : 'false' }}) return true;
-        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) return false;
-        return this.hasPermission('delete_admin_user');
+        if (!this.hasPermission('delete_admin')) return false;
+        
+        if (targetUserRoles.includes('ROLE_SUPER_ADMIN')) {
+            return this.hasPermission('edit_super_admin'); // Additional requirement for super admin deletion
+        }
+        if (targetUserRoles.includes('ROLE_ADMIN')) {
+            return this.hasPermission('edit_admin') || this.hasPermission('manage_admins');
+        }
+        return this.hasPermission('manage_admins');
+    },
+    
+    // New v2.0 features
+    canManagePermissions: function() {
+        return this.hasPermission('manage_permissions');
+    },
+    
+    getPermissionLevel: function() {
+        if (this.hasPermission('edit_super_admin')) return 'Super Admin Manager';
+        if (this.hasPermission('manage_admins')) return 'Admin Manager';
+        if (this.hasPermission('edit_admin')) return 'Admin Editor';
+        return 'Limited Access';
     }
 };
 
-console.log('🔐 Permission system initialized:', window.AdminPermissions);
+console.log('🔐 Permission system v2.0 initialized:', window.AdminPermissions);
+
+// Display current user's permission level
+const permissionLevel = window.AdminPermissions.getPermissionLevel();
+const permissionBadge = document.getElementById('permissionLevelBadge');
+if (permissionBadge) {
+    permissionBadge.textContent = permissionLevel;
+    permissionBadge.className = 'badge ms-2 ' + (
+        permissionLevel.includes('Super Admin') ? 'bg-danger' :
+        permissionLevel.includes('Manager') ? 'bg-warning' :
+        permissionLevel.includes('Editor') ? 'bg-info' : 'bg-secondary'
+    );
+}
 
 // ✨ NEW: Advanced Permission System Testing Functions
 async function testUserPermissions() {
@@ -530,6 +576,12 @@ function togglePermissionTestPanel() {
         if (panel.style.display === 'none') {
             panel.style.display = 'block';
             populateTargetUserSelect();
+            
+            // Update current user level in the system info
+            const currentUserLevel = document.getElementById('currentUserLevel');
+            if (currentUserLevel && window.AdminPermissions) {
+                currentUserLevel.textContent = window.AdminPermissions.getPermissionLevel();
+            }
         } else {
             panel.style.display = 'none';
         }
@@ -650,9 +702,10 @@ function togglePermissionTestPanel() {
             <div class="col-md-4">
                 <label class="form-label">System Info:</label>
                 <div class="small text-muted">
-                    Permission System: v2.0<br>
-                    Type: Advanced Permissions<br>
-                    Fallback: None (Pure Permission-Based)
+                    Permission System: v2.0 ✨<br>
+                    Type: Advanced Granular Permissions<br>
+                    Fallback: None (Pure Permission-Based)<br>
+                    Your Level: <span id="currentUserLevel" class="fw-bold">Loading...</span>
                 </div>
             </div>
         </div>

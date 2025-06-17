@@ -362,6 +362,9 @@ class AdminProfileManager {
     // ==================== CRUD OPERATIONS ====================
 
     showCreateModal() {
+        // ✨ NEW: Close any existing modals first to prevent stacking
+        this.closeAllModals();
+        
         // Using CoreUI modal instead of Bootstrap
         const modal = document.getElementById('createAdminModal');
         if (modal) {
@@ -605,9 +608,15 @@ class AdminProfileManager {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Fermer</button>
-                            <button type="button" class="btn btn-primary" onclick="adminProfileManager.showEditModal(${adminData.id})">
-                                <i class="fas fa-edit me-1"></i>Modifier
-                            </button>
+                            ${adminData.can_edit ? `
+                                <button type="button" class="btn btn-primary" onclick="adminProfileManager.showEditModal(${adminData.id})" id="editFromDetailsBtn">
+                                    <i class="fas fa-edit me-1"></i>Modifier
+                                </button>
+                            ` : `
+                                <button type="button" class="btn btn-outline-secondary" disabled title="Vous n'avez pas les permissions pour modifier cet utilisateur">
+                                    <i class="fas fa-lock me-1"></i>Modification non autorisée
+                                </button>
+                            `}
                         </div>
                     </div>
                 </div>
@@ -664,6 +673,12 @@ class AdminProfileManager {
     async showEditModal(adminId) {
         try {
             console.log('Opening edit modal for admin ID:', adminId);
+            
+            // ✨ NEW: Close any existing modals first to prevent stacking
+            this.closeAllModals();
+            
+            // Small delay to ensure modal transition is complete
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // Load roles and permissions first to prepare the form
             await this.loadRolesAndPermissions('#editAdminForm');
@@ -823,6 +838,33 @@ class AdminProfileManager {
     }
 
     // ==================== UTILITY METHODS ====================
+
+    /**
+     * ✨ NEW: Close all open modals to prevent stacking
+     */
+    closeAllModals() {
+        // List of modal IDs that might be open
+        const modalIds = [
+            'adminDetailsModal',
+            'editAdminModal',
+            'createAdminModal',
+            'deleteConfirmModal'
+        ];
+        
+        modalIds.forEach(modalId => {
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                const modalInstance = coreui.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }
+        });
+        
+        // Also close any backdrop that might be lingering
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+    }
 
     bindRowEvents() {
         $('.view-admin-btn').off('click').on('click', (e) => {
