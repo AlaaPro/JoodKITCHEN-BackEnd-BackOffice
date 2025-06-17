@@ -7,6 +7,7 @@ class ProfilePictureManager {
         this.maxFileSize = 2 * 1024 * 1024; // 2MB
         this.allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         this.API_BASE_URL = '/api/profile-picture';
+        this.clickListenerAdded = false;
         
         this.initializeEventListeners();
     }
@@ -56,46 +57,49 @@ class ProfilePictureManager {
             }
         });
 
-        // Handle profile picture clicks for upload
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.profile-picture-upload-trigger')) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const trigger = e.target.closest('.profile-picture-upload-trigger');
-                console.log('🖱️ Profile picture upload trigger clicked:', trigger);
-                
-                // Look for file input in multiple places
-                let fileInput = trigger.querySelector('.profile-picture-input');
-                if (!fileInput) {
-                    fileInput = trigger.closest('.profile-picture-container')?.querySelector('.profile-picture-input');
-                }
-                if (!fileInput) {
-                    fileInput = trigger.parentElement?.querySelector('.profile-picture-input');
-                }
-                
-                if (fileInput) {
-                    console.log('📁 Found file input, triggering click:', fileInput);
-                    fileInput.click();
-                } else {
-                    console.warn('⚠️ No file input found for profile picture upload trigger');
-                    // Create a temporary file input if none exists
-                    const tempInput = document.createElement('input');
-                    tempInput.type = 'file';
-                    tempInput.accept = 'image/*';
-                    tempInput.className = 'profile-picture-input';
-                    tempInput.style.display = 'none';
+        // Handle profile picture clicks for upload (only once per instance)
+        if (!this.clickListenerAdded) {
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.profile-picture-upload-trigger')) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     
-                    tempInput.addEventListener('change', (evt) => {
-                        this.handleFileSelect(evt);
-                        tempInput.remove();
-                    });
+                    const trigger = e.target.closest('.profile-picture-upload-trigger');
+                    console.log('🖱️ Profile picture upload trigger clicked:', trigger);
                     
-                    trigger.appendChild(tempInput);
-                    tempInput.click();
+                    // Look for file input in multiple places
+                    let fileInput = trigger.querySelector('.profile-picture-input');
+                    if (!fileInput) {
+                        fileInput = trigger.closest('.profile-picture-container')?.querySelector('.profile-picture-input');
+                    }
+                    if (!fileInput) {
+                        fileInput = trigger.parentElement?.querySelector('.profile-picture-input');
+                    }
+                    
+                    if (fileInput) {
+                        console.log('📁 Found file input, triggering click:', fileInput);
+                        fileInput.click();
+                    } else {
+                        console.warn('⚠️ No file input found for profile picture upload trigger');
+                        // Create a temporary file input if none exists
+                        const tempInput = document.createElement('input');
+                        tempInput.type = 'file';
+                        tempInput.accept = 'image/*';
+                        tempInput.className = 'profile-picture-input';
+                        tempInput.style.display = 'none';
+                        
+                        tempInput.addEventListener('change', (evt) => {
+                            this.handleFileSelect(evt);
+                            tempInput.remove();
+                        });
+                        
+                        trigger.appendChild(tempInput);
+                        tempInput.click();
+                    }
                 }
-            }
-        });
+            });
+            this.clickListenerAdded = true;
+        }
     }
 
     /**
@@ -483,10 +487,12 @@ class ProfilePictureManager {
 // Initialize ProfilePictureManager
 window.ProfilePictureManager = ProfilePictureManager;
 
-// Auto-initialize when DOM is ready
+// Auto-initialize when DOM is ready (only once)
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof window.profilePictureManager === 'undefined') {
         window.profilePictureManager = new ProfilePictureManager();
         console.log('✅ ProfilePictureManager initialized');
+    } else {
+        console.log('ℹ️ ProfilePictureManager already exists, skipping initialization');
     }
 }); 

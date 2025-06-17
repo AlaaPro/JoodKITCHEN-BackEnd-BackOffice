@@ -9,6 +9,8 @@ class KitchenStaffManager {
         this.searchQuery = '';
         this.filters = {};
         this.selectedItems = new Set();
+        this.profilePictureManager = null;
+        this.profilePictureListenerAdded = false;
         
         this.init().catch(error => {
             console.error('❌ Failed to initialize Kitchen Staff Manager:', error);
@@ -17,6 +19,22 @@ class KitchenStaffManager {
 
     async init() {
         console.log('🔧 Initializing Kitchen Staff Manager...');
+        
+        // Use existing global ProfilePictureManager instance
+        if (window.profilePictureManager) {
+            this.profilePictureManager = window.profilePictureManager;
+            console.log('✅ Using existing ProfilePictureManager for kitchen staff');
+        } else {
+            // Wait for global instance to be ready
+            console.log('⏳ Waiting for global ProfilePictureManager...');
+            setTimeout(() => {
+                if (window.profilePictureManager) {
+                    this.profilePictureManager = window.profilePictureManager;
+                    console.log('✅ Found global ProfilePictureManager for kitchen staff');
+                }
+            }, 100);
+        }
+        
         this.bindEvents();
         
         // Wait for complete DOM readiness
@@ -98,6 +116,15 @@ class KitchenStaffManager {
         const editForm = document.getElementById('editStaffForm');
         if (editForm) {
             editForm.addEventListener('submit', (e) => this.handleUpdate(e));
+        }
+
+        // Listen for profile picture updates (only add once)
+        if (!this.profilePictureListenerAdded) {
+            document.addEventListener('profilePictureUpdated', (e) => {
+                console.log('🖼️ Profile picture updated, refreshing staff list');
+                this.loadKitchenStaff();
+            });
+            this.profilePictureListenerAdded = true;
         }
     }
 
@@ -375,6 +402,11 @@ class KitchenStaffManager {
             const modal = new coreui.Modal(document.getElementById('createStaffModal'));
             modal.show();
             
+            // Initialize profile picture upload container
+            setTimeout(() => {
+                this.initializeProfilePictureForCreate();
+            }, 100);
+            
         } catch (error) {
             console.error('Error showing create modal:', error);
             AdminUtils.showAlert('Erreur lors de l\'ouverture du formulaire', 'error');
@@ -405,6 +437,24 @@ class KitchenStaffManager {
                                 <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal" aria-label="Fermer"></button>
                             </div>
                             <div class="modal-body">
+                                <!-- Profile Picture Section -->
+                                <div class="row mb-4">
+                                    <div class="col-12 text-center">
+                                        <div class="profile-picture-container profile-picture-lg">
+                                            <div class="profile-picture-wrapper">
+                                                ${staffMember.photo_profil_url ? 
+                                                    `<img src="${staffMember.photo_profil_url}" alt="${staffMember.prenom} ${staffMember.nom}" class="profile-picture-img">` :
+                                                    `<div class="profile-picture-placeholder">
+                                                        <span class="profile-picture-initials bg-primary">${(staffMember.prenom?.charAt(0) || '') + (staffMember.nom?.charAt(0) || '')}</span>
+                                                    </div>`
+                                                }
+                                            </div>
+                                        </div>
+                                        <h5 class="mt-3 mb-1">${staffMember.prenom} ${staffMember.nom}</h5>
+                                        <p class="text-muted">${this.generatePositionBadge(profile?.poste_cuisine)}</p>
+                                    </div>
+                                </div>
+                                
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6 class="fw-bold mb-3 jood-primary-color">Informations Personnelles</h6>
@@ -561,6 +611,11 @@ class KitchenStaffManager {
             const modal = new coreui.Modal(document.getElementById('editStaffModal'));
             modal.show();
             
+            // Initialize profile picture components
+            setTimeout(() => {
+                this.initializeProfilePictureForEdit(staffMember);
+            }, 100);
+            
         } catch (error) {
             console.error('Error showing edit modal:', error);
             AdminUtils.showAlert('Erreur lors de l\'ouverture du formulaire', 'error');
@@ -578,6 +633,10 @@ class KitchenStaffManager {
         // Handle arrays
         data.specialites = formData.getAll('specialites');
         data.permissions_kitchen = formData.getAll('permissions_kitchen');
+        
+        // Debug logging
+        console.log('🔍 Update data being sent:', data);
+        console.log('🔍 Staff ID:', staffId);
         
         try {
             // Show loading state
@@ -644,6 +703,73 @@ class KitchenStaffManager {
     }
 
     // ==================== HELPER METHODS ====================
+
+    /**
+     * Initialize profile picture upload for create modal
+     */
+    initializeProfilePictureForCreate() {
+        const container = document.getElementById('createStaffProfilePictureContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="profile-picture-container profile-picture-lg profile-picture-dropzone">
+                <div class="dropzone-content">
+                    <div class="profile-picture-wrapper profile-picture-upload-trigger">
+                        <div class="profile-picture-placeholder">
+                            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+                        </div>
+                        <div class="profile-picture-overlay">
+                            <i class="fas fa-camera"></i>
+                            <span>Ajouter une photo</span>
+                        </div>
+                    </div>
+                    <input type="file" class="profile-picture-input" accept="image/*" style="display: none;">
+                    <div class="profile-picture-loading" style="display: none;">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Upload...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Initialize profile picture management for edit modal
+     */
+    initializeProfilePictureForEdit(staffData) {
+        const container = document.getElementById('editStaffProfilePictureContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="profile-picture-container profile-picture-lg" data-user-id="${staffData.id}">
+                <div class="profile-picture-wrapper profile-picture-upload-trigger">
+                    ${staffData.photo_profil_url || staffData.photoProfilUrl ? 
+                        `<img src="${staffData.photo_profil_url || staffData.photoProfilUrl}" alt="${staffData.nom}" class="profile-picture-img">` :
+                        `<div class="profile-picture-placeholder">
+                            <span class="profile-picture-initials">${staffData.nom?.charAt(0) || ''}${staffData.prenom?.charAt(0) || ''}</span>
+                        </div>`
+                    }
+                    <div class="profile-picture-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>Changer la photo</span>
+                    </div>
+                </div>
+                ${staffData.photo_profil_url || staffData.photoProfilUrl ? `
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-profile-picture" 
+                            data-user-id="${staffData.id}" title="Supprimer la photo">
+                        <i class="fas fa-times"></i>
+                    </button>
+                ` : ''}
+                <input type="file" class="profile-picture-input" accept="image/*" style="display: none;" data-user-id="${staffData.id}">
+                <div class="profile-picture-loading" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Upload...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
     /**
      * ✨ NEW: Close all open modals to prevent stacking

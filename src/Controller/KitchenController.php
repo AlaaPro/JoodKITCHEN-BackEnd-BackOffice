@@ -451,6 +451,11 @@ class KitchenController extends AbstractController
         try {
             $data = json_decode($request->getContent(), true);
             
+            // Debug logging
+            error_log('🔍 Kitchen Staff Update - Raw request data: ' . $request->getContent());
+            error_log('🔍 Kitchen Staff Update - Parsed data: ' . json_encode($data));
+            error_log('🔍 Kitchen Staff Update - Staff ID: ' . $id);
+            
             if (!$data) {
                 return new JsonResponse([
                     'error' => 'Données invalides',
