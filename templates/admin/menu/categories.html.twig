@@ -129,25 +129,25 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="small fw-semibold">Catégories principales</span>
-                        <span class="badge jood-primary-bg">0</span>
+                        <span class="badge jood-primary-bg" data-stat="main-categories">0</span>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="small fw-semibold">Sous-catégories</span>
-                        <span class="badge bg-secondary">0</span>
+                        <span class="badge bg-secondary" data-stat="sub-categories">0</span>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="small fw-semibold">Catégories visibles</span>
-                        <span class="badge bg-success">0</span>
+                        <span class="badge bg-success" data-stat="visible-categories">0</span>
                     </div>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="small fw-semibold">Catégories masquées</span>
-                        <span class="badge bg-danger">0</span>
+                        <span class="badge bg-danger" data-stat="hidden-categories">0</span>
                     </div>
                 </div>
                 <hr>
@@ -167,34 +167,11 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-fire jood-warning me-2"></i>
-                            <span class="fw-semibold">Tajines</span>
-                        </div>
-                        <span class="badge jood-primary-bg">156 cmd</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-bowl-food jood-primary me-2"></i>
-                            <span class="fw-semibold">Couscous</span>
-                        </div>
-                        <span class="badge jood-primary-bg">142 cmd</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-seedling jood-secondary me-2"></i>
-                            <span class="fw-semibold">Salades</span>
-                        </div>
-                        <span class="badge jood-primary-bg">89 cmd</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <i class="fas fa-birthday-cake jood-info me-2"></i>
-                            <span class="fw-semibold">Desserts</span>
-                        </div>
-                        <span class="badge jood-primary-bg">76 cmd</span>
+                <div class="list-group list-group-flush top-categories-list">
+                    <!-- Top categories will be populated dynamically by CategoryManager -->
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div class="mt-2">Chargement des catégories populaires...</div>
                     </div>
                 </div>
             </div>

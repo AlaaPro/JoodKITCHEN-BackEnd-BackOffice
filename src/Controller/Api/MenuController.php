@@ -66,6 +66,8 @@ class MenuController extends AbstractController
                     'icon' => $subCategory->getIcon(),
                     'couleur' => $subCategory->getCouleur(),
                     'position' => $subCategory->getPosition(),
+                    'actif' => $subCategory->getActif(),
+                    'visible' => $subCategory->getVisible(),
                     'dishCount' => $subCategory->getTotalPlatsCount()
                 ];
             }

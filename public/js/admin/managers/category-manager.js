@@ -182,7 +182,11 @@ class CategoryManager {
                     </div>
                 </div>
                 <div class="flex-grow-1">
-                    <h6 class="mb-1 fw-bold">${category.nom}</h6>
+                    <div>
+                        <h6 class="mb-1 fw-bold d-inline">${category.nom}</h6>
+                        ${!category.actif ? '<span class="badge bg-warning ms-2">Inactif</span>' : ''}
+                        ${!category.visible ? '<span class="badge bg-danger ms-2">Masqué</span>' : ''}
+                    </div>
                     <small class="text-muted">
                         ${category.dishCount || 0} plat${category.dishCount > 1 ? 's' : ''} • Position ${category.position}
                         ${!category.visible ? ' • Masqué' : ''}
@@ -200,6 +204,9 @@ class CategoryManager {
                         </button>
                         <button class="btn btn-outline-success" onclick="categoryManager.addSubCategory(${category.id})" title="Sous-catégorie">
                             <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="categoryManager.toggleActive(${category.id})" title="${category.actif ? 'Désactiver' : 'Activer'}">
+                            <i class="fas ${category.actif ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
                         </button>
                         <button class="btn btn-outline-secondary" onclick="categoryManager.toggleVisibility(${category.id})" title="${category.visible ? 'Masquer' : 'Afficher'}">
                             <i class="fas ${category.visible ? 'fa-eye-slash' : 'fa-eye'}"></i>
@@ -224,7 +231,7 @@ class CategoryManager {
         
         subCategories.forEach(subCategory => {
             const subDiv = document.createElement('div');
-            subDiv.className = 'd-flex align-items-center p-2 border rounded mb-2';
+            subDiv.className = `d-flex align-items-center p-2 border rounded mb-2 ${!subCategory.actif ? 'opacity-50' : ''}`;
             subDiv.dataset.categoryId = subCategory.id;
             
             subDiv.innerHTML = `
@@ -235,17 +242,35 @@ class CategoryManager {
                     </div>
                 </div>
                 <div class="flex-grow-1">
-                    <span class="fw-semibold">${subCategory.nom}</span>
-                    <small class="text-muted ms-2">${subCategory.dishCount || 0} plat${subCategory.dishCount > 1 ? 's' : ''}</small>
+                    <div>
+                        <span class="fw-semibold">${subCategory.nom}</span>
+                        ${!subCategory.actif ? '<span class="badge bg-warning ms-2">Inactif</span>' : ''}
+                        ${!subCategory.visible ? '<span class="badge bg-danger ms-2">Masqué</span>' : ''}
+                    </div>
+                    <small class="text-muted">
+                        ${subCategory.dishCount || 0} plat${subCategory.dishCount > 1 ? 's' : ''}
+                        ${subCategory.description ? ` • ${subCategory.description}` : ''}
+                        ${!subCategory.visible ? ' • Masqué' : ''}
+                    </small>
                 </div>
-                <span class="badge bg-secondary me-2">${subCategory.dishCount || 0}</span>
-                <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary btn-sm" onclick="categoryManager.editCategory(${subCategory.id})" title="Modifier">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="categoryManager.deleteCategory(${subCategory.id})" title="Supprimer">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <div class="category-stats me-3">
+                    <span class="badge ${subCategory.actif ? 'jood-primary-bg' : 'bg-secondary'}">${subCategory.dishCount || 0} plat${subCategory.dishCount > 1 ? 's' : ''}</span>
+                </div>
+                <div class="category-actions">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary btn-sm" onclick="categoryManager.editCategory(${subCategory.id})" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="categoryManager.toggleActive(${subCategory.id})" title="${subCategory.actif ? 'Désactiver' : 'Activer'}">
+                            <i class="fas ${subCategory.actif ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="categoryManager.toggleVisibility(${subCategory.id})" title="${subCategory.visible ? 'Masquer' : 'Afficher'}">
+                            <i class="fas ${subCategory.visible ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="categoryManager.deleteCategory(${subCategory.id})" title="Supprimer">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             `;
             subContainer.appendChild(subDiv);
@@ -412,8 +437,14 @@ class CategoryManager {
     }
 
     async toggleVisibility(id) {
-        const category = this.categories.find(c => c.id === id);
-        if (!category) return;
+        // Find category in main categories or sub-categories
+        const category = this.categories.find(c => c.id === id) || 
+                        this.categories.flatMap(c => c.sousCategories || []).find(sc => sc.id === id);
+        
+        if (!category) {
+            this.showError('Catégorie non trouvée');
+            return;
+        }
 
         try {
             const response = await this.api.updateCategory(id, {
@@ -424,9 +455,38 @@ class CategoryManager {
             if (response.success) {
                 await this.loadCategories();
                 this.showSuccess(`Catégorie ${category.visible ? 'masquée' : 'affichée'}`);
+            } else {
+                this.showError(response.message || 'Erreur lors de la mise à jour');
             }
         } catch (error) {
             this.showError('Error updating category visibility: ' + error.message);
+        }
+    }
+
+    async toggleActive(id) {
+        // Find category in main categories or sub-categories
+        const category = this.categories.find(c => c.id === id) || 
+                        this.categories.flatMap(c => c.sousCategories || []).find(sc => sc.id === id);
+        
+        if (!category) {
+            this.showError('Catégorie non trouvée');
+            return;
+        }
+
+        try {
+            const response = await this.api.updateCategory(id, {
+                ...category,
+                actif: !category.actif
+            });
+
+            if (response.success) {
+                await this.loadCategories();
+                this.showSuccess(`Catégorie ${category.actif ? 'désactivée' : 'activée'}`);
+            } else {
+                this.showError(response.message || 'Erreur lors de la mise à jour');
+            }
+        } catch (error) {
+            this.showError('Error updating category status: ' + error.message);
         }
     }
 
@@ -534,14 +594,113 @@ class CategoryManager {
     }
 
     updateCategoryStats(categories) {
-        const totalCategories = categories.length;
+        console.log('📊 Updating category statistics...');
+        
+        // Flatten all categories (main + sub) for accurate counting
+        const allCategories = this.flattenCategories(categories);
+        
+        const totalCategories = allCategories.length;
+        const mainCategories = categories.length; // Only main categories from API
         const totalSubCategories = categories.reduce((sum, cat) => sum + (cat.sousCategories?.length || 0), 0);
-        const totalDishes = categories.reduce((sum, cat) => sum + (cat.dishCount || 0), 0);
-
-        // Update stats widgets if they exist
+        const totalDishes = allCategories.reduce((sum, cat) => sum + (cat.dishCount || 0), 0);
+        
+        // Count actif/visible including sub-categories
+        const activeCategories = allCategories.filter(c => c.actif).length;
+        const visibleCategories = allCategories.filter(c => c.visible).length;
+        const hiddenCategories = totalCategories - visibleCategories;
+        
+        // Update main stats widgets
         this.updateStatWidget('.stat-categories', totalCategories);
         this.updateStatWidget('.stat-dishes', totalDishes);
-        this.updateStatWidget('.stat-active', categories.filter(c => c.dishCount > 0).length);
+        this.updateStatWidget('.stat-active', activeCategories);
+        
+        // Update detailed statistics in sidebar
+        this.updateDetailedStats({
+            mainCategories,
+            totalSubCategories,
+            visibleCategories,
+            hiddenCategories
+        });
+        
+        // Update top categories section (use all categories for ranking)
+        this.updateTopCategories(allCategories);
+        
+        console.log('✅ Statistics updated:', {
+            total: totalCategories,
+            main: mainCategories,
+            sub: totalSubCategories,
+            dishes: totalDishes,
+            active: activeCategories,
+            visible: visibleCategories,
+            hidden: hiddenCategories
+        });
+    }
+    
+    // Helper method to flatten categories including sub-categories
+    flattenCategories(categories) {
+        const flattened = [];
+        
+        categories.forEach(category => {
+            // Add main category
+            flattened.push(category);
+            
+            // Add sub-categories if they exist
+            if (category.sousCategories && category.sousCategories.length > 0) {
+                category.sousCategories.forEach(subCategory => {
+                    flattened.push(subCategory);
+                });
+            }
+        });
+        
+        return flattened;
+    }
+    
+    updateDetailedStats(stats) {
+        // Update detailed statistics badges in the sidebar
+        const detailedStats = [
+            { selector: '[data-stat="main-categories"]', value: stats.mainCategories },
+            { selector: '[data-stat="sub-categories"]', value: stats.totalSubCategories },
+            { selector: '[data-stat="visible-categories"]', value: stats.visibleCategories },
+            { selector: '[data-stat="hidden-categories"]', value: stats.hiddenCategories }
+        ];
+        
+        detailedStats.forEach(stat => {
+            const element = document.querySelector(stat.selector);
+            if (element) {
+                element.textContent = stat.value;
+            }
+        });
+    }
+    
+    updateTopCategories(categories) {
+        // Sort categories by dish count and get top 4
+        const topCategories = [...categories]
+            .filter(cat => cat.dishCount > 0)
+            .sort((a, b) => (b.dishCount || 0) - (a.dishCount || 0))
+            .slice(0, 4);
+        
+        const topCategoriesContainer = document.querySelector('.top-categories-list');
+        if (!topCategoriesContainer) return;
+        
+        if (topCategories.length === 0) {
+            topCategoriesContainer.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="mt-2">Aucune catégorie avec des plats</div>
+                </div>
+            `;
+            return;
+        }
+        
+        topCategoriesContainer.innerHTML = topCategories.map(category => `
+            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                <div>
+                    <i class="fas ${category.icon || 'fa-utensils'} me-2" style="color: ${category.couleur || '#a9b73e'}"></i>
+                    <span class="fw-semibold">${category.nom}</span>
+                </div>
+                <span class="badge jood-primary-bg">${category.dishCount} plat${category.dishCount > 1 ? 's' : ''}</span>
+            </div>
+        `).join('');
     }
 
     updateStatWidget(selector, value) {
