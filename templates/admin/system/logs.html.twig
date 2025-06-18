@@ -126,18 +126,25 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Composant</label>
+                <label class="form-label">Composant/Profil</label>
                 <select class="form-select" id="logComponent">
                     <option value="">Tous les composants</option>
-                    <option value="auth">Authentification</option>
-                    <option value="orders">Commandes</option>
-                    <option value="kitchen">Cuisine</option>
-                    <option value="customers">Clients</option>
-                    <option value="payment">Paiement</option>
-                    <option value="menu">Menus</option>
-                    <option value="admin">Administration</option>
-                    <option value="security">Sécurité</option>
-                    <option value="system">Système</option>
+                    <optgroup label="Composants Système">
+                        <option value="auth">Authentification</option>
+                        <option value="orders">Commandes</option>
+                        <option value="kitchen">Cuisine</option>
+                        <option value="customers">Clients</option>
+                        <option value="payment">Paiement</option>
+                        <option value="menu">Menus</option>
+                        <option value="admin">Administration</option>
+                        <option value="security">Sécurité</option>
+                        <option value="system">Système</option>
+                    </optgroup>
+                    <optgroup label="Profils Utilisateurs">
+                        <option value="user_admin">Activités Admins</option>
+                        <option value="user_client">Activités Clients</option>
+                        <option value="user_kitchen">Activités Cuisine</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="col-md-2">
@@ -170,9 +177,21 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-stream"></i> Logs en Temps Réel
-                    </h4>
+                    <div class="d-flex align-items-center">
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-pills me-3" id="logsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="system-logs-tab" data-coreui-toggle="pill" data-coreui-target="#system-logs" type="button" role="tab">
+                                    <i class="fas fa-stream"></i> Logs Système
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="user-activities-tab" data-coreui-toggle="pill" data-coreui-target="#user-activities" type="button" role="tab">
+                                    <i class="fas fa-users"></i> Activités Utilisateurs
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                     <div class="d-flex align-items-center gap-2">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
@@ -184,11 +203,69 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="log-container" style="height: 600px; overflow-y: auto; font-family: 'Courier New', monospace;">
-                    <div id="logsContent">
-                        <div class="text-center text-muted py-5">
-                            <span class="spinner-border" role="status"></span>
-                            <div class="mt-2">Chargement des logs en temps réel...</div>
+                <!-- Tab Content -->
+                <div class="tab-content" id="logsTabsContent">
+                    <!-- System Logs Tab -->
+                    <div class="tab-pane fade show active" id="system-logs" role="tabpanel">
+                        <div class="log-container" style="height: 600px; overflow-y: auto; font-family: 'Courier New', monospace;">
+                            <div id="logsContent">
+                                <div class="text-center text-muted py-5">
+                                    <span class="spinner-border" role="status"></span>
+                                    <div class="mt-2">Chargement des logs en temps réel...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- User Activities Tab -->
+                    <div class="tab-pane fade" id="user-activities" role="tabpanel">
+                        <div class="activity-container" style="height: 600px; overflow-y: auto;">
+                            <!-- Advanced Activity Filters -->
+                            <div class="p-3 border-bottom bg-light">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <select class="form-select form-select-sm" id="userProfileType">
+                                            <option value="">Tous les profils</option>
+                                            <option value="AdminProfile">Administrateurs</option>
+                                            <option value="ClientProfile">Clients</option>
+                                            <option value="KitchenProfile">Staff Cuisine</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select form-select-sm" id="userActivityAction">
+                                            <option value="">Toutes les actions</option>
+                                            <option value="create">Créations</option>
+                                            <option value="update">Modifications</option>
+                                            <option value="remove">Suppressions</option>
+                                            <option value="login">Connexions</option>
+                                            <option value="logout">Déconnexions</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select form-select-sm" id="userEntityType">
+                                            <option value="">Toutes les entités</option>
+                                            <option value="User">Utilisateur</option>
+                                            <option value="Menu">Menu</option>
+                                            <option value="Plat">Plat</option>
+                                            <option value="Commande">Commande</option>
+                                            <option value="Permission">Permission</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-primary btn-sm w-100" id="applyActivityFilters">
+                                            <i class="fas fa-filter"></i> Filtrer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Activities Content -->
+                            <div id="activitiesContent" class="p-3">
+                                <div class="text-center text-muted py-5">
+                                    <span class="spinner-border" role="status"></span>
+                                    <div class="mt-2">Chargement des activités utilisateurs...</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -215,52 +292,44 @@
             </div>
         </div>
 
-        <!-- System Health -->
-        {# <div class="card mb-4">
+        <!-- User Activities -->
+        <div class="card mb-4">
             <div class="card-header jood-primary-bg">
                 <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-heartbeat"></i> Santé du Système
+                    <i class="fas fa-users"></i> Activités Utilisateurs
                 </h5>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>CPU</span>
-                    <div>
-                        <span class="fw-bold jood-primary" data-health="cpu">--%</span>
-                        <div class="progress mt-1" style="height: 4px; width: 60px;">
-                            <div class="progress-bar jood-primary-bg" style="width: 0%"></div>
-                        </div>
+                <!-- Activity filters -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select form-select-sm" id="activityProfileFilter">
+                            <option value="">Tous les profils</option>
+                            <option value="admin">Administrateurs</option>
+                            <option value="client">Clients</option>
+                            <option value="kitchen">Staff Cuisine</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select form-select-sm" id="activityActionFilter">
+                            <option value="">Toutes les actions</option>
+                            <option value="create">Créations</option>
+                            <option value="update">Modifications</option>
+                            <option value="remove">Suppressions</option>
+                            <option value="login">Connexions</option>
+                        </select>
                     </div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Mémoire</span>
-                    <div>
-                        <span class="fw-bold jood-warning" data-health="memory">--%</span>
-                        <div class="progress mt-1" style="height: 4px; width: 60px;">
-                            <div class="progress-bar jood-warning-bg" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>Disque</span>
-                    <div>
-                        <span class="fw-bold jood-primary" data-health="disk">--%</span>
-                        <div class="progress mt-1" style="height: 4px; width: 60px;">
-                            <div class="progress-bar jood-primary-bg" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Réseau</span>
-                    <div>
-                        <span class="fw-bold jood-primary" data-health="network">--%</span>
-                        <div class="progress mt-1" style="height: 4px; width: 60px;">
-                            <div class="progress-bar jood-primary-bg" style="width: 0%"></div>
-                        </div>
+                
+                <!-- Recent activities list -->
+                <div class="recent-activities-list" style="max-height: 200px; overflow-y: auto;">
+                    <div class="text-center text-muted py-3">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                        Chargement des activités...
                     </div>
                 </div>
             </div>
-        </div> #}
+        </div>
 
         <!-- Log Distribution -->
         <div class="card">
@@ -368,95 +437,140 @@
 {% block javascripts %}
 <!-- Include the logs API JavaScript -->
 <script src="{{ asset('js/admin/logs-api.js') }}"></script>
+<!-- Include the user activities API JavaScript -->
+<script src="{{ asset('js/admin/user-activities-api.js') }}"></script>
 
-<!-- Enhanced export modal functionality -->
+<!-- Enhanced initialization with both logs and activities -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Export logs functionality
-    const exportButton = document.querySelector('#exportLogsModal .btn-primary');
-    if (exportButton) {
-        exportButton.addEventListener('click', async function() {
-            const modal = coreui.Modal.getInstance(document.getElementById('exportLogsModal'));
-            const form = document.getElementById('exportLogsForm');
-            const formData = new FormData(form);
-            
-            const filters = {};
-            const format = formData.get('format') || 'csv';
-            
-            // Get current applied filters
-            if (window.logsManager && window.logsManager.currentFilters) {
-                Object.assign(filters, window.logsManager.currentFilters);
-            }
-            
-            // Add date range from export form
-            if (formData.get('dateStart')) filters.dateStart = formData.get('dateStart');
-            if (formData.get('dateEnd')) filters.dateEnd = formData.get('dateEnd');
-            
-            // Add log levels to include
-            const levels = [];
-            if (formData.get('exportError')) levels.push('error');
-            if (formData.get('exportWarning')) levels.push('warning');
-            if (formData.get('exportInfo')) levels.push('info');
-            if (formData.get('exportDebug')) levels.push('debug');
-            
-            if (levels.length > 0) {
-                filters.levels = levels;
-            }
-            
-            try {
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Export en cours...';
-                this.disabled = true;
-                
-                const api = new LogsAPI();
-                const exportData = await api.exportLogs(filters, format);
-                
-                // Create download
-                if (format === 'csv') {
-                    downloadCSV(exportData.data, `joodkitchen-logs-${new Date().toISOString().split('T')[0]}.csv`);
-                } else if (format === 'json') {
-                    downloadJSON(exportData.data, `joodkitchen-logs-${new Date().toISOString().split('T')[0]}.json`);
-                } else if (format === 'txt') {
-                    downloadText(exportData.data, `joodkitchen-logs-${new Date().toISOString().split('T')[0]}.txt`);
-                }
-                
-                modal.hide();
-                
-            } catch (error) {
-                console.error('Export error:', error);
-                alert('Erreur lors de l\'export: ' + error.message);
-            } finally {
-                this.innerHTML = '<i class="fas fa-download"></i> Exporter';
-                this.disabled = false;
+    // Add manual refresh button functionality
+    const refreshButton = document.getElementById('refreshLogs');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            if (window.logsManager) {
+                console.log('🔄 Manual refresh triggered');
+                refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+                window.logsManager.loadData().finally(() => {
+                    setTimeout(() => {
+                        refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
+                    }, 1000);
+                });
             }
         });
     }
-    
-    // Download helper functions
-    function downloadCSV(csvData, filename) {
-        const csvContent = csvData.map(row => row.join(',')).join('\n');
-        downloadFile(csvContent, filename, 'text/csv');
+
+    // Initialize activities manager immediately since we have activities sections on the page
+    if (window.ActivitiesManager) {
+        window.activitiesManager = new ActivitiesManager();
+        // Don't auto-init since we may not need it immediately
     }
-    
-    function downloadJSON(jsonData, filename) {
-        const jsonContent = JSON.stringify(jsonData, null, 2);
-        downloadFile(jsonContent, filename, 'application/json');
+
+    // Handle tab switching to load user activities when tab becomes active
+    const userActivitiesTab = document.getElementById('user-activities-tab');
+    if (userActivitiesTab) {
+        userActivitiesTab.addEventListener('shown.coreui.tab', function() {
+            console.log('User Activities tab activated');
+            if (window.activitiesManager) {
+                if (!window.activitiesManager.initialized) {
+                    window.activitiesManager.init();
+                } else {
+                    window.activitiesManager.loadAllData();
+                }
+            } else {
+                // Initialize activities manager if not already done
+                window.activitiesManager = new ActivitiesManager();
+                window.activitiesManager.init();
+            }
+        });
     }
-    
-    function downloadText(textData, filename) {
-        downloadFile(textData, filename, 'text/plain');
+
+    // Setup activities tab content handling
+    const activitiesFilterBtn = document.getElementById('applyActivityFilters');
+    if (activitiesFilterBtn) {
+        activitiesFilterBtn.addEventListener('click', function() {
+            if (window.activitiesManager) {
+                console.log('Applying activity filters...');
+                
+                const filters = {
+                    profileType: document.getElementById('userProfileType')?.value || '',
+                    action: document.getElementById('userActivityAction')?.value || '',
+                    entityType: document.getElementById('userEntityType')?.value || ''
+                };
+
+                // Remove empty filters
+                Object.keys(filters).forEach(key => {
+                    if (!filters[key]) delete filters[key];
+                });
+
+                window.activitiesManager.currentFilters = filters;
+                window.activitiesManager.loadActivities();
+            }
+        });
     }
-    
-    function downloadFile(content, filename, mimeType) {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+
+    // Load user activities data in the sidebar section
+    if (document.querySelector('.recent-activities-list')) {
+        // Initialize a simple activities loader for the sidebar
+        loadSidebarActivities();
     }
 });
+
+// Function to load activities in the sidebar
+async function loadSidebarActivities() {
+    const activitiesList = document.querySelector('.recent-activities-list');
+    if (!activitiesList) return;
+
+    try {
+        const api = new UserActivitiesAPI();
+        const result = await api.getActivities({}, 5); // Get recent 5 activities
+        
+        if (result && result.success && result.data.length > 0) {
+            const activitiesHtml = result.data.map(activity => `
+                <div class="activity-item py-2 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">${activity.user_name || 'Système'}</div>
+                            <div class="small text-muted">
+                                <span class="badge bg-${getActionBadgeColor(activity.action)} me-1">${activity.action}</span>
+                                ${activity.entity_type} #${activity.entity_id || 'N/A'}
+                            </div>
+                        </div>
+                        <small class="text-muted">${formatTimeAgo(activity.logged_at)}</small>
+                    </div>
+                </div>
+            `).join('');
+            
+            activitiesList.innerHTML = activitiesHtml;
+        } else {
+            activitiesList.innerHTML = '<div class="text-center text-muted py-3">Aucune activité récente</div>';
+        }
+    } catch (error) {
+        console.error('Error loading sidebar activities:', error);
+        activitiesList.innerHTML = '<div class="text-center text-muted py-3">Erreur de chargement</div>';
+    }
+}
+
+// Helper functions
+function getActionBadgeColor(action) {
+    const colors = {
+        'insert': 'success',
+        'update': 'warning', 
+        'remove': 'danger',
+        'create': 'success',
+        'delete': 'danger'
+    };
+    return colors[action] || 'secondary';
+}
+
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'À l\'instant';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
+    return `${Math.floor(diffInSeconds / 86400)}j`;
+}
 </script>
 {% endblock %} 

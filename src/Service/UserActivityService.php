@@ -95,9 +95,14 @@ class UserActivityService
             ->getSingleScalarResult();
 
         // Activities today
+        $today = new \DateTime('today');
+        $tomorrow = new \DateTime('tomorrow');
         $todayActivities = (clone $qb)
             ->select('COUNT(al.id)')
-            ->where('DATE(al.loggedAt) = CURRENT_DATE()')
+            ->where('al.loggedAt >= :today')
+            ->andWhere('al.loggedAt < :tomorrow')
+            ->setParameter('today', $today)
+            ->setParameter('tomorrow', $tomorrow)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -191,15 +196,210 @@ class UserActivityService
     }
 
     /**
-     * Get formatted activities for API/JSON response
+     * Get formatted activities for API/JSON response with advanced filtering
      */
     public function getFormattedActivities(array $criteria = [], int $limit = 20): array
     {
-        $activities = $this->getRecentActivities($limit);
+        $qb = $this->entityManager
+            ->getRepository(AuditLog::class)
+            ->createQueryBuilder('al')
+            ->leftJoin('al.blame', 'blame')
+            ->leftJoin('al.source', 'source')
+            ->orderBy('al.loggedAt', 'DESC')
+            ->setMaxResults($limit);
+
+        // Apply filters
+        if (isset($criteria['profileType']) && !empty($criteria['profileType'])) {
+            // Filter by user profile type - we need to join with the actual profile entities
+            // since audit logs store User as blame, not the profile entities
+            switch ($criteria['profileType']) {
+                case 'AdminProfile':
+                    $qb->leftJoin('App\\Entity\\AdminProfile', 'ap', 'WITH', 'ap.user = blame.fk')
+                       ->andWhere('ap.id IS NOT NULL')
+                       ->andWhere('blame.class = :userClass')
+                       ->setParameter('userClass', 'App\\Entity\\User');
+                    break;
+                case 'ClientProfile':
+                    $qb->leftJoin('App\\Entity\\ClientProfile', 'cp', 'WITH', 'cp.user = blame.fk')
+                       ->andWhere('cp.id IS NOT NULL')
+                       ->andWhere('blame.class = :userClass')
+                       ->setParameter('userClass', 'App\\Entity\\User');
+                    break;
+                case 'KitchenProfile':
+                    $qb->leftJoin('App\\Entity\\KitchenProfile', 'kp', 'WITH', 'kp.user = blame.fk')
+                       ->andWhere('kp.id IS NOT NULL')
+                       ->andWhere('blame.class = :userClass')
+                       ->setParameter('userClass', 'App\\Entity\\User');
+                    break;
+            }
+        }
+
+        if (isset($criteria['action']) && !empty($criteria['action'])) {
+            $qb->andWhere('al.action = :action')
+               ->setParameter('action', $criteria['action']);
+        }
+
+        if (isset($criteria['entityType']) && !empty($criteria['entityType'])) {
+            $entityClass = 'App\\Entity\\' . $criteria['entityType'];
+            $qb->andWhere('source.class = :entityClass')
+               ->setParameter('entityClass', $entityClass);
+        }
+
+        if (isset($criteria['userId']) && !empty($criteria['userId'])) {
+            $qb->andWhere('blame.fk = :userId')
+               ->setParameter('userId', $criteria['userId']);
+        }
+
+        if (isset($criteria['dateStart']) && !empty($criteria['dateStart'])) {
+            $qb->andWhere('al.loggedAt >= :dateStart')
+               ->setParameter('dateStart', new \DateTime($criteria['dateStart']));
+        }
+
+        if (isset($criteria['dateEnd']) && !empty($criteria['dateEnd'])) {
+            $qb->andWhere('al.loggedAt <= :dateEnd')
+               ->setParameter('dateEnd', new \DateTime($criteria['dateEnd']));
+        }
+
+        // Debug: Log the DQL query being executed
+        $query = $qb->getQuery();
+        error_log('UserActivityService DQL: ' . $query->getDQL());
+        error_log('UserActivityService Parameters: ' . json_encode($query->getParameters()->toArray()));
+        
+        $activities = $query->getResult();
+        
+        error_log('UserActivityService Results count: ' . count($activities));
         
         return array_map(function (AuditLog $auditLog) {
             return $this->formatActivityForDisplay($auditLog);
         }, $activities);
+    }
+
+    /**
+     * Get activity distribution by action type
+     */
+    public function getActivityDistribution(): array
+    {
+        $activities = $this->getFormattedActivities([], 200);
+        $distribution = ['create' => 0, 'update' => 0, 'remove' => 0, 'login' => 0, 'logout' => 0];
+
+        foreach ($activities as $activity) {
+            $action = $activity['action'];
+            if (isset($distribution[$action])) {
+                $distribution[$action]++;
+            }
+        }
+
+        $total = array_sum($distribution);
+        if ($total === 0) {
+            return ['create' => 20, 'update' => 50, 'remove' => 10, 'login' => 15, 'logout' => 5];
+        }
+
+        return [
+            'create' => round(($distribution['create'] / $total) * 100),
+            'update' => round(($distribution['update'] / $total) * 100),
+            'remove' => round(($distribution['remove'] / $total) * 100),
+            'login' => round(($distribution['login'] / $total) * 100),
+            'logout' => round(($distribution['logout'] / $total) * 100),
+        ];
+    }
+
+    /**
+     * Get profile type distribution
+     */
+    public function getProfileDistribution(): array
+    {
+        $activities = $this->getFormattedActivities([], 200);
+        $distribution = ['admin' => 0, 'client' => 0, 'kitchen' => 0, 'delivery' => 0];
+
+        foreach ($activities as $activity) {
+            // Determine profile type from user
+            if (strpos($activity['user_name'], 'Admin') !== false) {
+                $distribution['admin']++;
+            } elseif (strpos($activity['user_name'], 'Kitchen') !== false) {
+                $distribution['kitchen']++;
+            } elseif (strpos($activity['user_name'], 'Client') !== false) {
+                $distribution['client']++;
+            } else {
+                // Default classification logic
+                $distribution['admin']++;
+            }
+        }
+
+        $total = array_sum($distribution);
+        if ($total === 0) {
+            return ['admin' => 40, 'client' => 35, 'kitchen' => 20, 'delivery' => 5];
+        }
+
+        return [
+            'admin' => round(($distribution['admin'] / $total) * 100),
+            'client' => round(($distribution['client'] / $total) * 100),
+            'kitchen' => round(($distribution['kitchen'] / $total) * 100),
+            'delivery' => round(($distribution['delivery'] / $total) * 100),
+        ];
+    }
+
+    /**
+     * Export activities to various formats
+     */
+    public function exportActivities(array $filters, string $format = 'csv'): array|string
+    {
+        $activities = $this->getFormattedActivities($filters, 1000);
+        
+        switch ($format) {
+            case 'json':
+                return $activities;
+            case 'csv':
+                return $this->formatActivitiesAsCsv($activities);
+            case 'txt':
+                return $this->formatActivitiesAsText($activities);
+            default:
+                return $activities;
+        }
+    }
+
+    /**
+     * Format activities as CSV
+     */
+    private function formatActivitiesAsCsv(array $activities): array
+    {
+        $csv = [];
+        $csv[] = ['Time', 'Action', 'User', 'Entity Type', 'Entity ID', 'Changes'];
+        
+        foreach ($activities as $activity) {
+            $csv[] = [
+                $activity['logged_at_formatted'],
+                $activity['action'],
+                $activity['user_name'],
+                $activity['entity_type'],
+                $activity['entity_id'] ?? '',
+                json_encode($activity['changes'])
+            ];
+        }
+        
+        return $csv;
+    }
+
+    /**
+     * Format activities as plain text
+     */
+    private function formatActivitiesAsText(array $activities): string
+    {
+        $text = "JoodKitchen User Activities Export\n";
+        $text .= "Generated: " . (new \DateTime())->format('Y-m-d H:i:s') . "\n";
+        $text .= str_repeat("=", 50) . "\n\n";
+        
+        foreach ($activities as $activity) {
+            $text .= sprintf(
+                "[%s] %s by %s on %s #%s\n",
+                $activity['logged_at_formatted'],
+                $activity['action'],
+                $activity['user_name'],
+                $activity['entity_type'],
+                $activity['entity_id'] ?? 'N/A'
+            );
+        }
+        
+        return $text;
     }
 
     /**

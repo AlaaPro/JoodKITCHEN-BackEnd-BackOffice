@@ -22,7 +22,8 @@ class AdminController extends AbstractController
 {
     public function __construct(
         private PermissionService $permissionService,
-        private LogSystemService $logSystemService
+        private LogSystemService $logSystemService,
+        private \App\Service\UserActivityService $userActivityService
     ) {}
 
     #[Route('/api/admin/create-user', name: 'api_admin_create_user', methods: ['POST'])]
@@ -1142,6 +1143,180 @@ class AdminController extends AbstractController
             return new JsonResponse([
                 'success' => false,
                 'error' => 'Erreur lors de l\'export des logs',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // ============================================
+    // USER ACTIVITIES API ENDPOINTS
+    // ============================================
+
+    #[Route('/api/admin/activities/stats', name: 'api_admin_activities_stats', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getActivityStatistics(): JsonResponse
+    {
+        try {
+            $stats = $this->userActivityService->getActivityStats();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des statistiques d\'activité',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/activities', name: 'api_admin_activities', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getActivities(Request $request): JsonResponse
+    {
+        try {
+            $criteria = [];
+            
+            // Extract filters from query parameters
+            if ($request->query->has('profileType')) {
+                $criteria['profileType'] = $request->query->get('profileType');
+            }
+            if ($request->query->has('action')) {
+                $criteria['action'] = $request->query->get('action');
+            }
+            if ($request->query->has('entityType')) {
+                $criteria['entityType'] = $request->query->get('entityType');
+            }
+            if ($request->query->has('userId')) {
+                $criteria['userId'] = $request->query->get('userId');
+            }
+            if ($request->query->has('dateStart')) {
+                $criteria['dateStart'] = $request->query->get('dateStart');
+            }
+            if ($request->query->has('dateEnd')) {
+                $criteria['dateEnd'] = $request->query->get('dateEnd');
+            }
+            if ($request->query->has('limit')) {
+                $limit = (int)$request->query->get('limit');
+            } else {
+                $limit = 50;
+            }
+            
+            $activities = $this->userActivityService->getFormattedActivities($criteria, $limit);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $activities,
+                'count' => count($activities),
+                'debug' => [
+                    'criteria' => $criteria,
+                    'query_params' => $request->query->all()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des activités',
+                'message' => $e->getMessage(),
+                'debug' => [
+                    'criteria' => $criteria ?? [],
+                    'query_params' => $request->query->all()
+                ]
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/activities/recent', name: 'api_admin_activities_recent', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getRecentActivities(Request $request): JsonResponse
+    {
+        try {
+            $limit = (int)($request->query->get('limit', 20));
+            $since = $request->query->get('since'); // timestamp for updates since last check
+            
+            $criteria = [];
+            if ($since) {
+                $criteria['dateStart'] = date('Y-m-d H:i:s', (int)$since);
+            }
+            
+            $activities = $this->userActivityService->getFormattedActivities($criteria, $limit);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $activities,
+                'has_updates' => !empty($activities),
+                'last_check' => time()
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des activités récentes',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/activities/distribution', name: 'api_admin_activities_distribution', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getActivityDistribution(): JsonResponse
+    {
+        try {
+            $distribution = $this->userActivityService->getActivityDistribution();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $distribution
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération de la distribution des activités',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/activities/profiles', name: 'api_admin_activities_profiles', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getProfileDistribution(): JsonResponse
+    {
+        try {
+            $distribution = $this->userActivityService->getProfileDistribution();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $distribution
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération de la distribution des profils',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/activities/export', name: 'api_admin_activities_export', methods: ['POST'])]
+    #[IsGranted('export_logs')]
+    public function exportActivities(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            $filters = $data['filters'] ?? [];
+            $format = $data['format'] ?? 'csv';
+            
+            $exportData = $this->userActivityService->exportActivities($filters, $format);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $exportData,
+                'format' => $format,
+                'generated_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de l\'export des activités',
                 'message' => $e->getMessage()
             ], 500);
         }

@@ -49,7 +49,7 @@ class GenerateTestAuditLogsCommand extends Command
                 'create_menu' => 'Création d\'un nouveau menu',
                 'update_dish' => 'Modification d\'un plat',
                 'delete_item' => 'Suppression d\'un élément',
-                'login_attempt' => 'Tentative de connexion',
+                'create_error_scenarios' => 'Génération de scénarios d\'erreur',
                 'security_change' => 'Modification des paramètres de sécurité'
             ];
 
@@ -75,8 +75,8 @@ class GenerateTestAuditLogsCommand extends Command
                     case 'delete_item':
                         $this->deleteTestItem();
                         break;
-                    case 'login_attempt':
-                        $this->simulateLoginAttempt($users[array_rand($users)]);
+                    case 'create_error_scenarios':
+                        $this->generateErrorScenarios();
                         break;
                     case 'security_change':
                         $this->updateSecuritySettings($users[array_rand($users)]);
@@ -106,7 +106,7 @@ class GenerateTestAuditLogsCommand extends Command
             $user->setEmail("test$i@joodkitchen.ma");
             $user->setNom("Test$i");
             $user->setPrenom("User");
-            $user->setTelephone("06123456" . str_pad($i, 2, '0', STR_PAD_LEFT)); // Add required phone
+            $user->setTelephone("0612345" . str_pad($i, 3, '0', STR_PAD_LEFT)); // Fixed phone format
             $user->setPassword('$2y$13$test.password.hash'); // Dummy hash
             $user->setRoles(['ROLE_USER']);
             $user->setIsActive(true);
@@ -123,7 +123,7 @@ class GenerateTestAuditLogsCommand extends Command
         $user->setEmail('admin.test' . time() . '@joodkitchen.ma');
         $user->setNom('AdminTest');
         $user->setPrenom('Generated');
-        $user->setTelephone('0612345678'); // Add required phone
+        $user->setTelephone('0612' . str_pad(time() % 1000000, 6, '0', STR_PAD_LEFT)); // Properly formatted phone number
         $user->setPassword('$2y$13$test.admin.password.hash');
         $user->setRoles(['ROLE_ADMIN']);
         $user->setIsActive(true);
@@ -184,6 +184,62 @@ class GenerateTestAuditLogsCommand extends Command
         if (!empty($testMenus)) {
             $this->entityManager->remove($testMenus[0]);
             $this->entityManager->flush();
+        }
+    }
+
+    private function generateErrorScenarios(): void
+    {
+        // Scenario 1: Create and delete items (generates warning/error level logs)
+        $testMenu = new Menu();
+        $testMenu->setNom('Menu à Supprimer ' . date('H:i:s'));
+        $testMenu->setDescription('Menu créé pour être supprimé');
+        $testMenu->setDate(new \DateTime());
+        $testMenu->setActif(false);
+
+        $this->entityManager->persist($testMenu);
+        $this->entityManager->flush();
+
+        // Wait a moment then delete it
+        usleep(50000);
+        $this->entityManager->remove($testMenu);
+        $this->entityManager->flush();
+
+        // Scenario 2: Modify and then revert changes (multiple operations)
+        $users = $this->entityManager->getRepository(User::class)->findBy([], [], 2);
+        foreach ($users as $user) {
+            $originalName = $user->getPrenom();
+            
+            // First modification
+            $user->setPrenom($originalName . ' [MODIFIÉ]');
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+            
+            usleep(10000); // Small delay
+            
+            // Revert modification (appears as another change)
+            $user->setPrenom($originalName);
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
+
+        // Scenario 3: Role changes (security-related operations)
+        if (!empty($users)) {
+            $user = $users[0];
+            $currentRoles = $user->getRoles();
+            
+            // Add a role
+            if (!in_array('ROLE_KITCHEN', $currentRoles)) {
+                $user->setRoles(array_merge($currentRoles, ['ROLE_KITCHEN']));
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+                
+                usleep(10000);
+                
+                // Remove the role (security change)
+                $user->setRoles($currentRoles);
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+            }
         }
     }
 

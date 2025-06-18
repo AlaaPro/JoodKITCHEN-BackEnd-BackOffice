@@ -537,3 +537,13 @@ Stack trace:
 #1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_logs_api.php(19): Symfony\Component\DependencyInjection\Container->get('App\\Service\\Log...')
 #2 {main}
   thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\symfony\dependency-injection\Container.php on line 249
+[18-Jun-2025 11:40:10 UTC] PHP Warning:  Undefined array key "APP_DEBUG" in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_activities_api.php on line 16
+[18-Jun-2025 11:53:26 UTC] PHP Fatal error:  Uncaught Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException: The "App\Service\LogSystemService" service or alias has been removed or inlined when the container was compiled. You should either make it public, or stop using the container directly and use dependency injection instead. in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\symfony\dependency-injection\Container.php:249
+Stack trace:
+#0 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\symfony\dependency-injection\Container.php(211): Symfony\Component\DependencyInjection\Container::make(Object(Container0zRyPMb\App_KernelDevDebugContainer), 'App\\Service\\Log...', 1)
+#1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_recent_errors.php(14): Symfony\Component\DependencyInjection\Container->get('App\\Service\\Log...')
+#2 {main}
+  thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\symfony\dependency-injection\Container.php on line 249
+[18-Jun-2025 12:30:19 UTC] [critical] Error thrown while running command ""server:status"". Message: "There are no commands defined in the "server" namespace.
+
+You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."

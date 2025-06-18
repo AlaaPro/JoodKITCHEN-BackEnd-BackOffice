@@ -280,6 +280,22 @@ class AdminController extends AbstractController
         return $this->render('admin/system/backup.html.twig');
     }
 
+    #[Route('/system/user-activities', name: 'admin_system_user_activities', methods: ['GET'])]
+    public function systemUserActivities(): Response
+    {
+        return $this->render('admin/system/user-activities.html.twig', [
+            'page_title' => 'Activités Utilisateurs',
+            'api_endpoints' => [
+                'stats' => $this->generateUrl('api_admin_activities_stats'),
+                'activities' => $this->generateUrl('api_admin_activities'),
+                'recent' => $this->generateUrl('api_admin_activities_recent'),
+                'distribution' => $this->generateUrl('api_admin_activities_distribution'),
+                'profiles' => $this->generateUrl('api_admin_activities_profiles'),
+                'export' => $this->generateUrl('api_admin_activities_export')
+            ]
+        ]);
+    }
+
     /**
      * Search functionality
      */

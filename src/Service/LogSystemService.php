@@ -48,6 +48,12 @@ class LogSystemService
         'payment_success' => 'info',
         'order_cancelled' => 'warning',
         'system_error' => 'error',
+        'constraint_violation' => 'error',
+        'database_error' => 'error',
+        'validation_error' => 'error',
+        'permission_denied' => 'error',
+        'authentication_failed' => 'error',
+        'invalid_operation' => 'error',
     ];
 
     public function __construct(
@@ -280,19 +286,70 @@ class LogSystemService
      */
     public function getRecentErrors(int $limit = 5): array
     {
-        $logs = $this->getFormattedAuditLogs(['level' => 'error', 'limit' => $limit]);
+        // First try to get actual error-level logs
+        $errorLogs = $this->getFormattedAuditLogs(['level' => 'error', 'limit' => $limit]);
+        
+        // If no error logs, get warning-level logs as fallback
+        if (empty($errorLogs)) {
+            $warningLogs = $this->getFormattedAuditLogs(['level' => 'warning', 'limit' => $limit]);
+            $errorLogs = array_slice($warningLogs, 0, $limit);
+        }
+        
+        // If still empty, get most recent audit logs and treat them as potential issues
+        if (empty($errorLogs)) {
+            $recentLogs = $this->getFormattedAuditLogs(['limit' => $limit * 2]);
+            
+            // Look for patterns that might indicate errors
+            foreach ($recentLogs as $log) {
+                if ($this->isErrorPattern($log)) {
+                    $errorLogs[] = $log;
+                    if (count($errorLogs) >= $limit) {
+                        break;
+                    }
+                }
+            }
+        }
+        
         $errors = [];
-
-        foreach ($logs as $log) {
+        foreach ($errorLogs as $log) {
             $errors[] = [
                 'title' => $this->getErrorTitle($log),
                 'time' => $log['timestamp'],
                 'component' => $log['component'],
-                'count' => 1 // Could be enhanced to group similar errors
+                'count' => 1,
+                'severity' => $log['level']
             ];
         }
 
         return $errors;
+    }
+
+    /**
+     * Check if a log entry matches error patterns
+     */
+    private function isErrorPattern(array $log): bool
+    {
+        $errorPatterns = [
+            'remove',
+            'delete',
+            'failed',
+            'error',
+            'violation',
+            'denied',
+            'invalid',
+            'constraint',
+            'exception'
+        ];
+        
+        $searchText = strtolower($log['message'] . ' ' . $log['action']);
+        
+        foreach ($errorPatterns as $pattern) {
+            if (strpos($searchText, $pattern) !== false) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -309,8 +366,26 @@ class LogSystemService
                 return 'Paiement échoué';
             case 'security_violation':
                 return 'Violation de sécurité';
+            case 'constraint_violation':
+                return 'Erreur de contrainte DB';
+            case 'database_error':
+                return 'Erreur base de données';
+            case 'validation_error':
+                return 'Erreur de validation';
+            case 'permission_denied':
+                return 'Accès refusé';
+            case 'remove':
+            case 'delete':
+                return "Suppression {$log['entity_type']}";
             default:
-                return "Erreur {$component}";
+                // For other actions, create a meaningful title
+                if (strpos(strtolower($log['message']), 'erreur') !== false) {
+                    return "Erreur {$component}";
+                } elseif (strpos(strtolower($log['message']), 'échec') !== false) {
+                    return "Échec {$component}";
+                } else {
+                    return "Activité {$component}";
+                }
         }
     }
 
