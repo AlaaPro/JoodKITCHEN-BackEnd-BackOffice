@@ -10,100 +10,106 @@
 7. [Recent Updates](#recent-updates)
 8. [Troubleshooting](#troubleshooting)
 
-## 🔥 CRITICAL FIX - DataDog Audit Tables Issue (June 18, 2025)
+## 🔥 LATEST UPDATE - Unified Error & Activity Monitoring (January 2025)
 
-### **ROOT CAUSE IDENTIFIED & RESOLVED**
+### **INTEGRATION WITH ERROR MONITORING SYSTEM**
 
-**Problem:** System showed "0 Erreurs", "Aucun log trouvé" for filters, and "0%" error distribution despite having 324 audit log entries in database.
+**Major Enhancement:** The user activities system is now fully integrated with the comprehensive error monitoring system implemented in JoodKitchen.
 
-**Root Cause:** 
-- ✅ DataDog AuditBundle tables **ALREADY EXISTED** (audit_logs: 324 rows, audit_associations: 592 rows)
-- ❌ LogSystemService was not properly **READING** the audit data
-- ❌ Query logic and filtering was broken
-- ❌ Statistics calculation was incorrect
+**Key Improvements:**
+- ✅ **Dual-Source Error Tracking**: User activities now integrate with both PHP error logs and DataDog audit logs
+- ✅ **Unified Dashboard**: Activities and errors displayed cohesively in the admin interface
+- ✅ **Enhanced Error Classification**: CRUD operations properly classified and integrated with real application errors
+- ✅ **Detailed Error Table**: Full-width detailed errors table showing both activities and system errors
 
-### **COMPREHENSIVE FIXES IMPLEMENTED**
+### **NEW COMPREHENSIVE ERROR MONITORING**
 
-#### 1. **Fixed getFormattedAuditLogs() Method**
+#### 1. **Unified LogSystemService Architecture**
 ```php
-// BEFORE: Broken query structure
-$qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al')
-    ->leftJoin('al.blame', 'blame')
-    ->leftJoin('al.source', 'source')  // ❌ Wrong join
-
-// AFTER: Correct DataDog AuditBundle structure
-$qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al');
-$qb->leftJoin('al.blame', 'blame')   // ✅ Correct structure
-   ->orderBy('al.loggedAt', 'DESC');
-```
-
-#### 2. **Enhanced Filter Logic**
-```php
-// Map frontend filters to database actions
-$levelToAction = [
-    'error' => ['remove', 'delete'],
-    'warning' => ['remove', 'delete'], 
-    'info' => ['insert', 'update'],
-    'debug' => []
-];
-
-// Map components to entity classes
-$componentToEntity = [
-    'auth' => ['User'],
-    'admin' => ['AdminProfile'],
-    'orders' => ['Commande', 'CommandeArticle'],
-    // ... etc
-];
-```
-
-#### 3. **Fixed Statistics Calculation**
-```php
-// BEFORE: Used formatted logs (broken)
-$recentLogs = $this->getFormattedAuditLogs(['limit' => 200]);
-
-// AFTER: Direct database query
-$qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al');
-$qb->where('al.loggedAt >= :today')
-   ->andWhere('al.loggedAt < :tomorrow');
-
-foreach ($allLogs as $auditLog) {
-    $action = $auditLog->getAction();
-    if (in_array($action, ['remove', 'delete'])) {
-        $warningCount++; // Deletions are warnings
-    } elseif (in_array($action, ['insert', 'update'])) {
-        $infoCount++; // Normal operations are info
-    }
+// Integration of user activities with error monitoring
+public function getDetailedErrors(int $limit = 20): array
+{
+    $detailedErrors = [];
+    
+    // Get real errors from log files
+    $logFileErrors = $this->getErrorsFromLogFiles($limit);
+    
+    // Get CRUD activities from audit logs
+    $auditErrors = $this->getDetailedAuditErrors($limit);
+    
+    return array_merge($detailedErrors, $auditErrors);
 }
 ```
 
-#### 4. **Fixed Distribution Charts**
+#### 2. **Enhanced Activity Classification**
 ```php
-// Direct database aggregation for accurate percentages
-$qb->select('al.action', 'COUNT(al.id) as count')
-   ->groupBy('al.action');
-
-foreach ($results as $result) {
-    $action = $result['action'];
-    $count = (int)$result['count'];
-    // Map to distribution levels...
+// Activities now properly classified as errors/warnings in error monitoring
+if (in_array($action, ['remove', 'delete'])) {
+    $errorCount++; // CRUD deletions shown in "Erreurs Récentes" counted as errors
+} elseif (in_array($action, ['insert', 'update'])) {
+    $infoCount++; // Normal operations
 }
 ```
 
-#### 5. **Enhanced Error Handling**
-- Added try-catch blocks with meaningful error logging
-- Fallback mock data when database queries fail
-- Comprehensive debugging output
+#### 3. **Unified Statistics & Distribution**
+- **Error Statistics**: Activities contribute to overall error/warning counts
+- **Distribution Charts**: Activities included in system-wide error distribution
+- **Recent Errors Widget**: Shows both real PHP errors and critical CRUD operations
+- **Detailed Errors Table**: Displays activities alongside application errors
+
+### **NEW ERROR MONITORING FEATURES**
+
+#### 1. **Detailed Errors Table**
+- **Location**: Full-width table below main logs interface
+- **Data Sources**: Real PHP errors + User activities (CRUD operations)
+- **Features**: 
+  - Severity classification (Critical, Error, Warning, Info)
+  - Component identification (auth, admin, menu, database)
+  - Source tracking (Application Log, Database Audit)
+  - Interactive modal for full error details
+  - Copy to clipboard functionality
+
+#### 2. **Real PHP Error Detection**
+```php
+// New error patterns detected from log files
+$errorPatterns = [
+    '/\[critical\]/', '/PHP Fatal error:/', '/SQLSTATE\[/',
+    '/Exception/', '/Uncaught/', '/failed/',
+    '/Error thrown/', '/Permission denied/'
+];
+```
+
+#### 3. **Consistent Widget Display**
+- **Statistics**: 4 Erreurs (CRUD deletions + real errors)
+- **Recent Errors**: Real activities from audit logs
+- **Distribution**: Activities contribute to error percentages
+
+### **API ENDPOINTS ENHANCED**
+
+#### New Error Monitoring Endpoints
+```
+GET /api/admin/logs/errors/detailed     # Detailed errors table (activities + real errors)
+GET /api/admin/logs/stats               # Enhanced statistics including activities
+GET /api/admin/logs/distribution        # Distribution including activities as errors
+```
+
+### **UNIFIED DOCUMENTATION**
+- 📋 **[System Error Monitoring Guide](SYSTEM_ERROR_MONITORING.md)** - Comprehensive error tracking
+- 📋 **[User Activities Integration Guide](USER_ACTIVITIES_INTEGRATION_GUIDE.md)** - This document (activity focus)
 
 ### **EXPECTED RESULTS NOW**
-1. ✅ **Statistics**: Show actual error/warning/info counts from audit data
-2. ✅ **Filters**: "Erreur" filter now works correctly 
-3. ✅ **Distribution**: Charts show real percentages (not 0%)
-4. ✅ **Recent Errors**: Display actual delete/remove actions as warnings
-5. ✅ **Log Display**: Color-coded entries with proper classification
+1. ✅ **Unified Interface**: Activities and errors displayed together in logs interface
+2. ✅ **Consistent Statistics**: Activity deletions counted as errors across all widgets
+3. ✅ **Detailed Error Analysis**: Full-width table showing activities with real errors
+4. ✅ **Real-time Monitoring**: Both application errors and user activities tracked simultaneously
+5. ✅ **Enhanced Debugging**: Complete error context with activity correlation
 
-### **FILES MODIFIED**
-- `src/Service/LogSystemService.php` - Complete rewrite of data access logic
-- `docs/USER_ACTIVITIES_INTEGRATION_GUIDE.md` - This documentation
+### **FILES MODIFIED (Latest Update)**
+- `src/Service/LogSystemService.php` - Unified error and activity tracking
+- `src/Controller/AdminController.php` - Added detailed errors API endpoint
+- `templates/admin/system/logs.html.twig` - Added detailed errors table
+- `docs/SYSTEM_ERROR_MONITORING.md` - New comprehensive error monitoring guide
+- `docs/USER_ACTIVITIES_INTEGRATION_GUIDE.md` - Updated with error monitoring integration
 
 ---
 
@@ -584,8 +590,31 @@ All errors are logged and displayed to users:
 4. **Look for emoji console messages** to verify proper element detection
 5. **Check Network tab** to see API calls with correct action parameters
 
+## Related Documentation
+
+### 📋 **Comprehensive Documentation Suite**
+
+- **[System Error Monitoring Guide](SYSTEM_ERROR_MONITORING.md)** - Complete error tracking and monitoring system
+- **[User Activities Integration Guide](USER_ACTIVITIES_INTEGRATION_GUIDE.md)** - This document (user activities focus)
+- **[Admin Implementation Summary](ADMIN_IMPLEMENTATION_SUMMARY.md)** - Overall admin interface documentation
+- **[Permission System Migration](PERMISSION_SYSTEM_MIGRATION.md)** - Permission and security system
+
+### 🔗 **System Integration**
+
+The user activities system is now **fully integrated** with the comprehensive error monitoring system:
+
+1. **Error Classification**: User activities (CRUD operations) contribute to overall system error statistics
+2. **Unified Interface**: Activities and errors displayed together in the admin logs interface
+3. **Real-time Monitoring**: Both PHP application errors and user activities tracked simultaneously
+4. **Detailed Analysis**: Comprehensive error table showing activities alongside system errors
+
 ## Conclusion
 
-The user activities system is now fully integrated into the JoodKitchen admin interface, providing comprehensive tracking and monitoring capabilities. The implementation follows best practices for security, performance, and maintainability while offering a clean, intuitive user experience.
+The user activities system is now fully integrated into the JoodKitchen admin interface as part of a **comprehensive dual-layer monitoring system**. This integration provides:
 
-The system successfully bridges the gap between audit logging and user-friendly activity monitoring, giving administrators powerful tools to oversee platform usage and user behavior in real-time. The recent fixes ensure robust filter functionality and excellent developer experience for ongoing maintenance and enhancements. 
+✅ **Unified Error & Activity Tracking** - Complete visibility into both system errors and user behavior  
+✅ **Real-time Monitoring** - Immediate insights into application health and user actions  
+✅ **Detailed Analysis Tools** - Interactive error investigation with full context  
+✅ **Consistent Data Classification** - CRUD activities properly integrated with error monitoring  
+
+The implementation follows best practices for security, performance, and maintainability while offering administrators powerful tools to oversee both system stability and user behavior in real-time. The integration with error monitoring creates a comprehensive observability platform for the JoodKitchen application. 

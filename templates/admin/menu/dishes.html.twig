@@ -40,7 +40,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">42</div>
+                        <div class="widget-value stat-total">0</div>
                         <div class="widget-label">Total Plats</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -56,7 +56,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">38</div>
+                        <div class="widget-value stat-available">0</div>
                         <div class="widget-label">Disponibles</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -72,7 +72,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">4</div>
+                        <div class="widget-value stat-unavailable">0</div>
                         <div class="widget-label">En rupture</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -88,7 +88,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">18.50€</div>
+                        <div class="widget-value stat-average-price">0€</div>
                         <div class="widget-label">Prix moyen</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -135,8 +135,10 @@
 
 <!-- Dishes Grid -->
 <div id="dishesContainer">
-    <!-- Grid View -->
-    <div id="gridView" class="row g-4">
+    <!-- Loading state -->
+    <div class="text-center p-4 text-muted">
+        <i class="fas fa-spinner fa-spin"></i> Chargement des plats...
+    </div>
         <!-- Dish Card 1 -->
         <div class="col-lg-4 col-md-6 dish-card" data-category="plats" data-status="available">
             <div class="card h-100">
@@ -390,49 +392,80 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addDishForm">
+                <form id="dishForm">
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label">Nom du plat *</label>
-                            <input type="text" class="form-control" placeholder="Ex: Couscous Royal">
+                            <input type="text" class="form-control" name="nom" placeholder="Ex: Couscous Royal" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Prix (€) *</label>
-                            <input type="number" class="form-control" step="0.10" placeholder="16.90">
+                            <input type="number" class="form-control" name="prix" step="0.10" placeholder="16.90" required>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" placeholder="Description du plat..."></textarea>
+                            <textarea class="form-control" name="description" rows="3" placeholder="Description du plat..."></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Catégorie</label>
-                            <select class="form-select">
+                            <select class="form-select" name="categoryId">
                                 <option value="">Sélectionner...</option>
-                                <option value="entrees">Entrées</option>
-                                <option value="plats">Plats principaux</option>
-                                <option value="desserts">Desserts</option>
-                                <option value="boissons">Boissons</option>
+                                <!-- Options will be populated by DishManager -->
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Statut</label>
-                            <select class="form-select">
-                                <option value="available">Disponible</option>
-                                <option value="unavailable">Indisponible</option>
-                                <option value="out_of_stock">En rupture</option>
-                            </select>
+                            <label class="form-label">Temps de préparation (min)</label>
+                            <input type="number" class="form-control" name="tempsPreparation" placeholder="30">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Allergènes</label>
+                            <input type="text" class="form-control" name="allergenes" placeholder="Gluten, Lactose...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ingrédients principaux</label>
+                            <input type="text" class="form-control" name="ingredients" placeholder="Agneau, Légumes...">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Image du plat</label>
-                            <input type="file" class="form-control" accept="image/*">
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                        </div>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="disponible" id="dishAvailable" checked>
+                                        <label class="form-check-label" for="dishAvailable">
+                                            <i class="fas fa-check-circle text-success"></i> Disponible
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="populaire" id="dishPopular">
+                                        <label class="form-check-label" for="dishPopular">
+                                            <i class="fas fa-star text-warning"></i> Populaire
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="vegetarien" id="dishVegetarian">
+                                        <label class="form-check-label" for="dishVegetarian">
+                                            <i class="fas fa-leaf text-success"></i> Végétarien
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Créer le plat
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="btn btn-primary" id="saveDishBtn">
+                    <i class="fas fa-save"></i> Enregistrer
                 </button>
             </div>
         </div>
@@ -441,122 +474,92 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // View toggle functionality
-    const gridViewBtn = document.getElementById('gridViewBtn');
-    const listViewBtn = document.getElementById('listViewBtn');
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    
-    gridViewBtn.addEventListener('click', function() {
-        gridView.classList.remove('d-none');
-        listView.classList.add('d-none');
-        gridViewBtn.classList.add('active');
-        listViewBtn.classList.remove('active');
-    });
-    
-    listViewBtn.addEventListener('click', function() {
-        listView.classList.remove('d-none');
-        gridView.classList.add('d-none');
-        listViewBtn.classList.add('active');
-        gridViewBtn.classList.remove('active');
-    });
-    
-    // Set default active view
-    gridViewBtn.classList.add('active');
-    
-    // Filter functionality
-    const categoryFilter = document.getElementById('categoryFilter');
-    const statusFilter = document.getElementById('statusFilter');
-    const searchInput = document.getElementById('searchInput');
-    const clearFilters = document.getElementById('clearFilters');
-    
-    function filterDishes() {
-        const dishes = document.querySelectorAll('.dish-card');
-        const categoryValue = categoryFilter.value;
-        const statusValue = statusFilter.value;
-        const searchValue = searchInput.value.toLowerCase();
-        
-        dishes.forEach(dish => {
-            let show = true;
-            
-            // Category filter
-            if (categoryValue && dish.dataset.category !== categoryValue) {
-                show = false;
-            }
-            
-            // Status filter
-            if (statusValue && dish.dataset.status !== statusValue) {
-                show = false;
-            }
-            
-            // Search filter
-            if (searchValue) {
-                const dishName = dish.querySelector('.card-title').textContent.toLowerCase();
-                if (!dishName.includes(searchValue)) {
-                    show = false;
-                }
-            }
-            
-            dish.style.display = show ? 'block' : 'none';
-        });
-    }
-    
-    categoryFilter.addEventListener('change', filterDishes);
-    statusFilter.addEventListener('change', filterDishes);
-    searchInput.addEventListener('input', filterDishes);
-    
-    clearFilters.addEventListener('click', function() {
-        categoryFilter.value = '';
-        statusFilter.value = '';
-        searchInput.value = '';
-        filterDishes();
-    });
-    
-    // Dish creation form
-    document.querySelector('#addDishModal .btn-primary').addEventListener('click', function() {
-        const form = document.getElementById('addDishForm');
-        const formData = new FormData(form);
-        
-        // Show loading state
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
-        this.disabled = true;
-        
-        // Simulate dish creation
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-check"></i> Plat créé!';
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('addDishModal')).hide();
-                this.innerHTML = '<i class="fas fa-save"></i> Créer le plat';
-                this.disabled = false;
-                form.reset();
-                
-                // Show success notification
-                showNotification('Plat créé avec succès!', 'success');
-            }, 1500);
-        }, 2000);
-    });
-    
-    function showNotification(message, type) {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        toast.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-            </div>
-        `;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
-            }
-        }, 5000);
-    }
-});
-</script>
+<!-- Menu API -->
+<script src="{{ asset('js/admin/managers/menu-api.js') }}"></script>
+<!-- Dish Manager -->
+<script src="{{ asset('js/admin/managers/dish-manager.js') }}"></script>
+
+<style>
+/* Dish card enhancements */
+.dish-card {
+    transition: all 0.3s ease;
+}
+
+.dish-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* View toggle buttons */
+.btn-group .btn.active {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+    color: white;
+}
+
+/* Filter enhancements */
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--jood-primary);
+    box-shadow: 0 0 0 0.2rem rgba(169, 183, 62, 0.25);
+}
+
+/* Loading state */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form enhancements */
+.form-check-label {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+}
+
+/* Badge styles */
+.badge.jood-primary-bg {
+    background-color: var(--jood-primary) !important;
+}
+
+.badge.jood-warning-bg {
+    background-color: #f39c12 !important;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.card:hover {
+    border-color: var(--jood-primary);
+    box-shadow: 0 4px 12px rgba(169, 183, 62, 0.15);
+}
+
+/* List view enhancements */
+.table-hover tbody tr:hover {
+    background-color: rgba(169, 183, 62, 0.05);
+}
+
+.table th {
+    border-top: none;
+    background-color: var(--jood-primary);
+    color: white;
+    font-weight: 600;
+}
+</style>
 {% endblock %} 

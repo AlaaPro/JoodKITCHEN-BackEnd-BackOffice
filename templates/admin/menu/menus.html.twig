@@ -40,7 +40,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">12</div>
+                        <div class="widget-value">0</div>
                         <div class="widget-label">Menus actifs</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -56,7 +56,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">3</div>
+                        <div class="widget-value">0</div>
                         <div class="widget-label">Menus du jour</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -72,7 +72,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">28.50€</div>
+                        <div class="widget-value">0.00€</div>
                         <div class="widget-label">Prix moyen</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -88,7 +88,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">156</div>
+                        <div class="widget-value">0</div>
                         <div class="widget-label">Commandes</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -137,6 +137,10 @@
             <!-- All Menus Tab -->
             <div class="tab-pane fade show active" id="all" role="tabpanel">
                 <div class="row g-4" id="menusGrid">
+                    <!-- Loading state -->
+                    <div class="col-12 text-center p-4 text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> Chargement des menus...
+                    </div>
                     <!-- Menu Card 1 -->
                     <div class="col-lg-6 col-xl-4">
                         <div class="card h-100">
@@ -349,50 +353,71 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addMenuForm">
+                <form id="menuForm">
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label">Nom du menu *</label>
-                            <input type="text" class="form-control" placeholder="Ex: Menu Royal">
+                            <input type="text" class="form-control" name="nom" placeholder="Ex: Menu Royal" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Prix (€) *</label>
-                            <input type="number" class="form-control" step="0.10" placeholder="35.90">
+                            <input type="number" class="form-control" name="prix" step="0.10" placeholder="35.90" required>
                         </div>
                         <div class="col-12">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" placeholder="Description du menu..."></textarea>
+                            <textarea class="form-control" name="description" rows="3" placeholder="Description du menu..."></textarea>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Catégorie</label>
-                            <select class="form-select">
-                                <option value="">Sélectionner...</option>
-                                <option value="dejeuner">Déjeuner</option>
-                                <option value="diner">Dîner</option>
+                            <label class="form-label">Type de menu</label>
+                            <select class="form-select" name="type">
+                                <option value="normal">Menu normal</option>
+                                <option value="menu_du_jour">Menu du jour</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tag/Cuisine</label>
+                            <select class="form-select" name="tag">
+                                <option value="">Aucun tag</option>
+                                <option value="marocain">Marocain</option>
+                                <option value="italien">Italien</option>
+                                <option value="international">International</option>
                                 <option value="familial">Familial</option>
                                 <option value="decouverte">Découverte</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Disponibilité</label>
-                            <select class="form-select">
-                                <option value="always">Toujours disponible</option>
-                                <option value="lunch">Déjeuner uniquement</option>
-                                <option value="dinner">Dîner uniquement</option>
-                                <option value="weekend">Week-end uniquement</option>
+                            <label class="form-label">Jour de la semaine</label>
+                            <select class="form-select" name="jourSemaine">
+                                <option value="">Aucun (menu permanent)</option>
+                                <option value="dejeuner">Déjeuner</option>
+                                <option value="diner">Dîner</option>
                             </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date spécifique</label>
+                            <input type="date" class="form-control" name="date">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Image du menu</label>
-                            <input type="file" class="form-control" accept="image/*">
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="actif" id="menuActive" checked>
+                                <label class="form-check-label" for="menuActive">
+                                    <i class="fas fa-toggle-on text-success"></i> Menu actif
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Créer le menu
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="btn btn-primary" id="saveMenuBtn">
+                    <i class="fas fa-save"></i> Enregistrer
                 </button>
             </div>
         </div>
@@ -401,61 +426,116 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Filter menus by category
-    const tabButtons = document.querySelectorAll('#menuTabs button[data-bs-toggle="tab"]');
-    tabButtons.forEach(button => {
-        button.addEventListener('shown.bs.tab', function(event) {
-            const targetTab = event.target.getAttribute('data-bs-target');
-            console.log('Switched to tab:', targetTab);
-            // Here you would filter the menus based on category
-        });
-    });
-    
-    // Menu creation form
-    document.querySelector('#addMenuModal .btn-primary').addEventListener('click', function() {
-        const form = document.getElementById('addMenuForm');
-        const formData = new FormData(form);
-        
-        // Show loading state
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
-        this.disabled = true;
-        
-        // Simulate menu creation
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-check"></i> Menu créé!';
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('addMenuModal')).hide();
-                this.innerHTML = '<i class="fas fa-save"></i> Créer le menu';
-                this.disabled = false;
-                form.reset();
-                
-                // Show success notification
-                showNotification('Menu créé avec succès!', 'success');
-            }, 1500);
-        }, 2000);
-    });
-    
-    function showNotification(message, type) {
-        const toast = document.createElement('div');
-        toast.className = `alert alert-${type} position-fixed`;
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        toast.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-            </div>
-        `;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            if (toast.parentElement) {
-                toast.remove();
-            }
-        }, 5000);
-    }
-});
-</script>
+<!-- Menu API -->
+<script src="{{ asset('js/admin/managers/menu-api.js') }}"></script>
+<!-- Menu Manager -->
+<script src="{{ asset('js/admin/managers/menu-manager.js') }}"></script>
+
+<style>
+/* Menu card enhancements */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--jood-primary);
+    box-shadow: 0 8px 25px rgba(169, 183, 62, 0.15);
+}
+
+/* Tab navigation */
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--jood-dark);
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--jood-primary);
+    color: white;
+    border-color: var(--jood-primary);
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    background-color: rgba(169, 183, 62, 0.1);
+}
+
+/* Badge styles */
+.badge.jood-primary-bg {
+    background-color: var(--jood-primary) !important;
+}
+
+.badge.jood-secondary-bg {
+    background-color: var(--jood-secondary) !important;
+}
+
+.badge.jood-info-bg {
+    background-color: #17a2b8 !important;
+}
+
+.badge.jood-warning-bg {
+    background-color: #f39c12 !important;
+}
+
+/* Menu composition styling */
+.menu-items .badge {
+    min-width: 70px;
+    text-align: center;
+}
+
+/* Form enhancements */
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--jood-primary);
+    box-shadow: 0 0 0 0.2rem rgba(169, 183, 62, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Widget cards */
+.jood-widget-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.widget-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.widget-label {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+</style>
 {% endblock %} 

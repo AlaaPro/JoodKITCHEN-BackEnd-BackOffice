@@ -62,10 +62,15 @@ class Plat
     #[Groups(['plat:read', 'plat:write', 'menu:read', 'commande_article:read'])]
     private ?string $prix = '0.00';
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
+    // Legacy string category field - deprecated in favor of Category entity
+    #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['plat:read', 'plat:write', 'menu:read'])]
     private ?string $categorie = null;
+
+    // New Category entity relationship
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'plats')]
+    #[Groups(['plat:read', 'plat:write', 'menu:read'])]
+    private ?Category $category = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['plat:read', 'plat:write', 'menu:read'])]
@@ -164,9 +169,20 @@ class Plat
         return $this->categorie;
     }
 
-    public function setCategorie(string $categorie): static
+    public function setCategorie(?string $categorie): static
     {
         $this->categorie = $categorie;
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
         return $this;
     }
 
