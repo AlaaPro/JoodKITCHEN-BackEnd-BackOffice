@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Service\LogSystemService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,9 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 #[Route('/admin')]
 class AdminController extends AbstractController
 {
+    public function __construct(
+        private LogSystemService $logSystemService
+    ) {}
     /**
      * Admin login page
      */
@@ -248,7 +252,20 @@ class AdminController extends AbstractController
     #[Route('/system/logs', name: 'admin_system_logs', methods: ['GET'])]
     public function systemLogs(): Response
     {
-        return $this->render('admin/system/logs.html.twig');
+        // The template will load data dynamically via JavaScript API calls
+        // but we can pass some initial metadata if needed
+        return $this->render('admin/system/logs.html.twig', [
+            'page_title' => 'Logs Système',
+            'api_endpoints' => [
+                'stats' => $this->generateUrl('api_admin_logs_stats'),
+                'logs' => $this->generateUrl('api_admin_logs'),
+                'recent' => $this->generateUrl('api_admin_logs_recent'),
+                'errors' => $this->generateUrl('api_admin_logs_errors'),
+                'distribution' => $this->generateUrl('api_admin_logs_distribution'),
+                'health' => $this->generateUrl('api_admin_system_health'),
+                'export' => $this->generateUrl('api_admin_logs_export')
+            ]
+        ]);
     }
 
     #[Route('/system/cache', name: 'admin_system_cache', methods: ['GET'])]

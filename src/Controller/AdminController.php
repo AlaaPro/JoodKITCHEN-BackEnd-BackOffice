@@ -7,6 +7,7 @@ use App\Entity\AdminProfile;
 use App\Entity\Permission;
 use App\Entity\Role;
 use App\Service\PermissionService;
+use App\Service\LogSystemService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class AdminController extends AbstractController
 {
     public function __construct(
-        private PermissionService $permissionService
+        private PermissionService $permissionService,
+        private LogSystemService $logSystemService
     ) {}
 
     #[Route('/api/admin/create-user', name: 'api_admin_create_user', methods: ['POST'])]
@@ -965,6 +967,183 @@ class AdminController extends AbstractController
         } else {
             $explanation[] = "User has delete_admin but lacks manage_admins permission";
             return ['allowed' => false, 'reasons' => $explanation];
+        }
+    }
+
+    // ============================================
+    // LOG SYSTEM API ENDPOINTS
+    // ============================================
+
+    #[Route('/api/admin/logs/stats', name: 'api_admin_logs_stats', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getLogStatistics(): JsonResponse
+    {
+        try {
+            $stats = $this->logSystemService->getLogStatistics();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des statistiques',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/logs', name: 'api_admin_logs', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getLogs(Request $request): JsonResponse
+    {
+        try {
+            $filters = [];
+            
+            // Extract filters from query parameters
+            if ($request->query->has('level')) {
+                $filters['level'] = $request->query->get('level');
+            }
+            if ($request->query->has('component')) {
+                $filters['component'] = $request->query->get('component');
+            }
+            if ($request->query->has('dateStart')) {
+                $filters['dateStart'] = $request->query->get('dateStart');
+            }
+            if ($request->query->has('dateEnd')) {
+                $filters['dateEnd'] = $request->query->get('dateEnd');
+            }
+            if ($request->query->has('limit')) {
+                $filters['limit'] = (int)$request->query->get('limit');
+            }
+            
+            $logs = $this->logSystemService->getFormattedAuditLogs($filters);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $logs,
+                'count' => count($logs)
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des logs',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/logs/recent', name: 'api_admin_logs_recent', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getRecentLogs(Request $request): JsonResponse
+    {
+        try {
+            $limit = (int)($request->query->get('limit', 20));
+            $since = $request->query->get('since'); // timestamp for updates since last check
+            
+            $filters = ['limit' => $limit];
+            if ($since) {
+                $filters['dateStart'] = date('Y-m-d H:i:s', (int)$since);
+            }
+            
+            $logs = $this->logSystemService->getFormattedAuditLogs($filters);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $logs,
+                'has_updates' => !empty($logs),
+                'last_check' => time()
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des logs récents',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/logs/errors', name: 'api_admin_logs_errors', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getRecentErrors(): JsonResponse
+    {
+        try {
+            $errors = $this->logSystemService->getRecentErrors();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $errors
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des erreurs',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/logs/distribution', name: 'api_admin_logs_distribution', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getLogDistribution(): JsonResponse
+    {
+        try {
+            $distribution = $this->logSystemService->getLogDistribution();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $distribution
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération de la distribution',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/system/health', name: 'api_admin_system_health', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getSystemHealth(): JsonResponse
+    {
+        try {
+            $health = $this->logSystemService->getSystemHealth();
+            return new JsonResponse([
+                'success' => true,
+                'data' => $health
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération de la santé système',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/admin/logs/export', name: 'api_admin_logs_export', methods: ['POST'])]
+    #[IsGranted('export_logs')]
+    public function exportLogs(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            $filters = $data['filters'] ?? [];
+            $format = $data['format'] ?? 'csv';
+            
+            $exportData = $this->logSystemService->exportLogs($filters, $format);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $exportData,
+                'format' => $format,
+                'generated_at' => (new \DateTime())->format('Y-m-d H:i:s')
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de l\'export des logs',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 } 
