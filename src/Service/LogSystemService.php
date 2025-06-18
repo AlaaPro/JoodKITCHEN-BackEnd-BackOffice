@@ -86,8 +86,37 @@ class LogSystemService
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Get error/warning counts from real audit data
+        // Get error/warning counts from REAL LOG FILES + audit data
         try {
+            $errorCount = 0;
+            $warningCount = 0;
+            $infoCount = 0;
+            $debugCount = 0;
+
+            // Count errors from log files (today's errors)
+            $logFileErrors = $this->getErrorsFromLogFiles(100); // Get more for counting
+            foreach ($logFileErrors as $error) {
+                // Check if error is from today
+                try {
+                    $errorDate = new \DateTime($error['timestamp']);
+                    if ($errorDate->format('Y-m-d') === $today->format('Y-m-d')) {
+                        if ($error['severity'] === 'critical' || $error['severity'] === 'error') {
+                            $errorCount++;
+                        } elseif ($error['severity'] === 'warning') {
+                            $warningCount++;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // If timestamp parsing fails, count it as today's error
+                    if ($error['severity'] === 'critical' || $error['severity'] === 'error') {
+                        $errorCount++;
+                    } elseif ($error['severity'] === 'warning') {
+                        $warningCount++;
+                    }
+                }
+            }
+
+            // Also count audit logs for info/debug stats
             $qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al');
             $qb->where('al.loggedAt >= :today')
                ->andWhere('al.loggedAt < :tomorrow')
@@ -96,33 +125,21 @@ class LogSystemService
 
             $allLogs = $qb->getQuery()->getResult();
 
-            $errorCount = 0;
-            $warningCount = 0;
-            $infoCount = 0;
-            $debugCount = 0;
-
             foreach ($allLogs as $auditLog) {
                 $action = $auditLog->getAction();
                 
-                // Classify actions based on their type
                 if (in_array($action, ['remove', 'delete'])) {
-                    $warningCount++; // Deletions are warnings
+                    $errorCount++; // CRUD deletions shown in "Erreurs Récentes" should be counted as errors
                 } elseif (in_array($action, ['insert', 'update'])) {
                     $infoCount++; // Normal operations are info
                 } else {
-                    $debugCount++; // Unknown actions are debug
+                    $debugCount++; // Other actions are debug
                 }
             }
 
-            // If we still have no data, use fallback counts
-            if ($errorCount === 0 && $warningCount === 0 && $infoCount === 0) {
-                $warningCount = max(1, intval($totalToday * 0.1)); // 10% warnings
-                $infoCount = $totalToday - $warningCount;
-            }
-
         } catch (\Exception $e) {
-            // Fallback to basic counts if audit data fails
-            error_log('Error counting audit statistics: ' . $e->getMessage());
+            // Fallback to basic counts if both systems fail
+            error_log('Error counting log statistics: ' . $e->getMessage());
             $warningCount = max(1, intval($totalToday * 0.1));
             $infoCount = $totalToday - $warningCount;
             $errorCount = 0;
@@ -393,42 +410,97 @@ class LogSystemService
      */
     public function getRecentErrors(int $limit = 5): array
     {
-        // Get recent audit logs and look for error patterns
-        $recentLogs = $this->getFormattedAuditLogs(['limit' => $limit * 3]);
-        
         $errors = [];
-        foreach ($recentLogs as $log) {
-            if ($this->isErrorPattern($log)) {
-                $errors[] = [
-                    'title' => $this->getErrorTitle($log),
-                    'time' => $log['timestamp'],
-                    'component' => $log['component'],
-                    'count' => 1,
-                    'severity' => $this->getLogSeverity($log)
-                ];
-                
-                if (count($errors) >= $limit) {
-                    break;
-                }
-            }
-        }
         
-        // If still no errors found, create some mock error patterns for demonstration
-        if (empty($errors)) {
-            $mockErrors = [
-                ['title' => 'Tentative de connexion', 'time' => date('H:i'), 'component' => 'auth', 'severity' => 'warning'],
-                ['title' => 'Suppression d\'entité', 'time' => date('H:i', strtotime('-1 hour')), 'component' => 'admin', 'severity' => 'info'],
-            ];
-            $errors = array_slice($mockErrors, 0, $limit);
+        try {
+            // Get real errors from log files
+            $logFileErrors = $this->getErrorsFromLogFiles($limit);
+            
+            foreach ($logFileErrors as $error) {
+                $errors[] = [
+                    'title' => $error['message'],
+                    'time' => $this->formatErrorTimestamp($error['timestamp']),
+                    'component' => $error['component'],
+                    'count' => 1,
+                    'severity' => $error['severity']
+                ];
+            }
+
+            // Also check audit logs for CRUD-related issues (optional)
+            if (count($errors) < $limit) {
+                $auditErrors = $this->getAuditLogErrors($limit - count($errors));
+                $errors = array_merge($errors, $auditErrors);
+            }
+            
+        } catch (\Exception $e) {
+            error_log('Error fetching recent errors: ' . $e->getMessage());
+        }
+
+        // Limit results
+        return array_slice($errors, 0, $limit);
+    }
+
+    /**
+     * Get errors from audit logs (CRUD operations that might indicate issues)
+     */
+    private function getAuditLogErrors(int $limit): array
+    {
+        $errors = [];
+        
+        try {
+            $qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al');
+            $auditLogs = $qb
+                ->where('al.action IN (:actions)')
+                ->setParameter('actions', ['remove', 'delete'])
+                ->orderBy('al.loggedAt', 'DESC')
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($auditLogs as $auditLog) {
+                $errors[] = [
+                    'title' => $this->formatAuditTitle($auditLog),
+                    'time' => $auditLog->getLoggedAt()->format('H:i'),
+                    'component' => 'database',
+                    'count' => 1,
+                    'severity' => 'warning'
+                ];
+            }
+        } catch (\Exception $e) {
+            error_log('Error fetching audit log errors: ' . $e->getMessage());
         }
 
         return $errors;
     }
 
     /**
+     * Format timestamp for display
+     */
+    private function formatErrorTimestamp(string $timestamp): string
+    {
+        try {
+            $date = new \DateTime($timestamp);
+            return $date->format('H:i');
+        } catch (\Exception $e) {
+            return date('H:i');
+        }
+    }
+
+    /**
+     * Format audit log for display
+     */
+    private function formatAuditTitle(AuditLog $auditLog): string
+    {
+        $action = $auditLog->getAction();
+        $table = $auditLog->getTbl();
+        
+        return "Suppression en {$table}";
+    }
+
+    /**
      * Check if a log entry matches error patterns
      */
-    private function isErrorPattern(array $log): bool
+    public function isErrorPattern(array $log): bool
     {
         // Consider these actions as potential issues worth reporting
         $alertActions = [
@@ -462,7 +534,7 @@ class LogSystemService
     /**
      * Get log severity level
      */
-    private function getLogSeverity(array $log): string
+    public function getLogSeverity(array $log): string
     {
         // Check for critical error patterns
         $criticalPatterns = ['failed', 'error', 'exception', 'violation'];
@@ -545,14 +617,42 @@ class LogSystemService
                 $action = $result['action'];
                 $count = (int)$result['count'];
                 
-                // Map actions to levels
+                // Map actions to levels (consistent with getLogStatistics)
                 if (in_array($action, ['remove', 'delete'])) {
-                    $distribution['warning'] += $count;
+                    $distribution['error'] += $count; // Deletions are errors (consistent with "Erreurs Récentes")
                 } elseif (in_array($action, ['insert', 'update'])) {
                     $distribution['info'] += $count;
                 } else {
                     $distribution['debug'] += $count;
                 }
+            }
+
+            // Also add real log file errors
+            try {
+                $logFileErrors = $this->getErrorsFromLogFiles(100);
+                $today = new \DateTime('today');
+                
+                foreach ($logFileErrors as $error) {
+                    try {
+                        $errorDate = new \DateTime($error['timestamp']);
+                        if ($errorDate->format('Y-m-d') === $today->format('Y-m-d')) {
+                            if ($error['severity'] === 'critical' || $error['severity'] === 'error') {
+                                $distribution['error']++;
+                            } elseif ($error['severity'] === 'warning') {
+                                $distribution['warning']++;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // If timestamp parsing fails, count as today
+                        if ($error['severity'] === 'critical' || $error['severity'] === 'error') {
+                            $distribution['error']++;
+                        } elseif ($error['severity'] === 'warning') {
+                            $distribution['warning']++;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                error_log('Error adding log file errors to distribution: ' . $e->getMessage());
             }
 
             $total = array_sum($distribution);
@@ -649,5 +749,302 @@ class LogSystemService
         }
         
         return $text;
+    }
+
+    /**
+     * Read real application errors from log files
+     */
+    private function getErrorsFromLogFiles(int $limit = 10): array
+    {
+        $errors = [];
+        $logFiles = [
+            'php_errors.log',
+            'var/log/prod.log',
+            'var/log/dev.log',
+            'public/php_errors.log'
+        ];
+
+        foreach ($logFiles as $logFile) {
+            if (file_exists($logFile)) {
+                $errors = array_merge($errors, $this->parseLogFile($logFile, $limit));
+            }
+        }
+
+        // Sort by timestamp (newest first)
+        usort($errors, function($a, $b) {
+            return strtotime($b['timestamp']) <=> strtotime($a['timestamp']);
+        });
+
+        return array_slice($errors, 0, $limit);
+    }
+
+    /**
+     * Parse log file and extract errors/warnings
+     */
+    private function parseLogFile(string $logFile, int $limit = 50): array
+    {
+        $errors = [];
+        
+        try {
+            // Read last N lines of log file efficiently
+            $lines = $this->readLastLines($logFile, $limit * 3); // Read more lines to filter
+            
+            foreach ($lines as $line) {
+                if ($this->isErrorLine($line)) {
+                    $parsed = $this->parseLogLine($line);
+                    if ($parsed) {
+                        $errors[] = $parsed;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            error_log("Error reading log file {$logFile}: " . $e->getMessage());
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Read last N lines from a file efficiently
+     */
+    private function readLastLines(string $filename, int $lines = 50): array
+    {
+        if (!file_exists($filename)) {
+            return [];
+        }
+
+        $handle = fopen($filename, "r");
+        if (!$handle) {
+            return [];
+        }
+
+        $linecounter = $lines;
+        $pos = -2;
+        $beginning = false;
+        $text = [];
+
+        while ($linecounter > 0) {
+            $t = " ";
+            while ($t != "\n") {
+                if (fseek($handle, $pos, SEEK_END) == -1) {
+                    $beginning = true;
+                    break;
+                }
+                $t = fgetc($handle);
+                $pos--;
+            }
+            $linecounter--;
+            if (!$beginning) {
+                $text[$lines - $linecounter - 1] = fgets($handle);
+            }
+            if ($beginning) {
+                rewind($handle);
+                for ($i = 0; $i < $lines - $linecounter; $i++) {
+                    $text[$i] = fgets($handle);
+                }
+                break;
+            }
+        }
+        fclose($handle);
+        
+        return array_reverse($text);
+    }
+
+    /**
+     * Check if log line contains error/warning/critical
+     */
+    private function isErrorLine(string $line): bool
+    {
+        $errorPatterns = [
+            '/\[critical\]/',
+            '/\[error\]/',
+            '/\[warning\]/',
+            '/PHP Fatal error:/',
+            '/PHP Warning:/',
+            '/PHP Deprecated:/',
+            '/SQLSTATE\[/',
+            '/Exception/',
+            '/Uncaught/',
+            '/failed/',
+            '/Error thrown/',
+            '/Integrity constraint violation/',
+            '/does not exist/',
+            '/Permission denied/',
+            '/Connection refused/'
+        ];
+
+        foreach ($errorPatterns as $pattern) {
+            if (preg_match($pattern, $line)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Parse individual log line to extract error information
+     */
+    private function parseLogLine(string $line): ?array
+    {
+        $line = trim($line);
+        if (empty($line)) {
+            return null;
+        }
+
+        // Extract timestamp
+        $timestamp = '';
+        if (preg_match('/\[([^\]]+)\]/', $line, $matches)) {
+            $timestamp = $matches[1];
+        }
+
+        // Determine severity
+        $severity = 'info';
+        if (preg_match('/\[critical\]|PHP Fatal error/i', $line)) {
+            $severity = 'critical';
+        } elseif (preg_match('/\[error\]|Exception|Uncaught|failed/i', $line)) {
+            $severity = 'error';
+        } elseif (preg_match('/\[warning\]|PHP Warning|Deprecated/i', $line)) {
+            $severity = 'warning';
+        }
+
+        // Extract error message (clean up)
+        $message = $line;
+        $message = preg_replace('/\[[^\]]+\]\s*/', '', $message); // Remove timestamps
+        $message = preg_replace('/\s+/', ' ', $message); // Clean whitespace
+        $message = substr($message, 0, 100) . (strlen($message) > 100 ? '...' : '');
+
+        // Determine component
+        $component = 'system';
+        if (preg_match('/doctrine|database|sql/i', $line)) {
+            $component = 'database';
+        } elseif (preg_match('/authentication|login|security/i', $line)) {
+            $component = 'auth';
+        } elseif (preg_match('/api|controller/i', $line)) {
+            $component = 'api';
+        }
+
+        return [
+            'timestamp' => $timestamp,
+            'message' => $message,
+            'severity' => $severity,
+            'component' => $component,
+            'raw_line' => $line
+        ];
+    }
+
+    /**
+     * Get detailed errors for the full-width table
+     */
+    public function getDetailedErrors(int $limit = 20): array
+    {
+        $detailedErrors = [];
+        
+        try {
+            // Get real errors from log files
+            $logFileErrors = $this->getErrorsFromLogFiles($limit);
+            
+            foreach ($logFileErrors as $error) {
+                $detailedErrors[] = [
+                    'id' => uniqid(),
+                    'timestamp' => $error['timestamp'],
+                    'formatted_time' => $this->formatDetailedTimestamp($error['timestamp']),
+                    'severity' => $error['severity'],
+                    'component' => $error['component'],
+                    'message' => $error['message'],
+                    'full_message' => $error['raw_line'] ?? $error['message'],
+                    'type' => 'log_file',
+                    'source' => 'Application Log'
+                ];
+            }
+
+            // Also get CRUD errors from audit logs
+            if (count($detailedErrors) < $limit) {
+                $auditErrors = $this->getDetailedAuditErrors($limit - count($detailedErrors));
+                $detailedErrors = array_merge($detailedErrors, $auditErrors);
+            }
+
+            // Sort by timestamp (newest first)
+            usort($detailedErrors, function($a, $b) {
+                return strtotime($b['timestamp']) <=> strtotime($a['timestamp']);
+            });
+
+        } catch (\Exception $e) {
+            error_log('Error fetching detailed errors: ' . $e->getMessage());
+        }
+
+        return array_slice($detailedErrors, 0, $limit);
+    }
+
+    /**
+     * Get detailed audit errors
+     */
+    private function getDetailedAuditErrors(int $limit): array
+    {
+        $errors = [];
+        
+        try {
+            $qb = $this->entityManager->getRepository(AuditLog::class)->createQueryBuilder('al');
+            $auditLogs = $qb
+                ->where('al.action IN (:actions)')
+                ->setParameter('actions', ['remove', 'delete'])
+                ->orderBy('al.loggedAt', 'DESC')
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getResult();
+
+            foreach ($auditLogs as $auditLog) {
+                $errors[] = [
+                    'id' => $auditLog->getId(),
+                    'timestamp' => $auditLog->getLoggedAt()->format('Y-m-d H:i:s'),
+                    'formatted_time' => $auditLog->getLoggedAt()->format('d/m/Y H:i:s'),
+                    'severity' => 'warning',
+                    'component' => 'database',
+                    'message' => "Suppression d'entité en " . $auditLog->getTbl(),
+                    'full_message' => $this->generateDetailedAuditMessage($auditLog),
+                    'type' => 'audit_log',
+                    'source' => 'Database Audit'
+                ];
+            }
+        } catch (\Exception $e) {
+            error_log('Error fetching detailed audit errors: ' . $e->getMessage());
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Format timestamp for detailed display
+     */
+    private function formatDetailedTimestamp(string $timestamp): string
+    {
+        try {
+            $date = new \DateTime($timestamp);
+            $now = new \DateTime();
+            $diff = $now->diff($date);
+            
+            if ($diff->days == 0) {
+                return "Aujourd'hui " . $date->format('H:i:s');
+            } elseif ($diff->days == 1) {
+                return "Hier " . $date->format('H:i:s');
+            } else {
+                return $date->format('d/m/Y H:i:s');
+            }
+        } catch (\Exception $e) {
+            return $timestamp;
+        }
+    }
+
+    /**
+     * Generate detailed message for audit logs
+     */
+    private function generateDetailedAuditMessage(AuditLog $auditLog): string
+    {
+        $action = $auditLog->getAction();
+        $table = $auditLog->getTbl();
+        $user = $this->getUserDisplayName($auditLog->getBlame());
+        $timestamp = $auditLog->getLoggedAt()->format('d/m/Y H:i:s');
+        
+        return "Action '{$action}' sur table '{$table}' par {$user} le {$timestamp}";
     }
 } 

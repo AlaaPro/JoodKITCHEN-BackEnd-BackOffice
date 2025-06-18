@@ -559,3 +559,16 @@ Did you mean one of these?
     doctrine:schema:validate"
 [18-Jun-2025 13:24:13 UTC] [critical] Error thrown while running command "doctrine:migrations:diff". Message: "No changes detected in your mapping information."
 [18-Jun-2025 13:24:23 UTC] [critical] Error thrown while running command "doctrine:query:sql "SELECT action, object_class, logged_at, blame_id FROM audit_logs ORDER BY logged_at DESC LIMIT 10"". Message: "An exception occurred while executing a query: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'object_class' in 'field list'"
+[18-Jun-2025 15:12:02 UTC] [critical] Error thrown while running command "dbal:run-sql "SELECT action, logged_at, object_class FROM audit_logs WHERE action = 'remove' ORDER BY logged_at DESC;"". Message: "An exception occurred while executing a query: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'object_class' in 'field list'"
+[18-Jun-2025 15:13:14 UTC] PHP Fatal error:  Uncaught Doctrine\ORM\Mapping\MappingException: Class "DataDog\AuditBundle\Entity\AuditLog" is not a valid entity or mapped super class. in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\Mapping\MappingException.php:254
+Stack trace:
+#0 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\Mapping\Driver\AttributeDriver.php(103): Doctrine\ORM\Mapping\MappingException::classIsNotAValidEntityOrMappedSuperClass('DataDog\\AuditBu...')
+#1 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\Mapping\ClassMetadataFactory.php(163): Doctrine\ORM\Mapping\Driver\AttributeDriver->loadMetadataForClass('DataDog\\AuditBu...', Object(Doctrine\ORM\Mapping\ClassMetadata))
+#2 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\persistence\src\Persistence\Mapping\AbstractClassMetadataFactory.php(343): Doctrine\ORM\Mapping\ClassMetadataFactory->doLoadMetadata(Object(Doctrine\ORM\Mapping\ClassMetadata), NULL, false, Array)
+#3 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\persistence\src\Persistence\Mapping\AbstractClassMetadataFactory.php(207): Doctrine\Persistence\Mapping\AbstractClassMetadataFactory->loadMetadata('DataDog\\AuditBu...')
+#4 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\EntityManager.php(220): Doctrine\Persistence\Mapping\AbstractClassMetadataFactory->getMetadataFor('DataDog\\AuditBu...')
+#5 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\Repository\DefaultRepositoryFactory.php(28): Doctrine\ORM\EntityManager->getClassMetadata('DataDog\\AuditBu...')
+#6 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\EntityManager.php(495): Doctrine\ORM\Repository\DefaultRepositoryFactory->getRepository(Object(Doctrine\ORM\EntityManager), 'DataDog\\AuditBu...')
+#7 C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\test_logs_detection.php(40): Doctrine\ORM\EntityManager->getRepository('DataDog\\AuditBu...')
+#8 {main}
+  thrown in C:\Users\valaa\OneDrive\Bureau\alaa\Jood\JoodKitchen\APP\WebApp\vendor\doctrine\orm\src\Mapping\MappingException.php on line 254

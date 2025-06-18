@@ -1083,6 +1083,28 @@ class AdminController extends AbstractController
         }
     }
 
+    #[Route('/api/admin/logs/errors/detailed', name: 'api_admin_logs_errors_detailed', methods: ['GET'])]
+    #[IsGranted('view_logs')]
+    public function getDetailedErrors(Request $request): JsonResponse
+    {
+        try {
+            $limit = min((int)$request->query->get('limit', 20), 100);
+            $errors = $this->logSystemService->getDetailedErrors($limit);
+            
+            return new JsonResponse([
+                'success' => true,
+                'data' => $errors,
+                'count' => count($errors)
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération des erreurs détaillées',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     #[Route('/api/admin/logs/distribution', name: 'api_admin_logs_distribution', methods: ['GET'])]
     #[IsGranted('view_logs')]
     public function getLogDistribution(): JsonResponse

@@ -181,7 +181,7 @@
 <div class="row g-4">
     <!-- Logs Table -->
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-header">
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -285,6 +285,64 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header jood-secondary-bg">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="fas fa-exclamation-triangle"></i> Erreurs et Avertissements Détaillés
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-light" id="refreshDetailedErrors">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" id="toggleErrorsView">
+                            <i class="fas fa-expand"></i> Vue étendue
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="detailedErrorsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 140px;">Date/Heure</th>
+                                <th style="width: 80px;">Sévérité</th>
+                                <th style="width: 100px;">Composant</th>
+                                <th style="width: 100px;">Source</th>
+                                <th>Message d'erreur</th>
+                                <th style="width: 60px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedErrorsBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Chargement des erreurs détaillées...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div class="text-muted">
+                        <span id="detailedErrorsCount">0</span> erreurs trouvées
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" id="loadMoreErrors">
+                            <i class="fas fa-plus"></i> Charger plus
+                        </button>
+                        <select class="form-select form-select-sm" id="errorLimitSelect" style="width: auto;">
+                            <option value="20">20 par page</option>
+                            <option value="50">50 par page</option>
+                            <option value="100">100 par page</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -602,6 +660,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load sidebar activities immediately
     loadSidebarActivities();
     
+    // Initialize detailed errors table
+    DetailedErrorsTable.init();
+    
     console.log('✅ Logs & Activities System initialized');
 });
 
@@ -714,5 +775,294 @@ function formatTimeAgo(dateString) {
         return 'N/A';
     }
 }
+
+// Detailed Errors Table Manager
+class DetailedErrorsTable {
+    constructor() {
+        this.api = window.logsAPI || new LogsAPI();
+        this.currentLimit = 20;
+        this.isExtended = false;
+        this.errors = [];
+    }
+
+    static init() {
+        const table = new DetailedErrorsTable();
+        table.bindEvents();
+        table.loadErrors();
+        window.detailedErrorsTable = table;
+    }
+
+    bindEvents() {
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshDetailedErrors');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadErrors();
+            });
+        }
+
+        // Toggle view button
+        const toggleBtn = document.getElementById('toggleErrorsView');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                this.toggleView();
+            });
+        }
+
+        // Load more button
+        const loadMoreBtn = document.getElementById('loadMoreErrors');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', () => {
+                this.loadMoreErrors();
+            });
+        }
+
+        // Limit select
+        const limitSelect = document.getElementById('errorLimitSelect');
+        if (limitSelect) {
+            limitSelect.addEventListener('change', () => {
+                this.currentLimit = parseInt(limitSelect.value);
+                this.loadErrors();
+            });
+        }
+    }
+
+    async loadErrors() {
+        const tbody = document.getElementById('detailedErrorsBody');
+        const countSpan = document.getElementById('detailedErrorsCount');
+        
+        if (!tbody) return;
+
+        try {
+            // Show loading
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Chargement des erreurs détaillées...
+                    </td>
+                </tr>
+            `;
+
+            const response = await fetch(`/api/admin/logs/errors/detailed?limit=${this.currentLimit}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + (localStorage.getItem('admin_token') || ''),
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch detailed errors');
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                this.errors = result.data;
+                this.renderErrors();
+                if (countSpan) countSpan.textContent = result.count || this.errors.length;
+            } else {
+                throw new Error(result.error || 'Failed to load errors');
+            }
+
+        } catch (error) {
+            console.error('Error loading detailed errors:', error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des erreurs détaillées
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    renderErrors() {
+        const tbody = document.getElementById('detailedErrorsBody');
+        if (!tbody || !this.errors.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Aucune erreur trouvée
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const html = this.errors.map(error => `
+            <tr>
+                <td>
+                    <small class="text-muted">
+                        ${error.formatted_time || error.timestamp}
+                    </small>
+                </td>
+                <td>
+                    <span class="badge bg-${this.getSeverityColor(error.severity)}">
+                        ${this.getSeverityLabel(error.severity)}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">
+                        ${error.component}
+                    </span>
+                </td>
+                <td>
+                    <small class="text-muted">
+                        ${error.source}
+                    </small>
+                </td>
+                <td>
+                    <div class="error-message" style="max-width: 400px;">
+                        <div class="text-truncate" title="${this.escapeHtml(error.full_message || error.message)}">
+                            ${this.escapeHtml(error.message)}
+                        </div>
+                        ${error.full_message && error.full_message !== error.message ? 
+                            `<button class="btn btn-link btn-sm p-0 mt-1 expand-error" onclick="window.detailedErrorsTable.showFullError('${error.id}')">
+                                <small>Voir complet</small>
+                            </button>` : ''
+                        }
+                    </div>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" data-coreui-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" onclick="window.detailedErrorsTable.showFullError('${error.id}')">
+                                <i class="fas fa-eye me-2"></i>Détails
+                            </a></li>
+                            <li><a class="dropdown-item" onclick="window.detailedErrorsTable.copyError('${error.id}')">
+                                <i class="fas fa-copy me-2"></i>Copier
+                            </a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        tbody.innerHTML = html;
+    }
+
+    getSeverityColor(severity) {
+        const colors = {
+            'critical': 'danger',
+            'error': 'danger', 
+            'warning': 'warning',
+            'info': 'info'
+        };
+        return colors[severity] || 'secondary';
+    }
+
+    getSeverityLabel(severity) {
+        const labels = {
+            'critical': 'Critique',
+            'error': 'Erreur',
+            'warning': 'Avertissement', 
+            'info': 'Info'
+        };
+        return labels[severity] || severity;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showFullError(errorId) {
+        const error = this.errors.find(e => e.id === errorId);
+        if (!error) return;
+
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Détails de l'erreur</h5>
+                        <button type="button" class="btn-close" data-coreui-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Date/Heure:</dt>
+                            <dd class="col-sm-9">${error.formatted_time}</dd>
+                            
+                            <dt class="col-sm-3">Sévérité:</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge bg-${this.getSeverityColor(error.severity)}">
+                                    ${this.getSeverityLabel(error.severity)}
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-3">Composant:</dt>
+                            <dd class="col-sm-9">${error.component}</dd>
+                            
+                            <dt class="col-sm-3">Source:</dt>
+                            <dd class="col-sm-9">${error.source}</dd>
+                            
+                            <dt class="col-sm-3">Message:</dt>
+                            <dd class="col-sm-9">
+                                <pre class="bg-light p-3 rounded">${this.escapeHtml(error.full_message || error.message)}</pre>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary" onclick="navigator.clipboard.writeText('${this.escapeHtml(error.full_message || error.message)}')">
+                            <i class="fas fa-copy me-2"></i>Copier
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        const modalInstance = new coreui.Modal(modal);
+        modalInstance.show();
+
+        // Remove modal when hidden
+        modal.addEventListener('hidden.coreui.modal', () => {
+            modal.remove();
+        });
+    }
+
+    copyError(errorId) {
+        const error = this.errors.find(e => e.id === errorId);
+        if (error) {
+            navigator.clipboard.writeText(error.full_message || error.message).then(() => {
+                window.showSuccess('Erreur copiée dans le presse-papiers');
+            });
+        }
+    }
+
+    toggleView() {
+        const table = document.getElementById('detailedErrorsTable');
+        const toggleBtn = document.getElementById('toggleErrorsView');
+        
+        if (!table || !toggleBtn) return;
+
+        this.isExtended = !this.isExtended;
+        
+        if (this.isExtended) {
+            table.style.fontSize = '0.85rem';
+            toggleBtn.innerHTML = '<i class="fas fa-compress"></i> Vue normale';
+        } else {
+            table.style.fontSize = '';
+            toggleBtn.innerHTML = '<i class="fas fa-expand"></i> Vue étendue';
+        }
+    }
+
+    async loadMoreErrors() {
+        this.currentLimit += 20;
+        await this.loadErrors();
+    }
+}
 </script>
+
+
 {% endblock %} 
