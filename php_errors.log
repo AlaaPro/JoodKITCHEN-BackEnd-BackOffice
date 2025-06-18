@@ -547,3 +547,15 @@ Stack trace:
 [18-Jun-2025 12:30:19 UTC] [critical] Error thrown while running command ""server:status"". Message: "There are no commands defined in the "server" namespace.
 
 You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[18-Jun-2025 13:22:03 UTC] [critical] Error thrown while running command "doctrine:query:sql "SELECT action, object_class, logged_at FROM datadog_audit_log ORDER BY logged_at DESC LIMIT 10"". Message: "An exception occurred while executing a query: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'joodkitchen.datadog_audit_log' doesn't exist"
+[18-Jun-2025 13:22:10 UTC] [critical] Error thrown while running command ""doctrine:schema:status"". Message: "Command "doctrine:schema:status" is not defined.
+
+Did you mean one of these?
+    api:json-schema:generate
+    doctrine:migrations:status
+    doctrine:schema:create
+    doctrine:schema:drop
+    doctrine:schema:update
+    doctrine:schema:validate"
+[18-Jun-2025 13:24:13 UTC] [critical] Error thrown while running command "doctrine:migrations:diff". Message: "No changes detected in your mapping information."
+[18-Jun-2025 13:24:23 UTC] [critical] Error thrown while running command "doctrine:query:sql "SELECT action, object_class, logged_at, blame_id FROM audit_logs ORDER BY logged_at DESC LIMIT 10"". Message: "An exception occurred while executing a query: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'object_class' in 'field list'"

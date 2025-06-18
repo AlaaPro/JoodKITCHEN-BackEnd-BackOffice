@@ -28,6 +28,20 @@
     </div>
 </div>
 
+<!-- Error Alert Container -->
+<div id="errorAlert" class="alert alert-danger d-none" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <span id="errorMessage"></span>
+    <button type="button" class="btn-close" onclick="document.getElementById('errorAlert').classList.add('d-none')"></button>
+</div>
+
+<!-- Success Alert Container -->
+<div id="successAlert" class="alert alert-success d-none" role="alert">
+    <i class="fas fa-check-circle me-2"></i>
+    <span id="successMessage"></span>
+    <button type="button" class="btn-close" onclick="document.getElementById('successAlert').classList.add('d-none')"></button>
+</div>
+
 <!-- Log Stats -->
 <div class="row g-4 mb-4">
     <div class="col-lg-3 col-sm-6">
@@ -126,25 +140,18 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Composant/Profil</label>
+                <label class="form-label">Composant</label>
                 <select class="form-select" id="logComponent">
                     <option value="">Tous les composants</option>
-                    <optgroup label="Composants Système">
-                        <option value="auth">Authentification</option>
-                        <option value="orders">Commandes</option>
-                        <option value="kitchen">Cuisine</option>
-                        <option value="customers">Clients</option>
-                        <option value="payment">Paiement</option>
-                        <option value="menu">Menus</option>
-                        <option value="admin">Administration</option>
-                        <option value="security">Sécurité</option>
-                        <option value="system">Système</option>
-                    </optgroup>
-                    <optgroup label="Profils Utilisateurs">
-                        <option value="user_admin">Activités Admins</option>
-                        <option value="user_client">Activités Clients</option>
-                        <option value="user_kitchen">Activités Cuisine</option>
-                    </optgroup>
+                    <option value="auth">Authentification</option>
+                    <option value="orders">Commandes</option>
+                    <option value="kitchen">Cuisine</option>
+                    <option value="customers">Clients</option>
+                    <option value="payment">Paiement</option>
+                    <option value="menu">Menus</option>
+                    <option value="admin">Administration</option>
+                    <option value="security">Sécurité</option>
+                    <option value="system">Système</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -220,11 +227,12 @@
                     <!-- User Activities Tab -->
                     <div class="tab-pane fade" id="user-activities" role="tabpanel">
                         <div class="activity-container" style="height: 600px; overflow-y: auto;">
-                            <!-- Advanced Activity Filters -->
+                            <!-- User Activities Filters -->
                             <div class="p-3 border-bottom bg-light">
                                 <div class="row g-2">
                                     <div class="col-md-3">
-                                        <select class="form-select form-select-sm" id="userProfileType">
+                                        <label class="form-label small">Profil Utilisateur</label>
+                                        <select class="form-select form-select-sm" id="activityProfileType">
                                             <option value="">Tous les profils</option>
                                             <option value="AdminProfile">Administrateurs</option>
                                             <option value="ClientProfile">Clients</option>
@@ -232,29 +240,39 @@
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <select class="form-select form-select-sm" id="userActivityAction">
-                                            <option value="">Toutes les actions</option>
-                                            <option value="create">Créations</option>
-                                            <option value="update">Modifications</option>
-                                            <option value="remove">Suppressions</option>
-                                            <option value="login">Connexions</option>
-                                            <option value="logout">Déconnexions</option>
-                                        </select>
+                                        <label class="form-label small">Action</label>
+                                <select class="form-select form-select-sm" id="activityAction">
+                                    <option value="">Toutes les actions</option>
+                                    <option value="insert">Créations</option>
+                                    <option value="update">Modifications</option>
+                                    <option value="remove">Suppressions</option>
+                                </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <select class="form-select form-select-sm" id="userEntityType">
+                                        <label class="form-label small">Type d'Entité</label>
+                                        <select class="form-select form-select-sm" id="activityEntityType">
                                             <option value="">Toutes les entités</option>
                                             <option value="User">Utilisateur</option>
                                             <option value="Menu">Menu</option>
                                             <option value="Plat">Plat</option>
                                             <option value="Commande">Commande</option>
                                             <option value="Permission">Permission</option>
+                                            <option value="AdminProfile">Profil Admin</option>
+                                            <option value="ClientProfile">Profil Client</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
-                                        <button class="btn btn-primary btn-sm w-100" id="applyActivityFilters">
-                                            <i class="fas fa-filter"></i> Filtrer
-                                        </button>
+                                        <div class="d-flex gap-1 align-items-end h-100">
+                                            <button class="btn btn-primary btn-sm" id="applyActivityFilters">
+                                                <i class="fas fa-filter"></i> Filtrer
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm" id="clearActivityFilters">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info btn-sm" id="refreshActivities">
+                                                <i class="fas fa-sync-alt"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -292,37 +310,32 @@
             </div>
         </div>
 
-        <!-- User Activities -->
+        <!-- User Activities Summary -->
         <div class="card mb-4">
             <div class="card-header jood-primary-bg">
                 <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-users"></i> Activités Utilisateurs
+                    <i class="fas fa-users"></i> Activités Récentes
                 </h5>
             </div>
             <div class="card-body">
-                <!-- Activity filters -->
+                <!-- Activity Stats -->
                 <div class="row g-2 mb-3">
-                    <div class="col-md-6">
-                        <select class="form-select form-select-sm" id="activityProfileFilter">
-                            <option value="">Tous les profils</option>
-                            <option value="admin">Administrateurs</option>
-                            <option value="client">Clients</option>
-                            <option value="kitchen">Staff Cuisine</option>
-                        </select>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h5 mb-0" id="todayActivitiesCount">-</div>
+                            <small class="text-muted">Aujourd'hui</small>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <select class="form-select form-select-sm" id="activityActionFilter">
-                            <option value="">Toutes les actions</option>
-                            <option value="create">Créations</option>
-                            <option value="update">Modifications</option>
-                            <option value="remove">Suppressions</option>
-                            <option value="login">Connexions</option>
-                        </select>
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="h5 mb-0" id="weekActivitiesCount">-</div>
+                            <small class="text-muted">Cette semaine</small>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Recent activities list -->
-                <div class="recent-activities-list" style="max-height: 200px; overflow-y: auto;">
+                <div class="recent-activities-list" style="max-height: 300px; overflow-y: auto;">
                     <div class="text-center text-muted py-3">
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                         Chargement des activités...
@@ -440,61 +453,97 @@
 <!-- Include the user activities API JavaScript -->
 <script src="{{ asset('js/admin/user-activities-api.js') }}"></script>
 
-<!-- Enhanced initialization with both logs and activities -->
+<!-- Enhanced initialization with improved error handling and activities integration -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add manual refresh button functionality
+    console.log('🚀 Initializing Logs & Activities System...');
+    
+    // Global error handler
+    window.showError = function(message) {
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorAlert && errorMessage) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('d-none');
+        }
+        console.error('Error:', message);
+    };
+    
+    // Global success handler
+    window.showSuccess = function(message) {
+        const successAlert = document.getElementById('successAlert');
+        const successMessage = document.getElementById('successMessage');
+        if (successAlert && successMessage) {
+            successMessage.textContent = message;
+            successAlert.classList.remove('d-none');
+            setTimeout(() => successAlert.classList.add('d-none'), 3000);
+        }
+    };
+
+    // Manual refresh button functionality
     const refreshButton = document.getElementById('refreshLogs');
     if (refreshButton) {
         refreshButton.addEventListener('click', function() {
-            if (window.logsManager) {
-                console.log('🔄 Manual refresh triggered');
-                refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
-                window.logsManager.loadData().finally(() => {
-                    setTimeout(() => {
-                        refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
-                    }, 1000);
-                });
-            }
+            console.log('🔄 Manual refresh triggered');
+            refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+            
+            Promise.all([
+                window.logsManager ? window.logsManager.loadData() : Promise.resolve(),
+                window.activitiesManager ? window.activitiesManager.loadAllData() : Promise.resolve()
+            ]).finally(() => {
+                setTimeout(() => {
+                    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
+                }, 1000);
+            });
         });
     }
 
-    // Initialize activities manager immediately since we have activities sections on the page
+    // Initialize activities manager
     if (window.ActivitiesManager) {
         window.activitiesManager = new ActivitiesManager();
-        // Don't auto-init since we may not need it immediately
+        console.log('✅ Activities Manager created');
+    } else {
+        console.warn('⚠️ ActivitiesManager not found - check if user-activities-api.js loaded');
     }
 
-    // Handle tab switching to load user activities when tab becomes active
+    // Handle user activities tab activation
     const userActivitiesTab = document.getElementById('user-activities-tab');
     if (userActivitiesTab) {
         userActivitiesTab.addEventListener('shown.coreui.tab', function() {
-            console.log('User Activities tab activated');
+            console.log('📋 User Activities tab activated');
+            
             if (window.activitiesManager) {
                 if (!window.activitiesManager.initialized) {
-                    window.activitiesManager.init();
+                    console.log('🔄 Initializing Activities Manager...');
+                    window.activitiesManager.init().catch(error => {
+                        console.error('Failed to initialize activities:', error);
+                        window.showError('Erreur lors du chargement des activités');
+                    });
                 } else {
-                    window.activitiesManager.loadAllData();
+                    console.log('🔄 Refreshing activities data...');
+                    window.activitiesManager.loadAllData().catch(error => {
+                        console.error('Failed to refresh activities:', error);
+                        window.showError('Erreur lors de l\'actualisation des activités');
+                    });
                 }
             } else {
-                // Initialize activities manager if not already done
-                window.activitiesManager = new ActivitiesManager();
-                window.activitiesManager.init();
+                console.error('❌ Activities manager not available');
+                window.showError('Gestionnaire d\'activités non disponible');
             }
         });
     }
 
-    // Setup activities tab content handling
-    const activitiesFilterBtn = document.getElementById('applyActivityFilters');
-    if (activitiesFilterBtn) {
-        activitiesFilterBtn.addEventListener('click', function() {
+    // Setup activities filter controls
+    const applyActivityFiltersBtn = document.getElementById('applyActivityFilters');
+    if (applyActivityFiltersBtn) {
+        applyActivityFiltersBtn.addEventListener('click', function() {
             if (window.activitiesManager) {
-                console.log('Applying activity filters...');
+                console.log('🔍 Applying activity filters...');
                 
                 const filters = {
-                    profileType: document.getElementById('userProfileType')?.value || '',
-                    action: document.getElementById('userActivityAction')?.value || '',
-                    entityType: document.getElementById('userEntityType')?.value || ''
+                    profileType: document.getElementById('activityProfileType')?.value || '',
+                    action: document.getElementById('activityAction')?.value || '',
+                    entityType: document.getElementById('activityEntityType')?.value || ''
                 };
 
                 // Remove empty filters
@@ -502,40 +551,109 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (!filters[key]) delete filters[key];
                 });
 
+                console.log('Applied filters:', filters);
                 window.activitiesManager.currentFilters = filters;
-                window.activitiesManager.loadActivities();
+                window.activitiesManager.loadActivities().catch(error => {
+                    console.error('Filter application failed:', error);
+                    window.showError('Erreur lors de l\'application des filtres');
+                });
             }
         });
     }
 
-    // Load user activities data in the sidebar section
-    if (document.querySelector('.recent-activities-list')) {
-        // Initialize a simple activities loader for the sidebar
-        loadSidebarActivities();
+    // Clear activity filters
+    const clearActivityFiltersBtn = document.getElementById('clearActivityFilters');
+    if (clearActivityFiltersBtn) {
+        clearActivityFiltersBtn.addEventListener('click', function() {
+            console.log('🧹 Clearing activity filters...');
+            
+            // Clear filter selects
+            document.getElementById('activityProfileType').value = '';
+            document.getElementById('activityAction').value = '';
+            document.getElementById('activityEntityType').value = '';
+            
+            if (window.activitiesManager) {
+                window.activitiesManager.currentFilters = {};
+                window.activitiesManager.loadActivities().catch(error => {
+                    console.error('Failed to clear filters:', error);
+                    window.showError('Erreur lors de l\'effacement des filtres');
+                });
+            }
+        });
     }
+
+    // Refresh activities button
+    const refreshActivitiesBtn = document.getElementById('refreshActivities');
+    if (refreshActivitiesBtn) {
+        refreshActivitiesBtn.addEventListener('click', function() {
+            if (window.activitiesManager) {
+                console.log('🔄 Manual activities refresh...');
+                refreshActivitiesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                window.activitiesManager.loadAllData().finally(() => {
+                    setTimeout(() => {
+                        refreshActivitiesBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    }, 1000);
+                });
+            }
+        });
+    }
+
+    // Load sidebar activities immediately
+    loadSidebarActivities();
+    
+    console.log('✅ Logs & Activities System initialized');
 });
 
-// Function to load activities in the sidebar
+// Enhanced sidebar activities loader with better error handling
 async function loadSidebarActivities() {
     const activitiesList = document.querySelector('.recent-activities-list');
+    const todayCount = document.getElementById('todayActivitiesCount');
+    const weekCount = document.getElementById('weekActivitiesCount');
+    
     if (!activitiesList) return;
 
     try {
-        const api = new UserActivitiesAPI();
-        const result = await api.getActivities({}, 5); // Get recent 5 activities
+        let api;
         
-        if (result && result.success && result.data.length > 0) {
-            const activitiesHtml = result.data.map(activity => `
+        // Try to use the global activities manager first
+        if (window.activitiesManager && window.activitiesManager.api) {
+            console.log('✅ Using global activities manager for sidebar');
+            api = window.activitiesManager.api;
+        } else {
+            console.log('⚠️ Global manager not available, creating new API instance');
+            // Check if UserActivitiesAPI class is available
+            if (typeof UserActivitiesAPI === 'undefined') {
+                console.warn('❌ UserActivitiesAPI class not available for sidebar');
+                activitiesList.innerHTML = '<div class="text-center text-muted py-3">API non disponible</div>';
+                return;
+            }
+            console.log('🔧 Creating new UserActivitiesAPI instance');
+            api = new UserActivitiesAPI();
+        }
+        
+        console.log('🔄 Loading sidebar activities...');
+        
+        // Load recent activities
+        const activitiesResult = await api.getActivities({}, 8);
+        console.log('📊 Activities result:', activitiesResult);
+        
+        // Load stats  
+        const statsResult = await api.getStats();
+        console.log('📈 Stats result:', statsResult);
+        
+        if (activitiesResult && activitiesResult.success && activitiesResult.data.length > 0) {
+            const activitiesHtml = activitiesResult.data.map(activity => `
                 <div class="activity-item py-2 border-bottom">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
-                            <div class="fw-semibold">${activity.user_name || 'Système'}</div>
+                            <div class="fw-semibold small">${activity.user_name || 'Système'}</div>
                             <div class="small text-muted">
                                 <span class="badge bg-${getActionBadgeColor(activity.action)} me-1">${activity.action}</span>
-                                ${activity.entity_type} #${activity.entity_id || 'N/A'}
+                                ${activity.entity_type} ${activity.entity_id ? '#' + activity.entity_id : ''}
                             </div>
                         </div>
-                        <small class="text-muted">${formatTimeAgo(activity.logged_at)}</small>
+                        <small class="text-muted">${formatTimeAgo(activity.logged_at_formatted)}</small>
                     </div>
                 </div>
             `).join('');
@@ -544,9 +662,16 @@ async function loadSidebarActivities() {
         } else {
             activitiesList.innerHTML = '<div class="text-center text-muted py-3">Aucune activité récente</div>';
         }
+        
+        // Update stats if available
+        if (statsResult && statsResult.success && statsResult.data) {
+            if (todayCount) todayCount.textContent = statsResult.data.today_activities || '0';
+            if (weekCount) weekCount.textContent = statsResult.data.week_activities || '0';
+        }
+        
     } catch (error) {
         console.error('Error loading sidebar activities:', error);
-        activitiesList.innerHTML = '<div class="text-center text-muted py-3">Erreur de chargement</div>';
+        activitiesList.innerHTML = '<div class="text-center text-danger py-3"><i class="fas fa-exclamation-triangle"></i> Erreur de chargement</div>';
     }
 }
 
@@ -554,23 +679,40 @@ async function loadSidebarActivities() {
 function getActionBadgeColor(action) {
     const colors = {
         'insert': 'success',
+        'create': 'success',
         'update': 'warning', 
         'remove': 'danger',
-        'create': 'success',
         'delete': 'danger'
     };
     return colors[action] || 'secondary';
 }
 
 function formatTimeAgo(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
+    if (!dateString) return 'N/A';
     
-    if (diffInSeconds < 60) return 'À l\'instant';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-    return `${Math.floor(diffInSeconds / 86400)}j`;
+    try {
+        // Handle both "18/06/2025 14:30:15" and ISO formats
+        let date;
+        if (dateString.includes('/')) {
+            const parts = dateString.split(' ');
+            const dateParts = parts[0].split('/');
+            const timeParts = parts[1]?.split(':') || ['00', '00', '00'];
+            date = new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1], timeParts[2]);
+        } else {
+            date = new Date(dateString);
+        }
+        
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        if (diffInSeconds < 60) return 'À l\'instant';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
+        return `${Math.floor(diffInSeconds / 86400)}j`;
+    } catch (error) {
+        console.warn('Date parsing error:', error, dateString);
+        return 'N/A';
+    }
 }
 </script>
 {% endblock %} 
