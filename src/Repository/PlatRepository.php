@@ -74,4 +74,15 @@ class PlatRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Get the average price of all plats
+     */
+    public function getAveragePrice(): float
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('AVG(p.prix) as avgPrice');
+        $result = $qb->getQuery()->getSingleScalarResult();
+        return $result !== null ? (float) $result : 0.0;
+    }
 } 

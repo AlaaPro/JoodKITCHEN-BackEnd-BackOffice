@@ -122,17 +122,37 @@ class MenuAPI {
 
     async getPlats(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        const response = await fetch(`${this.baseUrl}/plats?${queryString}`, {
-            headers: await this.getAuthHeaders()
-        });
-        return response.json();
+        const url = `${this.baseUrl}/plats?${queryString}`;
+        const headers = await this.getAuthHeaders();
+
+        try {
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        } catch (error) {
+            console.error('💥 MenuAPI.getPlats() Error:', error);
+            throw error;
+        }
     }
 
     async createPlat(data) {
+        const formData = new FormData();
+        for (const key in data) {
+            if (data[key] instanceof File) {
+                formData.append(key, data[key]);
+            } else if (data[key] !== null && data[key] !== undefined) {
+                formData.append(key, data[key]);
+            }
+        }
+
         const response = await fetch(`${this.baseUrl}/plats`, {
             method: 'POST',
-            headers: await this.getAuthHeaders(),
-            body: JSON.stringify(data)
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            },
+            body: formData
         });
         return response.json();
     }
@@ -145,10 +165,28 @@ class MenuAPI {
     }
 
     async updatePlat(id, data) {
+        // For data updates, we send a standard PATCH request
         const response = await fetch(`${this.baseUrl}/plats/${id}`, {
-            method: 'PUT',
-            headers: await this.getAuthHeaders(),
+            method: 'PATCH',
+            headers: {
+                ...await this.getAuthHeaders(),
+                'Content-Type': 'application/merge-patch+json',
+            },
             body: JSON.stringify(data)
+        });
+        return response.json();
+    }
+
+    async uploadPlatImage(id, imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        const response = await fetch(`${this.baseUrl}/plats/${id}/image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            },
+            body: formData
         });
         return response.json();
     }

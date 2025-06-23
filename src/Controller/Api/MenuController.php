@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Vich\UploaderBundle\Storage\StorageInterface;
 
 #[Route('/api/admin/menu')]
 #[IsGranted('ROLE_ADMIN')]
@@ -28,7 +29,8 @@ class MenuController extends AbstractController
         private CategoryRepository $categoryRepository,
         private PlatRepository $platRepository,
         private MenuRepository $menuRepository,
-        private MenuPlatRepository $menuPlatRepository
+        private MenuPlatRepository $menuPlatRepository,
+        private StorageInterface $storage
     ) {}
 
     // ========================
@@ -281,6 +283,10 @@ class MenuController extends AbstractController
         $category = $request->query->get('category');
         $status = $request->query->get('status');
         $search = $request->query->get('search');
+        $minPrice = $request->query->get('minPrice');
+        $maxPrice = $request->query->get('maxPrice');
+        $popular = $request->query->getBoolean('popular');
+        $vegetarian = $request->query->getBoolean('vegetarian');
         
         $queryBuilder = $this->platRepository->createQueryBuilder('p')
             ->leftJoin('p.category', 'c')
@@ -298,6 +304,7 @@ class MenuController extends AbstractController
                     $queryBuilder->andWhere('p.disponible = true');
                     break;
                 case 'unavailable':
+                case 'out_of_stock':
                     $queryBuilder->andWhere('p.disponible = false');
                     break;
             }
@@ -306,6 +313,24 @@ class MenuController extends AbstractController
         if ($search) {
             $queryBuilder->andWhere('p.nom LIKE :search OR p.description LIKE :search')
                         ->setParameter('search', '%' . $search . '%');
+        }
+        
+        if ($minPrice !== null && $minPrice !== '') {
+            $queryBuilder->andWhere('p.prix >= :minPrice')
+                        ->setParameter('minPrice', (float)$minPrice);
+        }
+        
+        if ($maxPrice !== null && $maxPrice !== '') {
+            $queryBuilder->andWhere('p.prix <= :maxPrice')
+                        ->setParameter('maxPrice', (float)$maxPrice);
+        }
+        
+        if ($popular) {
+            $queryBuilder->andWhere('p.populaire = true');
+        }
+        
+        if ($vegetarian) {
+            $queryBuilder->andWhere('p.vegetarien = true');
         }
         
         $total = count($queryBuilder->getQuery()->getResult());
@@ -328,15 +353,24 @@ class MenuController extends AbstractController
                     'id' => $plat->getCategory()->getId(),
                     'nom' => $plat->getCategory()->getNom()
                 ] : null,
-                'image' => $plat->getImage(),
+                'image' => $this->storage->resolveUri($plat, 'imageFile'),
                 'disponible' => $plat->getDisponible(),
                 'allergenes' => $plat->getAllergenes(),
                 'tempsPreparation' => $plat->getTempsPreparation(),
-                'createdAt' => $plat->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $plat->getUpdatedAt()?->format('Y-m-d H:i:s')
+                'createdAt' => $plat->getCreatedAt() ? $plat->getCreatedAt()->format('Y-m-d H:i') : null,
+                'updatedAt' => $plat->getUpdatedAt() ? $plat->getUpdatedAt()->format('Y-m-d H:i') : null,
+                'populaire' => $plat->isPopulaire(),
+                'vegetarien' => $plat->isVegetarien(),
             ];
         }
         
+        $stats = [
+            'total' => $total,
+            'available' => $this->platRepository->count(['disponible' => true]),
+            'unavailable' => $this->platRepository->count(['disponible' => false]),
+            'averagePrice' => $this->platRepository->getAveragePrice(),
+        ];
+
         return $this->json([
             'success' => true,
             'data' => $data,
@@ -345,23 +379,31 @@ class MenuController extends AbstractController
                 'limit' => $limit,
                 'total' => $total,
                 'pages' => ceil($total / $limit)
-            ]
+            ],
+            'stats' => $stats
         ]);
     }
 
     #[Route('/plats', name: 'api_admin_plats_create', methods: ['POST'])]
     public function createPlat(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        // Handle both JSON and FormData
+        if ($request->getContentType() === 'json') {
+            $data = json_decode($request->getContent(), true);
+        } else {
+            // FormData
+            $data = $request->request->all();
+        }
         
         $plat = new Plat();
         $plat->setNom($data['nom'] ?? '');
         $plat->setDescription($data['description'] ?? null);
         $plat->setPrix($data['prix'] ?? '0.00');
-        $plat->setImage($data['image'] ?? null);
-        $plat->setDisponible($data['disponible'] ?? true);
+        $plat->setDisponible(isset($data['disponible']) ? (bool)$data['disponible'] : true);
         $plat->setAllergenes($data['allergenes'] ?? null);
-        $plat->setTempsPreparation($data['tempsPreparation'] ?? null);
+        $plat->setTempsPreparation($data['tempsPreparation'] ? (int)$data['tempsPreparation'] : null);
+        $plat->setPopulaire(isset($data['populaire']) ? (bool)$data['populaire'] : false);
+        $plat->setVegetarien(isset($data['vegetarien']) ? (bool)$data['vegetarien'] : false);
         
         // Handle category
         if (!empty($data['categoryId'])) {
@@ -402,28 +444,29 @@ class MenuController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Plat not found'], 404);
         }
         
-        return $this->json([
-            'success' => true,
-            'data' => [
-                'id' => $plat->getId(),
-                'nom' => $plat->getNom(),
-                'description' => $plat->getDescription(),
-                'prix' => $plat->getPrix(),
-                'category' => $plat->getCategory() ? [
-                    'id' => $plat->getCategory()->getId(),
-                    'nom' => $plat->getCategory()->getNom()
-                ] : null,
-                'image' => $plat->getImage(),
-                'disponible' => $plat->getDisponible(),
-                'allergenes' => $plat->getAllergenes(),
-                'tempsPreparation' => $plat->getTempsPreparation(),
-                'createdAt' => $plat->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $plat->getUpdatedAt()?->format('Y-m-d H:i:s')
-            ]
-        ]);
+        $data = [
+            'id' => $plat->getId(),
+            'nom' => $plat->getNom(),
+            'description' => $plat->getDescription(),
+            'prix' => $plat->getPrix(),
+            'category' => $plat->getCategory() ? [
+                'id' => $plat->getCategory()->getId(),
+                'nom' => $plat->getCategory()->getNom()
+            ] : null,
+            'image' => $this->storage->resolveUri($plat, 'imageFile'),
+            'disponible' => $plat->getDisponible(),
+            'allergenes' => $plat->getAllergenes(),
+            'tempsPreparation' => $plat->getTempsPreparation(),
+            'createdAt' => $plat->getCreatedAt() ? $plat->getCreatedAt()->format('Y-m-d H:i') : null,
+            'updatedAt' => $plat->getUpdatedAt() ? $plat->getUpdatedAt()->format('Y-m-d H:i') : null,
+            'populaire' => $plat->isPopulaire(),
+            'vegetarien' => $plat->isVegetarien(),
+        ];
+
+        return $this->json(['success' => true, 'data' => $data]);
     }
 
-    #[Route('/plats/{id}', name: 'api_admin_plats_update', methods: ['PUT'])]
+    #[Route('/plats/{id}', name: 'api_admin_plats_update', methods: ['PUT', 'PATCH'])]
     public function updatePlat(int $id, Request $request): JsonResponse
     {
         $plat = $this->platRepository->find($id);
@@ -436,10 +479,11 @@ class MenuController extends AbstractController
         $plat->setNom($data['nom'] ?? $plat->getNom());
         $plat->setDescription($data['description'] ?? $plat->getDescription());
         $plat->setPrix($data['prix'] ?? $plat->getPrix());
-        $plat->setImage($data['image'] ?? $plat->getImage());
         $plat->setDisponible($data['disponible'] ?? $plat->getDisponible());
         $plat->setAllergenes($data['allergenes'] ?? $plat->getAllergenes());
         $plat->setTempsPreparation($data['tempsPreparation'] ?? $plat->getTempsPreparation());
+        $plat->setPopulaire($data['populaire'] ?? $plat->isPopulaire());
+        $plat->setVegetarien($data['vegetarien'] ?? $plat->isVegetarien());
         
         // Handle category change
         if (isset($data['categoryId'])) {

@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- Dishes Header -->
+<!-- Plats Header -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
@@ -17,15 +17,26 @@
                 <p class="text-muted">Gérez votre carte et vos spécialités</p>
             </div>
             <div>
-                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addPlatModal">
+                <button class="btn btn-primary me-2" data-coreui-toggle="modal" data-coreui-target="#platModal">
                     <i class="fas fa-plus"></i> Nouveau Plat
                 </button>
-                <div class="btn-group">
-                    <button class="btn btn-outline-primary" id="gridViewBtn">
+                <div class="btn-group me-2">
+                    <button class="btn btn-outline-primary" id="gridViewBtn" title="Vue grille">
                         <i class="fas fa-th"></i>
                     </button>
-                    <button class="btn btn-outline-primary" id="listViewBtn">
+                    <button class="btn btn-outline-primary" id="listViewBtn" title="Vue liste">
                         <i class="fas fa-list"></i>
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline-success" id="bulkActivateBtn" title="Activer la sélection" style="display: none;">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn btn-outline-warning" id="bulkDeactivateBtn" title="Désactiver la sélection" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" id="bulkDeleteBtn" title="Supprimer la sélection" style="display: none;">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -33,7 +44,7 @@
     </div>
 </div>
 
-<!-- Dishes Stats -->
+<!-- Plats Stats -->
 <div class="row g-4 mb-4">
     <div class="col-lg-3 col-sm-6">
         <div class="card jood-widget-card jood-primary-bg">
@@ -100,40 +111,77 @@
     </div>
 </div>
 
-<!-- Filters -->
+<!-- Advanced Filters -->
 <div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <select class="form-select" id="categoryFilter">
-                    <option value="">Toutes les catégories</option>
-                    <option value="entrees">Entrées</option>
-                    <option value="plats">Plats principaux</option>
-                    <option value="desserts">Desserts</option>
-                    <option value="boissons">Boissons</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" id="statusFilter">
-                    <option value="">Tous les statuts</option>
-                    <option value="available">Disponible</option>
-                    <option value="unavailable">Indisponible</option>
-                    <option value="out_of_stock">En rupture</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <input type="text" class="form-control" placeholder="Rechercher un plat..." id="searchInput">
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" id="clearFilters">
-                    <i class="fas fa-times"></i> Effacer
-                </button>
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-filter"></i> Filtres Avancés
+            <button class="btn btn-sm btn-outline-secondary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </h5>
+    </div>
+    <div class="collapse show" id="advancedFilters">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Catégorie</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">Toutes les catégories</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="available">Disponible</option>
+                        <option value="unavailable">Indisponible</option>
+                        {# <option value="out_of_stock">En rupture</option> #}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Prix min</label>
+                    <input type="number" class="form-control" id="minPriceFilter" placeholder="0€" step="0.10">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Prix max</label>
+                    <input type="number" class="form-control" id="maxPriceFilter" placeholder="100€" step="0.10">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Recherche</label>
+                    <input type="text" class="form-control" placeholder="Nom, description..." id="searchInput">
+                </div>
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="popularFilter">
+                            <label class="form-check-label" for="popularFilter">
+                                <i class="fas fa-star text-warning"></i> Populaires uniquement
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="vegetarianFilter">
+                            <label class="form-check-label" for="vegetarianFilter">
+                                <i class="fas fa-leaf text-success"></i> Végétariens uniquement
+                            </label>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm" id="clearFilters">
+                                <i class="fas fa-times"></i> Effacer
+                            </button>
+                            <button class="btn btn-primary btn-sm" id="applyFilters">
+                                <i class="fas fa-search"></i> Appliquer
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Plats Grid -->
+<!-- Plats Container -->
 <div id="platsContainer">
     <!-- Loading state -->
     <div class="text-center p-4 text-muted">
@@ -141,15 +189,27 @@
     </div>
 </div>
 
-<!-- Add Plat Modal -->
-<div class="modal fade" id="addPlatModal" tabindex="-1">
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-4" id="paginationContainer" style="display: none;">
+    <div class="text-muted">
+        Affichage de <span id="paginationInfo">0-0 sur 0</span> plats
+    </div>
+    <nav aria-label="Pagination des plats">
+        <ul class="pagination pagination-sm mb-0" id="pagination">
+            <!-- Pagination will be generated dynamically -->
+        </ul>
+    </nav>
+</div>
+
+<!-- Add/Edit Plat Modal -->
+<div class="modal fade" id="platModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header jood-primary-bg">
-                <h5 class="modal-title text-white">
+                <h5 class="modal-title text-white" id="platModalTitle">
                     <i class="fas fa-plus"></i> Nouveau Plat
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="platForm">
@@ -164,13 +224,13 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3" placeholder="Description du plat..."></textarea>
+                            <textarea class="form-control" name="description" rows="3" placeholder="Description détaillée du plat..."></textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Catégorie</label>
                             <select class="form-select" name="categoryId">
-                                <option value="">Sélectionner...</option>
-                                <!-- Options will be populated by PlatManager -->
+                                <option value="">Sélectionner une catégorie...</option>
+                                <!-- Options will be populated dynamically -->
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -179,15 +239,23 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Allergènes</label>
-                            <input type="text" class="form-control" name="allergenes" placeholder="Gluten, Lactose...">
+                            <input type="text" class="form-control" name="allergenes" placeholder="Gluten, Lactose, Fruits de mer...">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Ingrédients principaux</label>
-                            <input type="text" class="form-control" name="ingredients" placeholder="Agneau, Légumes...">
+                            <input type="text" class="form-control" name="ingredients" placeholder="Agneau, Légumes, Épices...">
                         </div>
                         <div class="col-12">
                             <label class="form-label">Image du plat</label>
-                            <input type="file" class="form-control" name="image" accept="image/*">
+                            <div class="input-group">
+                                <input type="file" class="form-control" name="image" accept="image/*" id="platImageInput">
+                                <button class="btn btn-outline-secondary" type="button" id="previewImageBtn">
+                                    <i class="fas fa-eye"></i> Aperçu
+                                </button>
+                            </div>
+                            <div id="imagePreview" class="mt-2" style="display: none;">
+                                <img src="" alt="Aperçu" class="img-thumbnail" style="max-height: 150px;">
+                            </div>
                         </div>
                         <div class="col-12">
                             <div class="row">
@@ -221,11 +289,37 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">
                     <i class="fas fa-times"></i> Annuler
                 </button>
                 <button type="button" class="btn btn-primary" id="savePlatBtn">
                     <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce plat ?</p>
+                <p class="text-muted small">Cette action est irréversible.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Supprimer
                 </button>
             </div>
         </div>
@@ -259,91 +353,10 @@ document.addEventListener('DOMContentLoaded', function() {
     platManager.loadPlats();
     platManager.loadCategories();
     
+    // Initialize filter button state
+    platManager.updateApplyButtonState();
+    
     console.log('✅ PlatManager initialized and loading data');
 });
 </script>
-
-<style>
-/* Plat card enhancements */
-.plat-card {
-    transition: all 0.3s ease;
-}
-
-.plat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-/* View toggle buttons */
-.btn-group .btn.active {
-    background-color: var(--jood-primary);
-    border-color: var(--jood-primary);
-    color: white;
-}
-
-/* Filter enhancements */
-.form-select:focus,
-.form-control:focus {
-    border-color: var(--jood-primary);
-    box-shadow: 0 0 0 0.2rem rgba(169, 183, 62, 0.25);
-}
-
-/* Loading state */
-.loading-spinner {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Form enhancements */
-.form-check-label {
-    cursor: pointer;
-}
-
-.form-check-input:checked {
-    background-color: var(--jood-primary);
-    border-color: var(--jood-primary);
-}
-
-/* Badge styles */
-.badge.jood-primary-bg {
-    background-color: var(--jood-primary) !important;
-}
-
-.badge.jood-warning-bg {
-    background-color: #f39c12 !important;
-}
-
-/* Card hover effects */
-.card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.125);
-}
-
-.card:hover {
-    border-color: var(--jood-primary);
-    box-shadow: 0 4px 12px rgba(169, 183, 62, 0.15);
-}
-
-/* List view enhancements */
-.table-hover tbody tr:hover {
-    background-color: rgba(169, 183, 62, 0.05);
-}
-
-.table th {
-    border-top: none;
-    background-color: var(--jood-primary);
-    color: white;
-    font-weight: 600;
-}
-</style>
 {% endblock %} 
