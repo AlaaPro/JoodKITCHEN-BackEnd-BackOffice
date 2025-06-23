@@ -117,19 +117,19 @@ class MenuAPI {
     }
 
     // ========================
-    // DISHES API
+    // PLATS API
     // ========================
 
-    async getDishes(params = {}) {
+    async getPlats(params = {}) {
         const queryString = new URLSearchParams(params).toString();
-        const response = await fetch(`${this.baseUrl}/dishes?${queryString}`, {
+        const response = await fetch(`${this.baseUrl}/plats?${queryString}`, {
             headers: await this.getAuthHeaders()
         });
         return response.json();
     }
 
-    async createDish(data) {
-        const response = await fetch(`${this.baseUrl}/dishes`, {
+    async createPlat(data) {
+        const response = await fetch(`${this.baseUrl}/plats`, {
             method: 'POST',
             headers: await this.getAuthHeaders(),
             body: JSON.stringify(data)
@@ -137,15 +137,15 @@ class MenuAPI {
         return response.json();
     }
 
-    async getDish(id) {
-        const response = await fetch(`${this.baseUrl}/dishes/${id}`, {
+    async getPlat(id) {
+        const response = await fetch(`${this.baseUrl}/plats/${id}`, {
             headers: await this.getAuthHeaders()
         });
         return response.json();
     }
 
-    async updateDish(id, data) {
-        const response = await fetch(`${this.baseUrl}/dishes/${id}`, {
+    async updatePlat(id, data) {
+        const response = await fetch(`${this.baseUrl}/plats/${id}`, {
             method: 'PUT',
             headers: await this.getAuthHeaders(),
             body: JSON.stringify(data)
@@ -153,8 +153,8 @@ class MenuAPI {
         return response.json();
     }
 
-    async deleteDish(id) {
-        const response = await fetch(`${this.baseUrl}/dishes/${id}`, {
+    async deletePlat(id) {
+        const response = await fetch(`${this.baseUrl}/plats/${id}`, {
             method: 'DELETE',
             headers: await this.getAuthHeaders()
         });

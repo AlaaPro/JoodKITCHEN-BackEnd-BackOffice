@@ -21,34 +21,34 @@ class CacheService
     ) {}
 
     /**
-     * Get cached available dishes with categories
+     * Get cached available plats with categories
      */
-    public function getAvailableDishes(): array
+    public function getAvailablePlats(): array
     {
-        return $this->cache->get('dishes.available', function (ItemInterface $item): array {
-            $item->expiresAfter(self::CACHE_TTL);
+        return $this->cache->get('plats.available', function (ItemInterface $item): array {
+            $item->expiresAfter(3600); // 1 hour
             
-            $dishes = $this->platRepository->findBy(['disponible' => true], ['categorie' => 'ASC', 'nom' => 'ASC']);
+            $plats = $this->platRepository->findBy(['disponible' => true], ['categorie' => 'ASC', 'nom' => 'ASC']);
             
-            $categorizedDishes = [];
-            foreach ($dishes as $dish) {
-                $category = $dish->getCategorie();
-                if (!isset($categorizedDishes[$category])) {
-                    $categorizedDishes[$category] = [];
+            $categorizedPlats = [];
+            foreach ($plats as $plat) {
+                $category = $plat->getCategorie();
+                if (!isset($categorizedPlats[$category])) {
+                    $categorizedPlats[$category] = [];
                 }
                 
-                $categorizedDishes[$category][] = [
-                    'id' => $dish->getId(),
-                    'nom' => $dish->getNom(),
-                    'description' => $dish->getDescription(),
-                    'prix' => $dish->getPrix(),
-                    'image' => $dish->getImage(),
-                    'allergenes' => $dish->getAllergenes(),
-                    'tempsPreparation' => $dish->getTempsPreparation()
+                $categorizedPlats[$category][] = [
+                    'id' => $plat->getId(),
+                    'nom' => $plat->getNom(),
+                    'description' => $plat->getDescription(),
+                    'prix' => $plat->getPrix(),
+                    'image' => $plat->getImage(),
+                    'allergenes' => $plat->getAllergenes(),
+                    'tempsPreparation' => $plat->getTempsPreparation()
                 ];
             }
             
-            return $categorizedDishes;
+            return $categorizedPlats;
         });
     }
 
@@ -174,11 +174,11 @@ class CacheService
     }
 
     /**
-     * Clear specific cache entries
+     * Clear plats cache
      */
-    public function clearDishesCache(): void
+    public function clearPlatsCache(): void
     {
-        $this->cache->delete('dishes.available');
+        $this->cache->delete('plats.available');
     }
 
     public function clearMenusCache(): void
@@ -198,12 +198,12 @@ class CacheService
     }
 
     /**
-     * Get popular dishes (cached analytics)
+     * Get popular plats (cached analytics)
      */
-    public function getPopularDishes(int $limit = 10): array
+    public function getPopularPlats(int $limit = 10): array
     {
-        return $this->cache->get('analytics.popular_dishes', function (ItemInterface $item) use ($limit): array {
-            $item->expiresAfter(7200); // 2 hours
+        return $this->cache->get('analytics.popular_plats', function (ItemInterface $item) use ($limit): array {
+            $item->expiresAfter(1800); // 30 minutes
             
             $qb = $this->entityManager->createQueryBuilder();
             $result = $qb->select('p.id, p.nom, COUNT(ca.id) as orderCount')

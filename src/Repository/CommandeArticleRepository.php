@@ -30,9 +30,9 @@ class CommandeArticleRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find most popular dishes
+     * Find most popular plats
      */
-    public function findMostPopularDishes(int $limit = 10): array
+    public function findMostPopularPlats(int $limit = 10): array
     {
         return $this->createQueryBuilder('ca')
             ->select('p.nom, p.id, SUM(ca.quantite) as totalQuantity')

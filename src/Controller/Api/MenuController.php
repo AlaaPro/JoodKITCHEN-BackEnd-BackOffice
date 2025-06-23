@@ -244,11 +244,11 @@ class MenuController extends AbstractController
             return $this->json(['success' => false, 'message' => 'Category not found'], 404);
         }
         
-        // Check if category has dishes
+        // Check if category has plats
         if ($category->getPlats()->count() > 0) {
             return $this->json([
                 'success' => false,
-                'message' => 'Cannot delete category with dishes. Move dishes to another category first.'
+                'message' => 'Cannot delete category with plats. Move plats to another category first.'
             ], 400);
         }
         
@@ -270,11 +270,11 @@ class MenuController extends AbstractController
     }
 
     // ========================
-    // DISHES CRUD
+    // PLATS CRUD
     // ========================
 
-    #[Route('/dishes', name: 'api_admin_dishes', methods: ['GET'])]
-    public function getDishes(Request $request): JsonResponse
+    #[Route('/plats', name: 'api_admin_plats', methods: ['GET'])]
+    public function getPlats(Request $request): JsonResponse
     {
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 20);
@@ -310,7 +310,7 @@ class MenuController extends AbstractController
         
         $total = count($queryBuilder->getQuery()->getResult());
         
-        $dishes = $queryBuilder
+        $plats = $queryBuilder
             ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit)
             ->orderBy('p.nom', 'ASC')
@@ -318,22 +318,22 @@ class MenuController extends AbstractController
             ->getResult();
         
         $data = [];
-        foreach ($dishes as $dish) {
+        foreach ($plats as $plat) {
             $data[] = [
-                'id' => $dish->getId(),
-                'nom' => $dish->getNom(),
-                'description' => $dish->getDescription(),
-                'prix' => $dish->getPrix(),
-                'category' => $dish->getCategory() ? [
-                    'id' => $dish->getCategory()->getId(),
-                    'nom' => $dish->getCategory()->getNom()
+                'id' => $plat->getId(),
+                'nom' => $plat->getNom(),
+                'description' => $plat->getDescription(),
+                'prix' => $plat->getPrix(),
+                'category' => $plat->getCategory() ? [
+                    'id' => $plat->getCategory()->getId(),
+                    'nom' => $plat->getCategory()->getNom()
                 ] : null,
-                'image' => $dish->getImage(),
-                'disponible' => $dish->getDisponible(),
-                'allergenes' => $dish->getAllergenes(),
-                'tempsPreparation' => $dish->getTempsPreparation(),
-                'createdAt' => $dish->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $dish->getUpdatedAt()?->format('Y-m-d H:i:s')
+                'image' => $plat->getImage(),
+                'disponible' => $plat->getDisponible(),
+                'allergenes' => $plat->getAllergenes(),
+                'tempsPreparation' => $plat->getTempsPreparation(),
+                'createdAt' => $plat->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'updatedAt' => $plat->getUpdatedAt()?->format('Y-m-d H:i:s')
             ];
         }
         
@@ -349,29 +349,29 @@ class MenuController extends AbstractController
         ]);
     }
 
-    #[Route('/dishes', name: 'api_admin_dishes_create', methods: ['POST'])]
-    public function createDish(Request $request): JsonResponse
+    #[Route('/plats', name: 'api_admin_plats_create', methods: ['POST'])]
+    public function createPlat(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         
-        $dish = new Plat();
-        $dish->setNom($data['nom'] ?? '');
-        $dish->setDescription($data['description'] ?? null);
-        $dish->setPrix($data['prix'] ?? '0.00');
-        $dish->setImage($data['image'] ?? null);
-        $dish->setDisponible($data['disponible'] ?? true);
-        $dish->setAllergenes($data['allergenes'] ?? null);
-        $dish->setTempsPreparation($data['tempsPreparation'] ?? null);
+        $plat = new Plat();
+        $plat->setNom($data['nom'] ?? '');
+        $plat->setDescription($data['description'] ?? null);
+        $plat->setPrix($data['prix'] ?? '0.00');
+        $plat->setImage($data['image'] ?? null);
+        $plat->setDisponible($data['disponible'] ?? true);
+        $plat->setAllergenes($data['allergenes'] ?? null);
+        $plat->setTempsPreparation($data['tempsPreparation'] ?? null);
         
         // Handle category
         if (!empty($data['categoryId'])) {
             $category = $this->categoryRepository->find($data['categoryId']);
             if ($category) {
-                $dish->setCategory($category);
+                $plat->setCategory($category);
             }
         }
         
-        $errors = $this->validator->validate($dish);
+        $errors = $this->validator->validate($plat);
         if (count($errors) > 0) {
             return $this->json([
                 'success' => false,
@@ -380,80 +380,80 @@ class MenuController extends AbstractController
             ], 400);
         }
         
-        $this->entityManager->persist($dish);
+        $this->entityManager->persist($plat);
         $this->entityManager->flush();
         
         return $this->json([
             'success' => true,
-            'message' => 'Dish created successfully',
+            'message' => 'Plat created successfully',
             'data' => [
-                'id' => $dish->getId(),
-                'nom' => $dish->getNom(),
-                'prix' => $dish->getPrix()
+                'id' => $plat->getId(),
+                'nom' => $plat->getNom(),
+                'prix' => $plat->getPrix()
             ]
         ], 201);
     }
 
-    #[Route('/dishes/{id}', name: 'api_admin_dishes_get', methods: ['GET'])]
-    public function getDish(int $id): JsonResponse
+    #[Route('/plats/{id}', name: 'api_admin_plats_get', methods: ['GET'])]
+    public function getPlat(int $id): JsonResponse
     {
-        $dish = $this->platRepository->find($id);
-        if (!$dish) {
-            return $this->json(['success' => false, 'message' => 'Dish not found'], 404);
+        $plat = $this->platRepository->find($id);
+        if (!$plat) {
+            return $this->json(['success' => false, 'message' => 'Plat not found'], 404);
         }
         
         return $this->json([
             'success' => true,
             'data' => [
-                'id' => $dish->getId(),
-                'nom' => $dish->getNom(),
-                'description' => $dish->getDescription(),
-                'prix' => $dish->getPrix(),
-                'category' => $dish->getCategory() ? [
-                    'id' => $dish->getCategory()->getId(),
-                    'nom' => $dish->getCategory()->getNom()
+                'id' => $plat->getId(),
+                'nom' => $plat->getNom(),
+                'description' => $plat->getDescription(),
+                'prix' => $plat->getPrix(),
+                'category' => $plat->getCategory() ? [
+                    'id' => $plat->getCategory()->getId(),
+                    'nom' => $plat->getCategory()->getNom()
                 ] : null,
-                'image' => $dish->getImage(),
-                'disponible' => $dish->getDisponible(),
-                'allergenes' => $dish->getAllergenes(),
-                'tempsPreparation' => $dish->getTempsPreparation(),
-                'createdAt' => $dish->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $dish->getUpdatedAt()?->format('Y-m-d H:i:s')
+                'image' => $plat->getImage(),
+                'disponible' => $plat->getDisponible(),
+                'allergenes' => $plat->getAllergenes(),
+                'tempsPreparation' => $plat->getTempsPreparation(),
+                'createdAt' => $plat->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'updatedAt' => $plat->getUpdatedAt()?->format('Y-m-d H:i:s')
             ]
         ]);
     }
 
-    #[Route('/dishes/{id}', name: 'api_admin_dishes_update', methods: ['PUT'])]
-    public function updateDish(int $id, Request $request): JsonResponse
+    #[Route('/plats/{id}', name: 'api_admin_plats_update', methods: ['PUT'])]
+    public function updatePlat(int $id, Request $request): JsonResponse
     {
-        $dish = $this->platRepository->find($id);
-        if (!$dish) {
-            return $this->json(['success' => false, 'message' => 'Dish not found'], 404);
+        $plat = $this->platRepository->find($id);
+        if (!$plat) {
+            return $this->json(['success' => false, 'message' => 'Plat not found'], 404);
         }
         
         $data = json_decode($request->getContent(), true);
         
-        $dish->setNom($data['nom'] ?? $dish->getNom());
-        $dish->setDescription($data['description'] ?? $dish->getDescription());
-        $dish->setPrix($data['prix'] ?? $dish->getPrix());
-        $dish->setImage($data['image'] ?? $dish->getImage());
-        $dish->setDisponible($data['disponible'] ?? $dish->getDisponible());
-        $dish->setAllergenes($data['allergenes'] ?? $dish->getAllergenes());
-        $dish->setTempsPreparation($data['tempsPreparation'] ?? $dish->getTempsPreparation());
+        $plat->setNom($data['nom'] ?? $plat->getNom());
+        $plat->setDescription($data['description'] ?? $plat->getDescription());
+        $plat->setPrix($data['prix'] ?? $plat->getPrix());
+        $plat->setImage($data['image'] ?? $plat->getImage());
+        $plat->setDisponible($data['disponible'] ?? $plat->getDisponible());
+        $plat->setAllergenes($data['allergenes'] ?? $plat->getAllergenes());
+        $plat->setTempsPreparation($data['tempsPreparation'] ?? $plat->getTempsPreparation());
         
         // Handle category change
         if (isset($data['categoryId'])) {
             if (!empty($data['categoryId'])) {
                 $category = $this->categoryRepository->find($data['categoryId']);
                 if ($category) {
-                    $dish->setCategory($category);
+                    $plat->setCategory($category);
                 }
             } else {
-                $dish->setCategory(null);
+                $plat->setCategory(null);
             }
         }
         
-        $errors = $this->validator->validate($dish);
+        $errors = $this->validator->validate($plat);
         if (count($errors) > 0) {
             return $this->json([
                 'success' => false,
@@ -466,37 +466,37 @@ class MenuController extends AbstractController
         
         return $this->json([
             'success' => true,
-            'message' => 'Dish updated successfully',
+            'message' => 'Plat updated successfully',
             'data' => [
-                'id' => $dish->getId(),
-                'nom' => $dish->getNom(),
-                'prix' => $dish->getPrix()
+                'id' => $plat->getId(),
+                'nom' => $plat->getNom(),
+                'prix' => $plat->getPrix()
             ]
         ]);
     }
 
-    #[Route('/dishes/{id}', name: 'api_admin_dishes_delete', methods: ['DELETE'])]
-    public function deleteDish(int $id): JsonResponse
+    #[Route('/plats/{id}', name: 'api_admin_plats_delete', methods: ['DELETE'])]
+    public function deletePlat(int $id): JsonResponse
     {
-        $dish = $this->platRepository->find($id);
-        if (!$dish) {
-            return $this->json(['success' => false, 'message' => 'Dish not found'], 404);
+        $plat = $this->platRepository->find($id);
+        if (!$plat) {
+            return $this->json(['success' => false, 'message' => 'Plat not found'], 404);
         }
         
-        // Check if dish is used in menus
-        if ($dish->getMenuPlats()->count() > 0) {
+        // Check if plat is used in menus
+        if ($plat->getMenuPlats()->count() > 0) {
             return $this->json([
                 'success' => false,
-                'message' => 'Cannot delete dish that is part of menus. Remove from menus first.'
+                'message' => 'Cannot delete plat that is part of menus. Remove from menus first.'
             ], 400);
         }
         
-        $this->entityManager->remove($dish);
+        $this->entityManager->remove($plat);
         $this->entityManager->flush();
         
         return $this->json([
             'success' => true,
-            'message' => 'Dish deleted successfully'
+            'message' => 'Plat deleted successfully'
         ]);
     }
 

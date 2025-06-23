@@ -72,11 +72,11 @@ class MobileApiController extends AbstractController
     public function getTodayMenu(): JsonResponse
     {
         $menuOfTheDay = $this->cacheService->getMenuOfTheDay();
-        $popularDishes = $this->cacheService->getPopularDishes(5);
+        $popularPlats = $this->cacheService->getPopularPlats(5);
 
         return new JsonResponse([
             'menu_of_the_day' => $menuOfTheDay,
-            'popular_dishes' => $popularDishes,
+            'popular_plats' => $popularPlats,
             'categories' => $this->getMenuCategories()
         ]);
     }
@@ -106,55 +106,50 @@ class MobileApiController extends AbstractController
     }
 
     /**
-     * Lightweight dish search for mobile
+     * Lightweight plat search for mobile
      */
-    #[Route('/dishes/search', name: 'api_mobile_dishes_search', methods: ['GET'])]
-    public function searchDishes(Request $request): JsonResponse
+    #[Route('/plats/search', name: 'api_mobile_plats_search', methods: ['GET'])]
+    public function searchPlats(Request $request): JsonResponse
     {
         $query = $request->query->get('q', '');
-        $category = $request->query->get('category');
         $maxPrice = $request->query->get('max_price');
-
-        $criteria = ['disponible' => true];
-        $limit = 20; // Mobile pagination
-
-        if ($category) {
-            $criteria['categorie'] = $category;
+        $limit = $request->query->getInt('limit', 10);
+        
+        if (empty($query)) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Search query is required'
+            ], 400);
         }
-
-        $dishes = $this->platRepository->findBy($criteria, ['nom' => 'ASC'], $limit);
-
+        
+        $criteria = ['disponible' => true];
+        $plats = $this->platRepository->findBy($criteria, ['nom' => 'ASC'], $limit);
+        
         // Filter by search query and price
-        $filteredDishes = array_filter($dishes, function($dish) use ($query, $maxPrice) {
-            $matchesQuery = empty($query) || 
-                stripos($dish->getNom(), $query) !== false || 
-                stripos($dish->getDescription(), $query) !== false;
+        $filteredPlats = array_filter($plats, function($plat) use ($query, $maxPrice) {
+            $matchesQuery = stripos($plat->getNom(), $query) !== false ||
+                           stripos($plat->getDescription(), $query) !== false;
+            $matchesPrice = !$maxPrice || floatval($plat->getPrix()) <= floatval($maxPrice);
             
-            $matchesPrice = !$maxPrice || floatval($dish->getPrix()) <= floatval($maxPrice);
-
             return $matchesQuery && $matchesPrice;
         });
-
-        $result = array_map(function($dish) {
+        
+        $result = array_map(function($plat) {
             return [
-                'id' => $dish->getId(),
-                'nom' => $dish->getNom(),
-                'prix' => $dish->getPrix(),
-                'categorie' => $dish->getCategorie(),
-                'image' => $dish->getImage(),
-                'temps_preparation' => $dish->getTempsPreparation(),
-                'allergenes' => $dish->getAllergenes()
+                'id' => $plat->getId(),
+                'nom' => $plat->getNom(),
+                'prix' => $plat->getPrix(),
+                'categorie' => $plat->getCategorie(),
+                'image' => $plat->getImage(),
+                'temps_preparation' => $plat->getTempsPreparation(),
+                'allergenes' => $plat->getAllergenes()
             ];
-        }, array_values($filteredDishes));
-
-        return new JsonResponse([
-            'dishes' => $result,
-            'total' => count($result),
-            'query' => $query,
-            'filters' => [
-                'category' => $category,
-                'max_price' => $maxPrice
-            ]
+        }, array_values($filteredPlats));
+        
+        return $this->json([
+            'success' => true,
+            'plats' => $result,
+            'total' => count($result)
         ]);
     }
 
@@ -239,7 +234,7 @@ class MobileApiController extends AbstractController
 
         // Essential data for offline functionality
         $syncData = [
-            'dishes' => $this->cacheService->getAvailableDishes(),
+            'dishes' => $this->cacheService->getAvailablePlats(),
             'menus' => $this->cacheService->getActiveMenus(),
             'categories' => $this->getMenuCategories(),
             'version' => '1.0',
@@ -324,11 +319,11 @@ class MobileApiController extends AbstractController
     private function getAdminDashboard(): array
     {
         $stats = $this->cacheService->getKitchenStats();
-        $popularDishes = $this->cacheService->getPopularDishes(3);
+        $popularPlats = $this->cacheService->getPopularPlats(3);
 
         return [
             'stats' => $stats,
-            'popular_dishes' => $popularDishes,
+            'popular_plats' => $popularPlats,
             'quick_stats' => [
                 'orders_today' => $stats['orders_today'],
                 'revenue_today' => $stats['revenue_today']

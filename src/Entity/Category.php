@@ -293,7 +293,7 @@ class Category
     }
 
     /**
-     * Count total dishes in this category and subcategories
+     * Count total plats in this category and subcategories
      */
     public function getTotalPlatsCount(): int
     {

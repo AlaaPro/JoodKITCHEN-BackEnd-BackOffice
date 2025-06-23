@@ -2,7 +2,7 @@
 
 ## 🍽️ Overview
 
-JoodKitchen is a comprehensive restaurant management system backend built with Symfony 6.4 and API Platform. It provides a complete RESTful API for managing a restaurant's operations including users, menus, dishes, orders, subscriptions, payments, and notifications.
+JoodKitchen is a comprehensive restaurant management system backend built with Symfony 6.4 and API Platform. It provides a complete RESTful API for managing a restaurant's operations including users, menus, plats, orders, subscriptions, payments, and notifications.
 
 **🔥 NEW**: Now features a complete **stateless token authentication system** perfect for mobile apps and frontend applications, with beautiful token generator interfaces and full API Platform docs integration!
 
@@ -28,12 +28,12 @@ The system includes 13 main entities with comprehensive relationships:
 
 #### Menu & Food Management
 - **Menu**: Restaurant menus (regular and daily specials)
-- **Plat**: Individual dishes with categories and pricing
-- **MenuPlat**: Junction table linking menus and dishes
+- **Plat**: Individual plats with categories and pricing
+- **MenuPlat**: Junction table linking menus and plats
 
 #### Order Management
 - **Commande**: Customer orders with status tracking
-- **CommandeArticle**: Order line items (dishes/menus with quantities)
+- **CommandeArticle**: Order line items (plats/menus with quantities)
 - **Payment**: Payment processing and tracking
 - **CommandeReduction**: Discounts and promotions
 
@@ -99,7 +99,7 @@ php get_token.php
 - `GET /api/auth/profile` - Get authenticated user profile
 
 #### Public Endpoints
-- `GET /api/plats` - Browse available dishes
+- `GET /api/plats` - Browse available plats
 - `GET /api/menus` - Browse available menus
 - `GET /api/docs` - Interactive API documentation
 
@@ -110,7 +110,7 @@ All CRUD operations available for:
 - Kitchen Profiles (`/api/kitchen_profiles`)
 - Admin Profiles (`/api/admin_profiles`)
 - Menus (`/api/menus`)
-- Dishes (`/api/plats`)
+- Plats (`/api/plats`)
 - Orders (`/api/commandes`)
 - Subscriptions (`/api/abonnements`)
 - Payments (`/api/payments`)
@@ -223,11 +223,11 @@ After loading fixtures:
 - **27 tables** with proper relationships
 - **Comprehensive indexing** for performance
 - **Foreign key constraints** for data integrity
-- **5 traditional Tunisian dishes**
+- **5 traditional Tunisian plats**
 - **2 complete menus**
 - **Sample orders and user data**
 
-## 🔒 Security Features
+## �� Security Features
 
 - **Custom token authentication** with SHA256 hashing
 - **Stateless security** (perfect for mobile apps)
@@ -279,7 +279,7 @@ const apiResponse = await fetch('/api/protected-endpoint', {
 ## 🚧 Future Enhancements
 
 ### Immediate Next Steps
-1. **File Upload**: Add image upload for dishes and profiles
+1. **File Upload**: Add image upload for plats and profiles
 2. **Email Notifications**: Integrate email service
 3. **SMS Integration**: Order status notifications
 4. **Payment Gateway**: Real payment processing

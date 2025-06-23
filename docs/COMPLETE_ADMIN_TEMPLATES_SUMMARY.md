@@ -47,8 +47,8 @@
 - ✅ Live notifications system
 - ✅ Performance metrics
 
-### 4. **Dishes Management** (`templates/admin/menu/dishes.html.twig`)
-**Route**: `admin_dishes` ✅ **[FIXED]**  
+### 4. **Plats Management** (`templates/admin/menu/plats.html.twig`)
+**Route**: `admin_plats` ✅ **[FIXED]**  
 **Features:**
 - ✅ Grid/List view toggle
 - ✅ Dish cards with images and descriptions
@@ -151,7 +151,7 @@
 1. ❌ **FIXED**: `admin_kitchen` route was expecting `admin/orders/kitchen.html.twig` 
    - ✅ **Solution**: Created template at correct path
    
-2. ❌ **FIXED**: `admin_dishes` route was expecting `admin/menu/dishes.html.twig`
+2. ❌ **FIXED**: `admin_plats` route was expecting `admin/menu/plats.html.twig`
    - ✅ **Solution**: Created template at correct path
    
 3. ❌ **FIXED**: Missing `admin/users/admins.html.twig` template
@@ -163,7 +163,7 @@
 ✅ admin_orders → templates/admin/orders/index.html.twig  
 ✅ admin_kitchen → templates/admin/orders/kitchen.html.twig [FIXED]
 ✅ admin_orders_tracking → templates/admin/orders/tracking.html.twig
-✅ admin_dishes → templates/admin/menu/dishes.html.twig [FIXED]
+✅ admin_plats → templates/admin/menu/plats.html.twig [FIXED]
 ✅ admin_menus → templates/admin/menu/menus.html.twig
 ✅ admin_categories → templates/admin/menu/categories.html.twig
 ✅ admin_users → templates/admin/users/index.html.twig
@@ -215,7 +215,7 @@ All templates are perfectly aligned with AdminController routes:
 - `admin_orders` - Orders management ✅
 - `admin_kitchen` - Kitchen operations ✅ **[FIXED]**
 - `admin_orders_tracking` - Delivery tracking ✅
-- `admin_dishes` - Dish management ✅ **[FIXED]**
+- `admin_plats` - Dish management ✅ **[FIXED]**
 - `admin_menus` - Menu management ✅
 - `admin_categories` - Category management ✅
 - `admin_users` - Customer management ✅
@@ -373,7 +373,7 @@ All components use consistent utility classes for easy theming.
 
 ### **No More Template Errors:**
 - ❌ `Unable to find template "admin/orders/kitchen.html.twig"` → ✅ **FIXED**
-- ❌ `Unable to find template "admin/menu/dishes.html.twig"` → ✅ **FIXED**  
+- ❌ `Unable to find template "admin/menu/plats.html.twig"` → ✅ **FIXED**  
 - ❌ `Unable to find template "admin/users/admins.html.twig"` → ✅ **CREATED**
 
 ### **What's Complete:**

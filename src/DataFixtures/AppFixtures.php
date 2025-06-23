@@ -81,7 +81,7 @@ class AppFixtures extends Fixture
         $clientProfile->setPointsFidelite(150);
         $manager->persist($clientProfile);
 
-        // Create Dishes
+        // Create Plats
         $plats = [
             [
                 'nom' => 'Couscous Royal',
@@ -149,7 +149,7 @@ class AppFixtures extends Fixture
         $menuComplet->setActif(true);
         $manager->persist($menuComplet);
 
-        // Add dishes to menu
+        // Add plats to menu
         $menuPlat1 = new MenuPlat();
         $menuPlat1->setMenu($menuComplet);
         $menuPlat1->setPlat($platEntities[2]); // Salade Méchouia

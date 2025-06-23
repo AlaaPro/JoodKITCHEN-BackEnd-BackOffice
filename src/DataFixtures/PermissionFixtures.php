@@ -62,7 +62,7 @@ class PermissionFixtures extends Fixture
             // Kitchen Management
             ['name' => 'view_kitchen', 'description' => 'View kitchen operations', 'category' => 'kitchen', 'priority' => 100],
             ['name' => 'manage_kitchen', 'description' => 'Manage kitchen operations', 'category' => 'kitchen', 'priority' => 90],
-            ['name' => 'manage_dishes', 'description' => 'Create and manage dishes', 'category' => 'kitchen', 'priority' => 80],
+            ['name' => 'manage_plats', 'description' => 'Create and manage plats', 'category' => 'kitchen', 'priority' => 80],
             ['name' => 'manage_menus', 'description' => 'Create and manage menus', 'category' => 'kitchen', 'priority' => 70],
 
             // Inventory Management
@@ -142,7 +142,7 @@ class PermissionFixtures extends Fixture
                     'view_admins', 'manage_admins', 'edit_admin', 'view_user_details',
                     'view_permissions', 'view_roles', 'view_permission_matrix',
                     'view_orders', 'manage_orders', 'cancel_orders',
-                    'view_kitchen', 'manage_kitchen', 'manage_dishes', 'manage_menus',
+                    'view_kitchen', 'manage_kitchen', 'manage_plats', 'manage_menus',
                     'view_inventory', 'manage_inventory', 'view_suppliers',
                     'view_customers', 'manage_customers', 'view_customer_analytics',
                     'view_financial', 'view_revenue',
@@ -160,7 +160,7 @@ class PermissionFixtures extends Fixture
                 'permissions' => [
                     'view_dashboard',
                     'view_orders', 'manage_orders',
-                    'view_kitchen', 'manage_kitchen', 'manage_dishes', 'manage_menus',
+                    'view_kitchen', 'manage_kitchen', 'manage_plats', 'manage_menus',
                     'view_inventory', 'manage_inventory',
                     'view_customers',
                     // Legacy permissions

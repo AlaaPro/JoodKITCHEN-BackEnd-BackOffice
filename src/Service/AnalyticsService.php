@@ -41,9 +41,9 @@ class AnalyticsService
                 ? $orderStats['total_revenue'] / $orderStats['total_orders'] 
                 : 0;
 
-            // Most popular dishes
+            // Most popular plats
             $qb = $this->entityManager->createQueryBuilder();
-            $popularDishes = $qb->select('p.nom, COUNT(ca.id) as quantity_sold, SUM(ca.prixUnitaire * ca.quantite) as revenue')
+            $popularPlats = $qb->select('p.nom, COUNT(ca.id) as quantity_sold, SUM(ca.prixUnitaire * ca.quantite) as revenue')
                 ->from('App\Entity\CommandeArticle', 'ca')
                 ->join('ca.plat', 'p')
                 ->join('ca.commande', 'c')
@@ -75,7 +75,7 @@ class AnalyticsService
                     'total_revenue' => (float)$orderStats['total_revenue'],
                     'avg_order_value' => round($avgOrderValue, 2),
                 ],
-                'popular_dishes' => $popularDishes,
+                'popular_plats' => $popularPlats,
                 'orders_by_hour' => $ordersByHour,
                 'generated_at' => (new \DateTime())->format('Y-m-d H:i:s')
             ];
@@ -230,7 +230,7 @@ class AnalyticsService
                 ->getQuery()
                 ->getArrayResult();
 
-            // Low performers (dishes not ordered recently)
+            // Low performers (plats not ordered recently)
             $qb = $this->entityManager->createQueryBuilder();
             $lowPerformers = $qb->select('p.nom, p.categorie, p.prix')
                 ->from('App\Entity\Plat', 'p')
@@ -411,7 +411,7 @@ class AnalyticsService
         if (count($lowPerformers) > 0) {
             $recommendations[] = [
                 'type' => 'promotion',
-                'message' => 'Consider promoting ' . count($lowPerformers) . ' underperforming dishes',
+                'message' => 'Consider promoting ' . count($lowPerformers) . ' underperforming plats',
                 'action' => 'Create special offers for low-selling items'
             ];
         }
@@ -421,7 +421,7 @@ class AnalyticsService
         if (count($highPerformers) > 0) {
             $recommendations[] = [
                 'type' => 'restock',
-                'message' => 'Ensure adequate inventory for ' . count($highPerformers) . ' popular dishes',
+                'message' => 'Ensure adequate inventory for ' . count($highPerformers) . ' popular plats',
                 'action' => 'Monitor stock levels for high-demand items'
             ];
         }

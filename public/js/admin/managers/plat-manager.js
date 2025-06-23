@@ -1,9 +1,9 @@
 /**
- * JoodKitchen Dish Management System
- * Handles dish CRUD operations with advanced filtering and views
+ * JoodKitchen Plat Management System
+ * Handles plat CRUD operations with advanced filtering and views
  */
 
-class DishManager {
+class PlatManager {
     constructor() {
         this.api = new MenuAPI();
         this.currentView = 'grid';
@@ -24,8 +24,8 @@ class DishManager {
         if (gridBtn) gridBtn.addEventListener('click', () => this.setView('grid'));
         if (listBtn) listBtn.addEventListener('click', () => this.setView('list'));
 
-        // Create dish button
-        const createBtn = document.querySelector('[data-bs-target="#addDishModal"]');
+        // Create plat button
+        const createBtn = document.querySelector('[data-bs-target="#addPlatModal"]');
         if (createBtn) {
             createBtn.addEventListener('click', () => this.showCreateModal());
         }
@@ -39,14 +39,14 @@ class DishManager {
         if (categoryFilter) {
             categoryFilter.addEventListener('change', (e) => {
                 this.filters.category = e.target.value;
-                this.loadDishes();
+                this.loadPlats();
             });
         }
 
         if (statusFilter) {
             statusFilter.addEventListener('change', (e) => {
                 this.filters.status = e.target.value;
-                this.loadDishes();
+                this.loadPlats();
             });
         }
 
@@ -56,7 +56,7 @@ class DishManager {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     this.filters.search = e.target.value;
-                    this.loadDishes();
+                    this.loadPlats();
                 }, 500);
             });
         }
@@ -65,14 +65,14 @@ class DishManager {
             clearFilters.addEventListener('click', () => this.clearAllFilters());
         }
 
-        // Save dish button
-        const saveBtn = document.getElementById('saveDishBtn');
+        // Save plat button
+        const saveBtn = document.getElementById('savePlatBtn');
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => this.saveDish());
+            saveBtn.addEventListener('click', () => this.savePlat());
         }
     }
 
-    async loadDishes() {
+    async loadPlats() {
         try {
             const params = {
                 page: this.currentPage,
@@ -80,14 +80,14 @@ class DishManager {
                 ...this.filters
             };
 
-            const response = await this.api.getDishes(params);
+            const response = await this.api.getPlats(params);
             if (response.success) {
-                this.renderDishes(response.data);
+                this.renderPlats(response.data);
                 this.updatePagination(response.pagination);
-                this.updateDishStats(response.data);
+                this.updatePlatStats(response.data);
             }
         } catch (error) {
-            this.showError('Error loading dishes: ' + error.message);
+            this.showError('Error loading plats: ' + error.message);
         }
     }
 
@@ -102,33 +102,33 @@ class DishManager {
         }
     }
 
-    renderDishes(dishes) {
-        const container = document.getElementById('dishesContainer');
+    renderPlats(plats) {
+        const container = document.getElementById('platsContainer');
         if (!container) return;
 
         if (this.currentView === 'grid') {
-            this.renderGridView(dishes, container);
+            this.renderGridView(plats, container);
         } else {
-            this.renderListView(dishes, container);
+            this.renderListView(plats, container);
         }
     }
 
-    renderGridView(dishes, container) {
+    renderGridView(plats, container) {
         const gridContainer = document.getElementById('gridView') || document.createElement('div');
         gridContainer.id = 'gridView';
         gridContainer.className = 'row g-4';
         gridContainer.innerHTML = '';
 
-        dishes.forEach(dish => {
-            const dishCard = this.createDishCard(dish);
-            gridContainer.appendChild(dishCard);
+        plats.forEach(plat => {
+            const platCard = this.createPlatCard(plat);
+            gridContainer.appendChild(platCard);
         });
 
         container.innerHTML = '';
         container.appendChild(gridContainer);
     }
 
-    renderListView(dishes, container) {
+    renderListView(plats, container) {
         const listContainer = document.createElement('div');
         listContainer.id = 'listView';
         listContainer.className = 'table-responsive';
@@ -146,7 +146,7 @@ class DishManager {
                     </tr>
                 </thead>
                 <tbody>
-                    ${dishes.map(dish => this.createDishRow(dish)).join('')}
+                    ${plats.map(plat => this.createPlatRow(plat)).join('')}
                 </tbody>
             </table>
         `;
@@ -155,52 +155,52 @@ class DishManager {
         container.appendChild(listContainer);
     }
 
-    createDishCard(dish) {
+    createPlatCard(plat) {
         const col = document.createElement('div');
-        col.className = 'col-lg-4 col-md-6 dish-card';
-        col.dataset.categoryId = dish.category?.id || '';
-        col.dataset.status = dish.disponible ? 'available' : 'unavailable';
+        col.className = 'col-lg-4 col-md-6 plat-card';
+        col.dataset.categoryId = plat.category?.id || '';
+        col.dataset.status = plat.disponible ? 'available' : 'unavailable';
         
         col.innerHTML = `
             <div class="card h-100">
                 <div class="position-relative">
-                    <img src="${dish.image || 'https://via.placeholder.com/300x200/a9b73e/ffffff?text=' + encodeURIComponent(dish.nom)}" 
-                         class="card-img-top" alt="${dish.nom}" style="height: 200px; object-fit: cover;">
+                    <img src="${plat.image || 'https://via.placeholder.com/300x200/a9b73e/ffffff?text=' + encodeURIComponent(plat.nom)}" 
+                         class="card-img-top" alt="${plat.nom}" style="height: 200px; object-fit: cover;">
                     <div class="position-absolute top-0 end-0 m-2">
-                        ${dish.popular ? '<span class="badge jood-primary-bg">Populaire</span>' : ''}
+                        ${plat.popular ? '<span class="badge jood-primary-bg">Populaire</span>' : ''}
                     </div>
                     <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge ${dish.disponible ? 'bg-success' : 'bg-danger'}">
-                            ${dish.disponible ? 'Disponible' : 'Indisponible'}
+                        <span class="badge ${plat.disponible ? 'bg-success' : 'bg-danger'}">
+                            ${plat.disponible ? 'Disponible' : 'Indisponible'}
                         </span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">${dish.nom}</h5>
-                        <span class="fw-bold jood-primary fs-5">${dish.prix}€</span>
+                        <h5 class="card-title mb-0">${plat.nom}</h5>
+                        <span class="fw-bold jood-primary fs-5">${plat.prix}€</span>
                     </div>
                     <p class="card-text text-muted small mb-3">
-                        ${dish.description || 'Aucune description disponible'}
+                        ${plat.description || 'Aucune description disponible'}
                     </p>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <small class="text-muted">
-                            ${dish.tempsPreparation ? `<i class="fas fa-clock"></i> ${dish.tempsPreparation} min` : ''}
+                            ${plat.tempsPreparation ? `<i class="fas fa-clock"></i> ${plat.tempsPreparation} min` : ''}
                         </small>
                         <small class="text-muted">
-                            ${dish.allergenes ? `<i class="fas fa-exclamation-triangle"></i> Allergènes` : ''}
+                            ${plat.allergenes ? `<i class="fas fa-exclamation-triangle"></i> Allergènes` : ''}
                         </small>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-secondary">${dish.category?.nom || 'Sans catégorie'}</span>
+                        <span class="badge bg-secondary">${plat.category?.nom || 'Sans catégorie'}</span>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" onclick="dishManager.editDish(${dish.id})" title="Modifier">
+                            <button class="btn btn-outline-primary" onclick="platManager.editPlat(${plat.id})" title="Modifier">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-outline-success" onclick="dishManager.duplicateDish(${dish.id})" title="Dupliquer">
+                            <button class="btn btn-outline-success" onclick="platManager.duplicatePlat(${plat.id})" title="Dupliquer">
                                 <i class="fas fa-copy"></i>
                             </button>
-                            <button class="btn btn-outline-danger" onclick="dishManager.deleteDish(${dish.id})" title="Supprimer">
+                            <button class="btn btn-outline-danger" onclick="platManager.deletePlat(${plat.id})" title="Supprimer">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -212,37 +212,37 @@ class DishManager {
         return col;
     }
 
-    createDishRow(dish) {
+    createPlatRow(plat) {
         return `
             <tr>
                 <td>
-                    <img src="${dish.image || 'https://via.placeholder.com/50x50/a9b73e/ffffff'}" 
-                         alt="${dish.nom}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                    <img src="${plat.image || 'https://via.placeholder.com/50x50/a9b73e/ffffff'}"
+                         alt="${plat.nom}" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
                 </td>
                 <td>
-                    <strong>${dish.nom}</strong>
-                    <br><small class="text-muted">${dish.description ? dish.description.substring(0, 50) + '...' : ''}</small>
+                    <strong>${plat.nom}</strong>
+                    <br><small class="text-muted">${plat.description ? plat.description.substring(0, 50) + '...' : ''}</small>
                 </td>
                 <td>
-                    <span class="badge bg-secondary">${dish.category?.nom || 'Sans catégorie'}</span>
+                    <span class="badge bg-secondary">${plat.category?.nom || 'Sans catégorie'}</span>
                 </td>
                 <td>
-                    <span class="fw-bold jood-primary">${dish.prix}€</span>
+                    <span class="fw-bold jood-primary">${plat.prix}€</span>
                 </td>
                 <td>
-                    <span class="badge ${dish.disponible ? 'bg-success' : 'bg-danger'}">
-                        ${dish.disponible ? 'Disponible' : 'Indisponible'}
+                    <span class="badge ${plat.disponible ? 'bg-success' : 'bg-danger'}">
+                        ${plat.disponible ? 'Disponible' : 'Indisponible'}
                     </span>
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="dishManager.editDish(${dish.id})" title="Modifier">
+                        <button class="btn btn-outline-primary" onclick="platManager.editPlat(${plat.id})" title="Modifier">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-outline-success" onclick="dishManager.duplicateDish(${dish.id})" title="Dupliquer">
+                        <button class="btn btn-outline-success" onclick="platManager.duplicatePlat(${plat.id})" title="Dupliquer">
                             <i class="fas fa-copy"></i>
                         </button>
-                        <button class="btn btn-outline-danger" onclick="dishManager.deleteDish(${dish.id})" title="Supprimer">
+                        <button class="btn btn-outline-danger" onclick="platManager.deletePlat(${plat.id})" title="Supprimer">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -258,64 +258,61 @@ class DishManager {
         const gridBtn = document.getElementById('gridViewBtn');
         const listBtn = document.getElementById('listViewBtn');
         
-        if (gridBtn && listBtn) {
-            gridBtn.classList.toggle('active', view === 'grid');
-            listBtn.classList.toggle('active', view === 'list');
-        }
+        if (gridBtn) gridBtn.classList.toggle('active', view === 'grid');
+        if (listBtn) listBtn.classList.toggle('active', view === 'list');
         
-        this.loadDishes();
+        // Reload plats to render in new view
+        this.loadPlats();
     }
 
     populateCategoryFilters(categories) {
         const categoryFilter = document.getElementById('categoryFilter');
-        if (!categoryFilter) return;
-
-        // Clear existing options except first one
-        while (categoryFilter.children.length > 1) {
-            categoryFilter.removeChild(categoryFilter.lastChild);
+        const categorySelect = document.querySelector('[name="categoryId"]');
+        
+        if (categoryFilter) {
+            categoryFilter.innerHTML = '<option value="">Toutes les catégories</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.nom;
+                categoryFilter.appendChild(option);
+            });
         }
-
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.nom;
-            categoryFilter.appendChild(option);
-
-            // Add subcategories
-            if (category.sousCategories) {
-                category.sousCategories.forEach(subCategory => {
-                    const subOption = document.createElement('option');
-                    subOption.value = subCategory.id;
-                    subOption.textContent = `-- ${subCategory.nom}`;
-                    categoryFilter.appendChild(subOption);
-                });
-            }
-        });
+        
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Sélectionner...</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.nom;
+                categorySelect.appendChild(option);
+            });
+        }
     }
 
     showCreateModal() {
-        this.resetDishForm();
-        const modal = document.getElementById('addDishModal');
+        this.resetPlatForm();
+        const modal = document.getElementById('addPlatModal');
         if (modal) {
             const modalInstance = new coreui.Modal(modal);
             modalInstance.show();
         }
     }
 
-    async editDish(id) {
+    async editPlat(id) {
         try {
-            const response = await this.api.getDish(id);
+            const response = await this.api.getPlat(id);
             if (response.success) {
-                this.fillDishForm(response.data);
+                this.fillPlatForm(response.data);
                 this.showEditModal(id);
             }
         } catch (error) {
-            this.showError('Error loading dish: ' + error.message);
+            this.showError('Error loading plat: ' + error.message);
         }
     }
 
-    async saveDish() {
-        const form = document.getElementById('dishForm');
+    async savePlat() {
+        const form = document.getElementById('platForm');
         const formData = new FormData(form);
         
         const data = {
@@ -330,61 +327,61 @@ class DishManager {
         };
 
         try {
-            const dishId = form.dataset.dishId;
+            const platId = form.dataset.platId;
             let response;
 
-            if (dishId) {
-                response = await this.api.updateDish(dishId, data);
+            if (platId) {
+                response = await this.api.updatePlat(platId, data);
             } else {
-                response = await this.api.createDish(data);
+                response = await this.api.createPlat(data);
             }
 
             if (response.success) {
                 this.hideModal();
-                this.loadDishes();
+                this.loadPlats();
                 this.showSuccess(response.message);
             } else {
                 this.showError(response.message);
             }
         } catch (error) {
-            this.showError('Error saving dish: ' + error.message);
+            this.showError('Error saving plat: ' + error.message);
         }
     }
 
-    async deleteDish(id) {
+    async deletePlat(id) {
         if (!confirm('Êtes-vous sûr de vouloir supprimer ce plat ?')) {
             return;
         }
 
         try {
-            const response = await this.api.deleteDish(id);
+            const response = await this.api.deletePlat(id);
             if (response.success) {
-                this.loadDishes();
+                this.loadPlats();
                 this.showSuccess(response.message);
             } else {
                 this.showError(response.message);
             }
         } catch (error) {
-            this.showError('Error deleting dish: ' + error.message);
+            this.showError('Error deleting plat: ' + error.message);
         }
     }
 
-    async duplicateDish(id) {
+    async duplicatePlat(id) {
         try {
-            const response = await this.api.getDish(id);
+            const response = await this.api.getPlat(id);
             if (response.success) {
-                const dish = response.data;
-                dish.nom = dish.nom + ' (Copie)';
-                delete dish.id;
+                const plat = response.data;
+                plat.nom = plat.nom + ' (Copie)';
+                delete plat.id;
                 
-                const createResponse = await this.api.createDish(dish);
+                const createResponse = await this.api.createPlat(plat);
                 if (createResponse.success) {
-                    this.loadDishes();
+                    this.loadPlats();
                     this.showSuccess('Plat dupliqué avec succès');
                 }
             }
         } catch (error) {
-            this.showError('Error duplicating dish: ' + error.message);
+            this.showError('Error duplicating plat: ' + error.message);
         }
     }
 
@@ -404,47 +401,47 @@ class DishManager {
         if (statusFilter) statusFilter.value = '';
         if (searchInput) searchInput.value = '';
 
-        this.loadDishes();
+        this.loadPlats();
     }
 
-    resetDishForm() {
-        const form = document.getElementById('dishForm');
+    resetPlatForm() {
+        const form = document.getElementById('platForm');
         if (form) {
             form.reset();
-            delete form.dataset.dishId;
+            delete form.dataset.platId;
         }
     }
 
-    fillDishForm(dish) {
-        const form = document.getElementById('dishForm');
+    fillPlatForm(plat) {
+        const form = document.getElementById('platForm');
         if (!form) return;
 
-        form.dataset.dishId = dish.id;
+        form.dataset.platId = plat.id;
         
         const fields = ['nom', 'description', 'prix', 'image', 'allergenes', 'tempsPreparation'];
         fields.forEach(field => {
             const input = form.querySelector(`[name="${field}"]`);
-            if (input && dish[field] !== undefined) {
-                input.value = dish[field];
+            if (input && plat[field] !== undefined) {
+                input.value = plat[field];
             }
         });
 
         const categorySelect = form.querySelector('[name="categoryId"]');
-        if (categorySelect && dish.category) {
-            categorySelect.value = dish.category.id;
+        if (categorySelect && plat.category) {
+            categorySelect.value = plat.category.id;
         }
 
         const disponibleCheckbox = form.querySelector('[name="disponible"]');
         if (disponibleCheckbox) {
-            disponibleCheckbox.checked = dish.disponible;
+            disponibleCheckbox.checked = plat.disponible;
         }
     }
 
-    updateDishStats(dishes) {
+    updatePlatStats(plats) {
         // Update stats widgets if they exist
         const totalWidget = document.querySelector('.widget-value');
         if (totalWidget) {
-            totalWidget.textContent = dishes.length;
+            totalWidget.textContent = plats.length;
         }
     }
 
@@ -464,7 +461,7 @@ class DishManager {
     }
 
     hideModal() {
-        const modal = document.getElementById('addDishModal');
+        const modal = document.getElementById('addPlatModal');
         if (modal) {
             const modalInstance = coreui.Modal.getInstance(modal);
             if (modalInstance) {
@@ -472,13 +469,4 @@ class DishManager {
             }
         }
     }
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('dishesContainer')) {
-        window.dishManager = new DishManager();
-        dishManager.loadCategories();
-        dishManager.loadDishes();
-    }
-}); 
+} 

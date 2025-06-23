@@ -602,7 +602,7 @@ class CategoryManager {
         const totalCategories = allCategories.length;
         const mainCategories = categories.length; // Only main categories from API
         const totalSubCategories = categories.reduce((sum, cat) => sum + (cat.sousCategories?.length || 0), 0);
-        const totalDishes = allCategories.reduce((sum, cat) => sum + (cat.dishCount || 0), 0);
+        const totalPlats = allCategories.reduce((sum, cat) => sum + (cat.dishCount || 0), 0);
         
         // Count actif/visible including sub-categories
         const activeCategories = allCategories.filter(c => c.actif).length;
@@ -611,7 +611,7 @@ class CategoryManager {
         
         // Update main stats widgets
         this.updateStatWidget('.stat-categories', totalCategories);
-        this.updateStatWidget('.stat-dishes', totalDishes);
+        this.updateStatWidget('.stat-plats', totalPlats);
         this.updateStatWidget('.stat-active', activeCategories);
         
         // Update detailed statistics in sidebar
@@ -629,7 +629,7 @@ class CategoryManager {
             total: totalCategories,
             main: mainCategories,
             sub: totalSubCategories,
-            dishes: totalDishes,
+            plats: totalPlats,
             active: activeCategories,
             visible: visibleCategories,
             hidden: hiddenCategories

@@ -1,0 +1,349 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Plats - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item active">Plats</li>
+{% endblock %}
+
+{% block content %}
+<!-- Dishes Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-0 jood-dark">Gestion des Plats</h1>
+                <p class="text-muted">Gérez votre carte et vos spécialités</p>
+            </div>
+            <div>
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addPlatModal">
+                    <i class="fas fa-plus"></i> Nouveau Plat
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="gridViewBtn">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="btn btn-outline-primary" id="listViewBtn">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dishes Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value stat-total">0</div>
+                        <div class="widget-label">Total Plats</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-utensils fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value stat-available">0</div>
+                        <div class="widget-label">Disponibles</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value stat-unavailable">0</div>
+                        <div class="widget-label">En rupture</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value stat-average-price">0€</div>
+                        <div class="widget-label">Prix moyen</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-euro-sign fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <select class="form-select" id="categoryFilter">
+                    <option value="">Toutes les catégories</option>
+                    <option value="entrees">Entrées</option>
+                    <option value="plats">Plats principaux</option>
+                    <option value="desserts">Desserts</option>
+                    <option value="boissons">Boissons</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                    <option value="">Tous les statuts</option>
+                    <option value="available">Disponible</option>
+                    <option value="unavailable">Indisponible</option>
+                    <option value="out_of_stock">En rupture</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" class="form-control" placeholder="Rechercher un plat..." id="searchInput">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" id="clearFilters">
+                    <i class="fas fa-times"></i> Effacer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Plats Grid -->
+<div id="platsContainer">
+    <!-- Loading state -->
+    <div class="text-center p-4 text-muted">
+        <i class="fas fa-spinner fa-spin"></i> Chargement des plats...
+    </div>
+</div>
+
+<!-- Add Plat Modal -->
+<div class="modal fade" id="addPlatModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header jood-primary-bg">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-plus"></i> Nouveau Plat
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="platForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Nom du plat *</label>
+                            <input type="text" class="form-control" name="nom" placeholder="Ex: Couscous Royal" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prix (€) *</label>
+                            <input type="number" class="form-control" name="prix" step="0.10" placeholder="16.90" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3" placeholder="Description du plat..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-select" name="categoryId">
+                                <option value="">Sélectionner...</option>
+                                <!-- Options will be populated by PlatManager -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Temps de préparation (min)</label>
+                            <input type="number" class="form-control" name="tempsPreparation" placeholder="30">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Allergènes</label>
+                            <input type="text" class="form-control" name="allergenes" placeholder="Gluten, Lactose...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ingrédients principaux</label>
+                            <input type="text" class="form-control" name="ingredients" placeholder="Agneau, Légumes...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Image du plat</label>
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                        </div>
+                        <div class="col-12">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="disponible" id="platAvailable" checked>
+                                        <label class="form-check-label" for="platAvailable">
+                                            <i class="fas fa-check-circle text-success"></i> Disponible
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="populaire" id="platPopular">
+                                        <label class="form-check-label" for="platPopular">
+                                            <i class="fas fa-star text-warning"></i> Populaire
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="vegetarien" id="platVegetarian">
+                                        <label class="form-check-label" for="platVegetarian">
+                                            <i class="fas fa-leaf text-success"></i> Végétarien
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button type="button" class="btn btn-primary" id="savePlatBtn">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<!-- Menu API -->
+<script src="{{ asset('js/admin/managers/menu-api.js') }}"></script>
+<!-- Plat Manager -->
+<script src="{{ asset('js/admin/managers/plat-manager.js') }}"></script>
+
+<script>
+// Initialize Plat Manager when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🍽️ Plats page loaded - initializing PlatManager');
+    
+    // Check authentication first
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+        console.error('❌ No admin token found');
+        window.location.href = '{{ path('admin_login') }}';
+        return;
+    }
+    
+    // Initialize PlatManager
+    window.platManager = new PlatManager();
+    
+    // Load plats and categories immediately
+    platManager.loadPlats();
+    platManager.loadCategories();
+    
+    console.log('✅ PlatManager initialized and loading data');
+});
+</script>
+
+<style>
+/* Plat card enhancements */
+.plat-card {
+    transition: all 0.3s ease;
+}
+
+.plat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* View toggle buttons */
+.btn-group .btn.active {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+    color: white;
+}
+
+/* Filter enhancements */
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--jood-primary);
+    box-shadow: 0 0 0 0.2rem rgba(169, 183, 62, 0.25);
+}
+
+/* Loading state */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form enhancements */
+.form-check-label {
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+}
+
+/* Badge styles */
+.badge.jood-primary-bg {
+    background-color: var(--jood-primary) !important;
+}
+
+.badge.jood-warning-bg {
+    background-color: #f39c12 !important;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.card:hover {
+    border-color: var(--jood-primary);
+    box-shadow: 0 4px 12px rgba(169, 183, 62, 0.15);
+}
+
+/* List view enhancements */
+.table-hover tbody tr:hover {
+    background-color: rgba(169, 183, 62, 0.05);
+}
+
+.table th {
+    border-top: none;
+    background-color: var(--jood-primary);
+    color: white;
+    font-weight: 600;
+}
+</style>
+{% endblock %} 

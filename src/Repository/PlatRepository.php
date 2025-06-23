@@ -17,9 +17,9 @@ class PlatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find available dishes
+     * Find available plats
      */
-    public function findAvailableDishes(): array
+    public function findAvailablePlats(): array
     {
         return $this->createQueryBuilder('p')
             ->andWhere('p.disponible = :disponible')
@@ -30,7 +30,7 @@ class PlatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find dishes by category
+     * Find plats by category
      */
     public function findByCategory(string $category): array
     {
@@ -45,7 +45,7 @@ class PlatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search dishes by name
+     * Search plats by name
      */
     public function searchByName(string $searchTerm): array
     {
@@ -60,7 +60,7 @@ class PlatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find dishes by price range
+     * Find plats by price range
      */
     public function findByPriceRange(float $minPrice, float $maxPrice): array
     {

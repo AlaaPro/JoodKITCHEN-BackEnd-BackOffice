@@ -17,7 +17,7 @@ class MenuPlatRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find dishes by menu
+     * Find plats by menu
      */
     public function findByMenu(int $menuId): array
     {

@@ -40,14 +40,14 @@ async function loadDashboardStats() {
             orders: 156,
             revenue: 2847.50,
             customers: 89,
-            dishes: 12
+            plats: 12
         };
         
         // Update stat widgets
         updateStatWidget('stats-orders', stats.orders);
         updateStatWidget('stats-revenue', `${stats.revenue}€`);
         updateStatWidget('stats-users', stats.customers);
-        updateStatWidget('stats-dishes', stats.dishes);
+        updateStatWidget('stats-plats', stats.plats);
         
     } catch (error) {
         console.error('Error loading dashboard stats:', error);
@@ -132,7 +132,7 @@ function initializeMainChart() {
     });
 }
 
-// Initialize doughnut chart for top dishes
+// Initialize doughnut chart for top plats
 function initializeDoughnutChart() {
     const ctx = document.getElementById('doughnut-chart');
     if (!ctx) return;
@@ -191,7 +191,7 @@ function initializeCardCharts() {
             [10, 15, 12, 20, 18, 25, 22], // Orders
             [300, 450, 380, 520, 480, 620, 580], // Revenue
             [5, 8, 6, 10, 12, 9, 15], // Customers
-            [2, 3, 4, 2, 5, 3, 4] // Dishes
+            [2, 3, 4, 2, 5, 3, 4] // Plats
         ];
         
         const colors = ['#ffffff', '#ffffff', '#ffffff', '#ffffff'];

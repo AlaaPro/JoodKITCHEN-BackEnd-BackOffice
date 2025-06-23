@@ -85,22 +85,22 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Dishes management
+     * Plats management
      */
-    #[Route('/dishes', name: 'admin_dishes', methods: ['GET'])]
-    public function dishes(): Response
+    #[Route('/plats', name: 'admin_plats', methods: ['GET'])]
+    public function plats(): Response
     {
-        return $this->render('admin/menu/dishes.html.twig');
+        return $this->render('admin/menu/plats.html.twig');
     }
 
-    #[Route('/dishes/create', name: 'admin_dishes_create', methods: ['GET'])]
-    public function createDish(): Response
+    #[Route('/plats/create', name: 'admin_plats_create', methods: ['GET'])]
+    public function createPlat(): Response
     {
         return $this->render('admin/menu/create_dish.html.twig');
     }
 
-    #[Route('/dishes/{id}/edit', name: 'admin_dishes_edit', methods: ['GET'])]
-    public function editDish(int $id): Response
+    #[Route('/plats/{id}/edit', name: 'admin_plats_edit', methods: ['GET'])]
+    public function editPlat(int $id): Response
     {
         return $this->render('admin/menu/edit_dish.html.twig', [
             'dishId' => $id
