@@ -635,58 +635,92 @@ class MenuController extends AbstractController
     #[Route('/menus', name: 'api_admin_menus_create', methods: ['POST'])]
     public function createMenu(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        
-        $menu = new Menu();
-        $menu->setNom($data['nom'] ?? '');
-        $menu->setDescription($data['description'] ?? null);
-        $menu->setType($data['type'] ?? 'normal');
-        $menu->setJourSemaine($data['jourSemaine'] ?? null);
-        $menu->setPrix($data['prix'] ?? '0.00');
-        $menu->setTag($data['tag'] ?? null);
-        $menu->setActif($data['actif'] ?? true);
-        
-        if (!empty($data['date'])) {
-            $menu->setDate(new \DateTime($data['date']));
-        }
-        
-        $errors = $this->validator->validate($menu);
-        if (count($errors) > 0) {
-            return $this->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => (string) $errors
-            ], 400);
-        }
-        
-        $this->entityManager->persist($menu);
-        $this->entityManager->flush();
-        
-        // Add dishes to menu
-        if (!empty($data['dishes'])) {
-            foreach ($data['dishes'] as $dishData) {
-                $dish = $this->platRepository->find($dishData['id']);
-                if ($dish) {
-                    $menuPlat = new MenuPlat();
-                    $menuPlat->setMenu($menu);
-                    $menuPlat->setPlat($dish);
-                    $menuPlat->setOrdre($dishData['ordre'] ?? 1);
-                    
-                    $this->entityManager->persist($menuPlat);
+        try {
+            $data = json_decode($request->getContent(), true);
+            
+            if (!$data) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Invalid JSON data provided'
+                ], 400);
+            }
+            
+            $menu = new Menu();
+            $menu->setNom($data['nom'] ?? '');
+            $menu->setDescription($data['description'] ?? null);
+            $menu->setType($data['type'] ?? 'normal');
+            $menu->setJourSemaine($data['jourSemaine'] ?? null);
+            $menu->setPrix($data['prix'] ?? '0.00');
+            $menu->setTag($data['tag'] ?? null);
+            $menu->setActif($data['actif'] ?? true);
+            
+            if (!empty($data['date'])) {
+                try {
+                    $menu->setDate(new \DateTime($data['date']));
+                } catch (\Exception $e) {
+                    return $this->json([
+                        'success' => false,
+                        'message' => 'Invalid date format: ' . $data['date']
+                    ], 400);
                 }
             }
+            
+            $errors = $this->validator->validate($menu);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
+                }
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $errorMessages
+                ], 400);
+            }
+            
+            $this->entityManager->persist($menu);
             $this->entityManager->flush();
+            
+            // Add dishes to menu
+            if (!empty($data['dishes'])) {
+                foreach ($data['dishes'] as $dishData) {
+                    // Handle both old format (just IDs) and new format (objects with id and ordre)
+                    $dishId = is_array($dishData) ? $dishData['id'] : $dishData;
+                    $ordre = is_array($dishData) ? ($dishData['ordre'] ?? 1) : 1;
+                    
+                    $dish = $this->platRepository->find($dishId);
+                    if ($dish) {
+                        $menuPlat = new MenuPlat();
+                        $menuPlat->setMenu($menu);
+                        $menuPlat->setPlat($dish);
+                        $menuPlat->setOrdre($ordre);
+                        
+                        $this->entityManager->persist($menuPlat);
+                    }
+                }
+                $this->entityManager->flush();
+            }
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Menu created successfully',
+                'data' => [
+                    'id' => $menu->getId(),
+                    'nom' => $menu->getNom(),
+                    'type' => $menu->getType(),
+                    'tag' => $menu->getTag(),
+                    'prix' => $menu->getPrix(),
+                    'dishCount' => count($data['dishes'] ?? [])
+                ]
+            ], 201);
+            
+        } catch (\Exception $e) {
+            error_log('Menu creation error: ' . $e->getMessage());
+            return $this->json([
+                'success' => false,
+                'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return $this->json([
-            'success' => true,
-            'message' => 'Menu created successfully',
-            'data' => [
-                'id' => $menu->getId(),
-                'nom' => $menu->getNom(),
-                'type' => $menu->getType()
-            ]
-        ], 201);
     }
 
     #[Route('/menus/{id}', name: 'api_admin_menus_get', methods: ['GET'])]
@@ -766,12 +800,16 @@ class MenuController extends AbstractController
             
             // Add new dishes
             foreach ($data['dishes'] as $dishData) {
-                $dish = $this->platRepository->find($dishData['id']);
+                // Handle both old format (just IDs) and new format (objects with id and ordre)
+                $dishId = is_array($dishData) ? $dishData['id'] : $dishData;
+                $ordre = is_array($dishData) ? ($dishData['ordre'] ?? 1) : 1;
+                
+                $dish = $this->platRepository->find($dishId);
                 if ($dish) {
                     $menuPlat = new MenuPlat();
                     $menuPlat->setMenu($menu);
                     $menuPlat->setPlat($dish);
-                    $menuPlat->setOrdre($dishData['ordre'] ?? 1);
+                    $menuPlat->setOrdre($ordre);
                     
                     $this->entityManager->persist($menuPlat);
                 }
@@ -835,27 +873,175 @@ class MenuController extends AbstractController
         $totalCategories = $this->categoryRepository->count(['actif' => true]);
         $totalDishes = $this->platRepository->count(['disponible' => true]);
         $totalMenus = $this->menuRepository->count(['actif' => true]);
-        $menuOfDayCount = $this->menuRepository->count(['type' => 'menu_du_jour', 'actif' => true]);
-        $popularCategories = $this->categoryRepository->findPopularCategories();
+        $normalMenus = $this->menuRepository->count(['type' => 'normal', 'actif' => true]);
+        $dailyMenus = $this->menuRepository->count(['type' => 'menu_du_jour', 'actif' => true]);
+        
+        // Today's menus by cuisine (for today's count)
+        $today = new \DateTime();
+        $todayMenus = $this->menuRepository->findBy([
+            'type' => 'menu_du_jour',
+            'date' => $today,
+            'actif' => true
+        ]);
+        
+        // All daily menus by cuisine (for dropdown counts)
+        $allDailyMenus = $this->menuRepository->findBy([
+            'type' => 'menu_du_jour',
+            'actif' => true
+        ]);
+        
+        $cuisineStats = [
+            'marocain' => 0,
+            'italien' => 0,
+            'international' => 0
+        ];
+        
+        // Count all daily menus by cuisine for dropdown
+        foreach ($allDailyMenus as $menu) {
+            $tag = $menu->getTag();
+            if ($tag && isset($cuisineStats[$tag])) {
+                $cuisineStats[$tag]++;
+            } else {
+                // If no tag is set, we can try to infer from the menu name or set a default
+                // For now, let's log this case for debugging
+                error_log("Menu du jour without tag found: ID=" . $menu->getId() . ", Name=" . $menu->getNom());
+            }
+        }
+        
+        // Calculate average price
+        $menus = $this->menuRepository->findBy(['actif' => true]);
+        $prices = array_map(fn($m) => (float)$m->getPrix(), $menus);
+        $avgPrice = count($prices) > 0 ? array_sum($prices) / count($prices) : 0;
+        $minPrice = count($prices) > 0 ? min($prices) : 0;
+        $maxPrice = count($prices) > 0 ? max($prices) : 0;
         
         return $this->json([
             'success' => true,
             'data' => [
+                'totalMenus' => $totalMenus,
+                'normalMenus' => $normalMenus,
+                'dailyMenus' => $dailyMenus,
+                'todayMenus' => count($todayMenus),
+                'cuisine' => $cuisineStats,
+                'pricing' => [
+                    'average' => round($avgPrice, 2),
+                    'min' => $minPrice,
+                    'max' => $maxPrice
+                ],
                 'categories' => [
                     'total' => $totalCategories,
-                    'popular' => count($popularCategories)
                 ],
                 'dishes' => [
                     'total' => $totalDishes,
                     'available' => $this->platRepository->count(['disponible' => true]),
                     'unavailable' => $this->platRepository->count(['disponible' => false])
-                ],
-                'menus' => [
-                    'total' => $totalMenus,
-                    'normal' => $this->menuRepository->count(['type' => 'normal', 'actif' => true]),
-                    'menuOfDay' => $menuOfDayCount
                 ]
             ]
         ]);
+    }
+    
+    #[Route('/dishes/by-cuisine', name: 'api_admin_dishes_by_cuisine', methods: ['GET'])]
+    public function getDishesByCuisine(Request $request): JsonResponse
+    {
+        $cuisine = $request->query->get('cuisine');
+        $course = $request->query->get('course'); // entrée, plat, dessert
+        
+        $queryBuilder = $this->platRepository->createQueryBuilder('p')
+            ->leftJoin('p.category', 'c')
+            ->addSelect('c')
+            ->where('p.disponible = :disponible')
+            ->setParameter('disponible', true);
+        
+        // Filter by cuisine if provided (using category name matching)
+        if ($cuisine && in_array($cuisine, ['marocain', 'italien', 'international'])) {
+            $queryBuilder->andWhere('c.nom LIKE :cuisineLike OR p.categorie LIKE :cuisineLikeOld')
+                ->setParameter('cuisineLike', '%' . $cuisine . '%')
+                ->setParameter('cuisineLikeOld', '%' . $cuisine . '%');
+        }
+        
+        // Filter by course if provided (using category name matching)
+        if ($course && in_array($course, ['entrée', 'plat', 'dessert'])) {
+            $queryBuilder->andWhere('c.nom LIKE :courseLike OR p.categorie LIKE :courseLikeOld')
+                ->setParameter('courseLike', '%' . $course . '%')
+                ->setParameter('courseLikeOld', '%' . $course . '%');
+        }
+        
+        $dishes = $queryBuilder->orderBy('p.nom', 'ASC')->getQuery()->getResult();
+        
+        $data = [];
+        foreach ($dishes as $dish) {
+            // Extract cuisine and course from category name or use defaults
+            $categoryName = $dish->getCategory() ? $dish->getCategory()->getNom() : $dish->getCategorie();
+            $extractedCuisine = $this->extractCuisineFromCategory($categoryName);
+            $extractedCourse = $this->extractCourseFromCategory($categoryName);
+            
+            $data[] = [
+                'id' => $dish->getId(),
+                'nom' => $dish->getNom(),
+                'description' => $dish->getDescription(),
+                'prix' => $dish->getPrix(),
+                'typePlat' => $extractedCourse,
+                'typeCuisine' => $extractedCuisine,
+                'cuisine' => $extractedCuisine, // For backwards compatibility
+                'disponible' => $dish->getDisponible(),
+                'category' => $dish->getCategory() ? [
+                    'id' => $dish->getCategory()->getId(),
+                    'nom' => $dish->getCategory()->getNom()
+                ] : [
+                    'id' => null,
+                    'nom' => $dish->getCategorie()
+                ],
+                'imageUrl' => $this->storage->resolveUri($dish, 'imageFile'),
+                'image' => $this->storage->resolveUri($dish, 'imageFile')
+            ];
+        }
+        
+        return $this->json([
+            'success' => true,
+            'data' => $data,
+            'count' => count($data),
+            'filters' => [
+                'cuisine' => $cuisine,
+                'course' => $course
+            ]
+        ]);
+    }
+    
+    private function extractCuisineFromCategory(?string $categoryName): ?string
+    {
+        if (!$categoryName) return null;
+        
+        $categoryLower = strtolower($categoryName);
+        
+        if (strpos($categoryLower, 'marocain') !== false || strpos($categoryLower, 'maroc') !== false) {
+            return 'marocain';
+        }
+        if (strpos($categoryLower, 'italien') !== false || strpos($categoryLower, 'italie') !== false) {
+            return 'italien';
+        }
+        if (strpos($categoryLower, 'international') !== false || strpos($categoryLower, 'monde') !== false) {
+            return 'international';
+        }
+        
+        return null;
+    }
+    
+    private function extractCourseFromCategory(?string $categoryName): ?string
+    {
+        if (!$categoryName) return null;
+        
+        $categoryLower = strtolower($categoryName);
+        
+        if (strpos($categoryLower, 'entrée') !== false || strpos($categoryLower, 'entree') !== false) {
+            return 'entrée';
+        }
+        if (strpos($categoryLower, 'plat') !== false || strpos($categoryLower, 'principal') !== false) {
+            return 'plat';
+        }
+        if (strpos($categoryLower, 'dessert') !== false) {
+            return 'dessert';
+        }
+        
+        return null;
     }
 } 

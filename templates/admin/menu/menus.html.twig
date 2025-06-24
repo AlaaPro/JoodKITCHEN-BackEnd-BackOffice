@@ -14,34 +14,38 @@
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="h2 mb-0 jood-dark">Gestion des Menus</h1>
-                <p class="text-muted">Créez et gérez vos menus et formules</p>
+                <p class="text-muted">Créez et gérez vos menus permanents et menus du jour</p>
             </div>
             <div>
-                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMenuModal">
-                    <i class="fas fa-plus"></i> Nouveau Menu
+                <button class="btn btn-primary me-2" id="addMenuBtn">
+                    <i class="fas fa-plus"></i> <span id="addMenuText">Nouveau Menu</span>
                 </button>
-                <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                    <i class="fas fa-download"></i> Export
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf"></i> Menu PDF</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-image"></i> Menu Image</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-print"></i> Imprimer</a></li>
-                </ul>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary dropdown-toggle" data-coreui-toggle="dropdown">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="exportPdf"><i class="fas fa-file-pdf"></i> Menu PDF</a></li>
+                        <li><a class="dropdown-item" href="#" id="exportImage"><i class="fas fa-image"></i> Menu Image</a></li>
+                        <li><a class="dropdown-item" href="#" id="printMenu"><i class="fas fa-print"></i> Imprimer</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="exportCalendar"><i class="fas fa-calendar"></i> Planning Hebdomadaire</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Menu Stats -->
+<!-- Enhanced Menu Stats -->
 <div class="row g-4 mb-4">
-    <div class="col-lg-3 col-sm-6">
+    <div class="col-lg-2 col-md-4 col-sm-6">
         <div class="card jood-widget-card jood-primary-bg">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">0</div>
-                        <div class="widget-label">Menus actifs</div>
+                        <div class="widget-value" id="totalMenusCount">0</div>
+                        <div class="widget-label">Total Menus</div>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
@@ -51,13 +55,29 @@
         </div>
     </div>
     
-    <div class="col-lg-3 col-sm-6">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-secondary-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value" id="normalMenusCount">0</div>
+                        <div class="widget-label">Menus Normaux</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-utensils fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-sm-6">
         <div class="card jood-widget-card jood-info-bg">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">0</div>
-                        <div class="widget-label">Menus du jour</div>
+                        <div class="widget-value" id="dailyMenusCount">0</div>
+                        <div class="widget-label">Menus du Jour</div>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-calendar-day fa-2x opacity-75"></i>
@@ -67,13 +87,31 @@
         </div>
     </div>
     
-    <div class="col-lg-3 col-sm-6">
+    <div class="col-lg-3 col-md-6 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value" id="todayMenusCount">0/3</div>
+                        <div class="widget-label">Menus d'Aujourd'hui</div>
+                        <div class="widget-sublabel">🇲🇦🇮🇹🌍</div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar-check fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 col-sm-6">
         <div class="card jood-widget-card jood-warning-bg">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">0.00€</div>
-                        <div class="widget-label">Prix moyen</div>
+                        <div class="widget-value" id="averagePrice">0.00€</div>
+                        <div class="widget-label">Prix Moyen</div>
+                        <div class="widget-sublabel" id="priceRange">Min: 0€ - Max: 0€</div>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-euro-sign fa-2x opacity-75"></i>
@@ -82,342 +120,492 @@
             </div>
         </div>
     </div>
-    
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-success-bg">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <div class="widget-value">0</div>
-                        <div class="widget-label">Commandes</div>
+</div>
+
+<!-- Smart Filter & View Controls -->
+<div class="card mb-4">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <!-- Smart Menu Tabs -->
+                <ul class="nav nav-tabs card-header-tabs mb-0" id="smartMenuTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-filter="all" type="button">
+                            <i class="fas fa-th-large"></i> Tous les menus
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="normal-tab" data-filter="normal" type="button">
+                            <i class="fas fa-utensils"></i> Menus Normaux
+                        </button>
+                    </li>
+                    <li class="nav-item dropdown" role="presentation">
+                        <button class="nav-link dropdown-toggle" id="daily-tab" data-coreui-toggle="dropdown" type="button">
+                            <i class="fas fa-calendar-day"></i> Menus du Jour
+                            <span class="badge bg-light text-dark ms-1" id="dailyMenusBadge">0</span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Par Cuisine</h6></li>
+                            <li><a class="dropdown-item" data-filter="daily-marocain" href="#">
+                                <span class="cuisine-flag">🇲🇦</span> Cuisine Marocaine
+                                <span class="badge bg-primary ms-auto" id="marocainCount">0</span>
+                            </a></li>
+                            <li><a class="dropdown-item" data-filter="daily-italien" href="#">
+                                <span class="cuisine-flag">🇮🇹</span> Cuisine Italienne
+                                <span class="badge bg-info ms-auto" id="italienCount">0</span>
+                            </a></li>
+                            <li><a class="dropdown-item" data-filter="daily-international" href="#">
+                                <span class="cuisine-flag">🌍</span> Cuisine Internationale
+                                <span class="badge bg-success ms-auto" id="internationalCount">0</span>
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" data-view="calendar" href="#">
+                                <i class="fas fa-calendar-alt"></i> Vue Calendrier
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <!-- View Controls -->
+                <div class="d-flex justify-content-end align-items-center">
+                    <div class="btn-group btn-group-sm me-3" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" id="gridViewBtn" data-view="grid">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="listViewBtn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="calendarViewBtn" data-view="calendar">
+                            <i class="fas fa-calendar"></i>
+                        </button>
                     </div>
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
+                    
+                    <!-- Quick Search -->
+                    <div class="input-group input-group-sm" style="width: 200px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="quickSearch" placeholder="Rechercher...">
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Menu Categories Tabs -->
-<div class="card mb-4">
-    <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs" id="menuTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-                    Tous les menus
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="dejeuner-tab" data-bs-toggle="tab" data-bs-target="#dejeuner" type="button" role="tab">
-                    Déjeuner
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="diner-tab" data-bs-toggle="tab" data-bs-target="#diner" type="button" role="tab">
-                    Dîner
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="familial-tab" data-bs-toggle="tab" data-bs-target="#familial" type="button" role="tab">
-                    Familial
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="decouverte-tab" data-bs-toggle="tab" data-bs-target="#decouverte" type="button" role="tab">
-                    Découverte
-                </button>
-            </li>
-        </ul>
     </div>
     
     <div class="card-body">
-        <div class="tab-content" id="menuTabsContent">
-            <!-- All Menus Tab -->
-            <div class="tab-pane fade show active" id="all" role="tabpanel">
+        <!-- Context Information Bar -->
+        <div class="alert alert-light border-0 py-2 mb-3 d-none" id="contextInfo">
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <i class="fas fa-info-circle text-muted me-2"></i>
+                    <span id="contextText"></span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearFilters">
+                    <i class="fas fa-times"></i> Effacer les filtres
+                </button>
+            </div>
+        </div>
+
+        <!-- Menu Content Area -->
+        <div id="menuContent">
+            <!-- Grid View (Default) -->
+            <div id="gridView" class="menu-view active">
                 <div class="row g-4" id="menusGrid">
                     <!-- Loading state -->
-                    <div class="col-12 text-center p-4 text-muted">
-                        <i class="fas fa-spinner fa-spin"></i> Chargement des menus...
-                    </div>
-                    <!-- Menu Card 1 -->
-                    <div class="col-lg-6 col-xl-4">
-                        <div class="card h-100">
-                            <div class="position-relative">
-                                <img src="https://via.placeholder.com/350x200/a9b73e/ffffff?text=Menu+Royal" 
-                                     class="card-img-top" alt="Menu Royal" style="height: 200px; object-fit: cover;">
-                                <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge jood-primary-bg">Bestseller</span>
-                                </div>
-                                <div class="position-absolute top-0 start-0 m-2">
-                                    <span class="badge bg-success">Disponible</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0">Menu Royal</h5>
-                                    <span class="fw-bold jood-primary fs-5">35.90€</span>
-                                </div>
-                                <p class="card-text text-muted small mb-3">
-                                    Entrée + Plat + Dessert. Découvrez nos spécialités marocaines dans un menu complet.
-                                </p>
-                                
-                                <!-- Menu Composition -->
-                                <div class="mb-3">
-                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
-                                    <div class="menu-items">
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge bg-secondary me-2">Entrée</span>
-                                            <small>Salade Marocaine ou Pastilla</small>
-                                        </div>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge jood-primary-bg me-2">Plat</span>
-                                            <small>Couscous Royal ou Tajine</small>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge jood-warning-bg me-2">Dessert</span>
-                                            <small>Pâtisserie ou Thé à la menthe</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users"></i> 23 commandes
-                                    </small>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Dupliquer">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="col-12 text-center p-5" id="loadingState">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
                         </div>
+                        <p class="text-muted mt-3">Chargement des menus...</p>
                     </div>
-
-                    <!-- Menu Card 2 -->
-                    <div class="col-lg-6 col-xl-4">
-                        <div class="card h-100">
-                            <div class="position-relative">
-                                <img src="https://via.placeholder.com/350x200/202d5b/ffffff?text=Menu+Découverte" 
-                                     class="card-img-top" alt="Menu Découverte" style="height: 200px; object-fit: cover;">
-                                <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge jood-secondary-bg">Nouveau</span>
-                                </div>
-                                <div class="position-absolute top-0 start-0 m-2">
-                                    <span class="badge bg-success">Disponible</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0">Menu Découverte</h5>
-                                    <span class="fw-bold jood-primary fs-5">24.90€</span>
-                                </div>
-                                <p class="card-text text-muted small mb-3">
-                                    Parfait pour découvrir nos saveurs. Entrée et plat principal de votre choix.
-                                </p>
-                                
-                                <!-- Menu Composition -->
-                                <div class="mb-3">
-                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
-                                    <div class="menu-items">
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge bg-secondary me-2">Entrée</span>
-                                            <small>Au choix parmi 4 options</small>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge jood-primary-bg me-2">Plat</span>
-                                            <small>Au choix parmi 6 plats</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users"></i> 18 commandes
-                                    </small>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Dupliquer">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Menu Card 3 -->
-                    <div class="col-lg-6 col-xl-4">
-                        <div class="card h-100">
-                            <div class="position-relative">
-                                <img src="https://via.placeholder.com/350x200/da3c33/ffffff?text=Menu+Familial" 
-                                     class="card-img-top" alt="Menu Familial" style="height: 200px; object-fit: cover;">
-                                <div class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge jood-info-bg">Familial</span>
-                                </div>
-                                <div class="position-absolute top-0 start-0 m-2">
-                                    <span class="badge bg-success">Disponible</span>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0">Menu Familial</h5>
-                                    <span class="fw-bold jood-primary fs-5">89.90€</span>
-                                </div>
-                                <p class="card-text text-muted small mb-3">
-                                    Menu pour 4 personnes. Idéal pour partager un moment convivial en famille.
-                                </p>
-                                
-                                <!-- Menu Composition -->
-                                <div class="mb-3">
-                                    <h6 class="small fw-bold text-muted mb-2">COMPOSITION:</h6>
-                                    <div class="menu-items">
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge bg-secondary me-2">Entrées</span>
-                                            <small>Assortiment de 4 entrées</small>
-                                        </div>
-                                        <div class="d-flex align-items-center mb-1">
-                                            <span class="badge jood-primary-bg me-2">Plats</span>
-                                            <small>Couscous Familial + Tajine</small>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge jood-warning-bg me-2">Desserts</span>
-                                            <small>Pâtisseries orientales + Thé</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users"></i> 12 commandes
-                                    </small>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" title="Modifier">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-outline-success" title="Dupliquer">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" title="Supprimer">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    
+                    <!-- Empty state will be inserted here -->
+                    <!-- Menu cards will be inserted here dynamically -->
                 </div>
             </div>
             
-            <!-- Other tabs would have filtered content -->
-            <div class="tab-pane fade" id="dejeuner" role="tabpanel">
-                <p class="text-center text-muted">Menus déjeuner disponibles de 11h30 à 15h00</p>
+            <!-- List View -->
+            <div id="listView" class="menu-view">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="menusTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th><input type="checkbox" id="selectAllMenus"></th>
+                                <th>Menu</th>
+                                <th>Type</th>
+                                <th>Cuisine/Tag</th>
+                                <th>Prix</th>
+                                <th>Plats</th>
+                                <th>Date/Période</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menusTableBody">
+                            <!-- Table rows will be inserted here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
-            <div class="tab-pane fade" id="diner" role="tabpanel">
-                <p class="text-center text-muted">Menus dîner disponibles de 18h00 à 23h00</p>
-            </div>
-            
-            <div class="tab-pane fade" id="familial" role="tabpanel">
-                <p class="text-center text-muted">Menus familiaux pour 4 personnes et plus</p>
-            </div>
-            
-            <div class="tab-pane fade" id="decouverte" role="tabpanel">
-                <p class="text-center text-muted">Menus découverte pour les nouveaux clients</p>
+            <!-- Calendar View -->
+            <div id="calendarView" class="menu-view">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Planification des Menus du Jour</h5>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" id="prevWeek">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" id="currentWeek">
+                                    Cette semaine
+                                </button>
+                                <button class="btn btn-outline-primary" id="nextWeek">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly Calendar Grid -->
+                        <div class="calendar-grid" id="weeklyCalendar">
+                            <!-- Calendar will be generated here -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Add Menu Modal -->
-<div class="modal fade" id="addMenuModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<!-- Bulk Actions Bar (hidden by default) -->
+<div class="fixed-bottom bg-primary text-white p-3 d-none" id="bulkActionsBar">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-check-square me-2"></i>
+                <span id="selectedCount">0</span> menu(s) sélectionné(s)
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-light" id="bulkActivate">
+                    <i class="fas fa-toggle-on"></i> Activer
+                </button>
+                <button class="btn btn-light" id="bulkDeactivate">
+                    <i class="fas fa-toggle-off"></i> Désactiver
+                </button>
+                <button class="btn btn-light" id="bulkDuplicate">
+                    <i class="fas fa-copy"></i> Dupliquer
+                </button>
+                <button class="btn btn-outline-light" id="bulkDelete">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                <button class="btn btn-outline-light" id="clearSelection">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Smart Menu Modal -->
+<div class="modal fade" id="menuModal" tabindex="-1" data-coreui-backdrop="static">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header jood-primary-bg">
-                <h5 class="modal-title text-white">
-                    <i class="fas fa-plus"></i> Nouveau Menu
+            <div class="modal-header" id="modalHeader">
+                <h5 class="modal-title text-white" id="modalTitle">
+                    <i class="fas fa-plus"></i> <span id="modalTitleText">Nouveau Menu</span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="menuForm">
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label">Nom du menu *</label>
-                            <input type="text" class="form-control" name="nom" placeholder="Ex: Menu Royal" required>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Prix (€) *</label>
-                            <input type="number" class="form-control" name="prix" step="0.10" placeholder="35.90" required>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="3" placeholder="Description du menu..."></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Type de menu</label>
-                            <select class="form-select" name="type">
-                                <option value="normal">Menu normal</option>
-                                <option value="menu_du_jour">Menu du jour</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tag/Cuisine</label>
-                            <select class="form-select" name="tag">
-                                <option value="">Aucun tag</option>
-                                <option value="marocain">Marocain</option>
-                                <option value="italien">Italien</option>
-                                <option value="international">International</option>
-                                <option value="familial">Familial</option>
-                                <option value="decouverte">Découverte</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Jour de la semaine</label>
-                            <select class="form-select" name="jourSemaine">
-                                <option value="">Aucun (menu permanent)</option>
-                                <option value="dejeuner">Déjeuner</option>
-                                <option value="diner">Dîner</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date spécifique</label>
-                            <input type="date" class="form-control" name="date">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Image du menu</label>
-                            <input type="file" class="form-control" name="image" accept="image/*">
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="actif" id="menuActive" checked>
-                                <label class="form-check-label" for="menuActive">
-                                    <i class="fas fa-toggle-on text-success"></i> Menu actif
+                <!-- Menu Type Selector (Top of form) -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center">
+                            <div class="btn-group btn-group-lg" role="group" id="menuTypeSelector">
+                                <input type="radio" class="btn-check" name="menuType" id="normalMenuType" value="normal" checked>
+                                <label class="btn btn-outline-primary" for="normalMenuType">
+                                    <i class="fas fa-utensils"></i>
+                                    <div class="d-block">
+                                        <strong>Menu Normal</strong>
+                                        <small class="d-block text-muted">Menu permanent disponible toute l'année</small>
+                                    </div>
                                 </label>
+
+                                <input type="radio" class="btn-check" name="menuType" id="dailyMenuType" value="menu_du_jour">
+                                <label class="btn btn-outline-primary" for="dailyMenuType">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <div class="d-block">
+                                        <strong>Menu du Jour</strong>
+                                        <small class="d-block text-muted">Menu spécifique pour une date donnée</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="smartMenuForm">
+                    <div class="row">
+                        <!-- Left Column: Basic Information -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-info-circle"></i> Informations de base
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label">Nom du menu *</label>
+                                            <input type="text" class="form-control" name="nom" id="menuNom" placeholder="Ex: Menu Royal" required>
+                                            <div class="invalid-feedback">Le nom du menu est obligatoire</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label class="form-label">Prix (€) *</label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" name="prix" id="menuPrix" step="0.10" min="0" placeholder="25.90" required>
+                                                <span class="input-group-text">€</span>
+                                            </div>
+                                            <div class="invalid-feedback">Le prix doit être supérieur à 0</div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label">Statut</label>
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox" name="actif" id="menuActif" checked>
+                                                <label class="form-check-label" for="menuActif">
+                                                    <span class="status-text">Menu actif</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" name="description" id="menuDescription" rows="3" placeholder="Description du menu..."></textarea>
+                                        </div>
+
+                                        <!-- Dynamic Fields Container -->
+                                        <div class="col-12" id="dynamicFields">
+                                            <!-- Normal Menu Fields -->
+                                            <div id="normalMenuFields">
+                                                <div class="row g-3">
+                                                    <div class="col-12">
+                                                        <label class="form-label">Tag/Catégorie</label>
+                                                        <select class="form-select" name="tag" id="menuTag">
+                                                            <option value="">Aucun tag</option>
+                                                            <option value="familial">🏠 Familial</option>
+                                                            <option value="decouverte">🌟 Découverte</option>
+                                                            <option value="vegetarien">🌱 Végétarien</option>
+                                                            <option value="halal">🥩 Halal</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Daily Menu Fields -->
+                                            <div id="dailyMenuFields" class="d-none">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Date *</label>
+                                                        <input type="date" class="form-control" name="date" id="menuDate">
+                                                        <div class="invalid-feedback">La date est obligatoire pour un menu du jour</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Cuisine *</label>
+                                                        <select class="form-select" name="cuisine" id="menuCuisine" required>
+                                                            <option value="">Choisir une cuisine</option>
+                                                            <option value="marocain">🇲🇦 Cuisine Marocaine</option>
+                                                            <option value="italien">🇮🇹 Cuisine Italienne</option>
+                                                            <option value="international">🌍 Cuisine Internationale</option>
+                                                        </select>
+                                                        <div class="invalid-feedback">La cuisine est obligatoire pour un menu du jour</div>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <div class="alert alert-info">
+                                                            <i class="fas fa-info-circle"></i>
+                                                            <strong>Menu du Jour:</strong> Ce menu sera disponible uniquement pour la date sélectionnée. 
+                                                            Vous pouvez créer jusqu'à 3 menus par jour (un par cuisine).
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Image Upload -->
+                                        <div class="col-12">
+                                            <label class="form-label">Image du menu</label>
+                                            <div class="image-upload-area border border-2 border-dashed rounded p-4 text-center" id="imageUploadArea">
+                                                <input type="file" class="d-none" name="image" id="menuImage" accept="image/*">
+                                                <div id="imageUploadPlaceholder">
+                                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                                                    <p class="text-muted mb-1">Cliquez pour sélectionner une image</p>
+                                                    <small class="text-muted">ou glissez-déposez votre fichier ici</small>
+                                                </div>
+                                                <div id="imagePreview" class="d-none">
+                                                    <img id="previewImage" src="" class="img-fluid rounded" style="max-height: 200px;">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImage">
+                                                        <i class="fas fa-trash"></i> Supprimer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Menu Composition -->
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-list"></i> Composition du menu
+                                        </h6>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="addDishBtn">
+                                            <i class="fas fa-plus"></i> Ajouter un plat
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Menu Structure for Daily Menus -->
+                                    <div id="dailyMenuStructure" class="d-none">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-utensils"></i>
+                                            <strong>Structure obligatoire:</strong> Un menu du jour doit contenir exactement 1 entrée, 1 plat principal et 1 dessert.
+                                        </div>
+                                        
+                                        <!-- Entrée Section -->
+                                        <div class="course-section mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">
+                                                    <span class="badge bg-secondary me-2">Entrée</span>
+                                                    <span class="course-count" id="entreeCount">0/1</span>
+                                                </h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-course-dish" data-course="entree">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="course-dishes" id="entreeDishes">
+                                                <!-- Entrée dishes will be added here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Plat Principal Section -->
+                                        <div class="course-section mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">
+                                                    <span class="badge jood-primary-bg me-2">Plat Principal</span>
+                                                    <span class="course-count" id="platCount">0/1</span>
+                                                </h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-course-dish" data-course="plat_principal">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="course-dishes" id="platDishes">
+                                                <!-- Plat principal dishes will be added here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Dessert Section -->
+                                        <div class="course-section mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="mb-0">
+                                                    <span class="badge jood-warning-bg me-2">Dessert</span>
+                                                    <span class="course-count" id="dessertCount">0/1</span>
+                                                </h6>
+                                                <button type="button" class="btn btn-sm btn-outline-primary add-course-dish" data-course="dessert">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="course-dishes" id="dessertDishes">
+                                                <!-- Dessert dishes will be added here -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Free composition for Normal Menus -->
+                                    <div id="normalMenuStructure">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Composition libre:</strong> Ajoutez les plats de votre choix pour composer ce menu.
+                                        </div>
+                                        
+                                        <div id="selectedDishes" class="selected-dishes">
+                                            <!-- Selected dishes will be shown here -->
+                                        </div>
+                                        
+                                        <div class="text-center py-4 text-muted" id="noDishesMessage">
+                                            <i class="fas fa-utensils fa-2x mb-2"></i>
+                                            <p>Aucun plat sélectionné</p>
+                                            <small>Cliquez sur "Ajouter un plat" pour commencer</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">
                     <i class="fas fa-times"></i> Annuler
                 </button>
+                <button type="button" class="btn btn-outline-primary" id="previewMenuBtn">
+                    <i class="fas fa-eye"></i> Aperçu
+                </button>
                 <button type="button" class="btn btn-primary" id="saveMenuBtn">
-                    <i class="fas fa-save"></i> Enregistrer
+                    <i class="fas fa-save"></i> <span id="saveButtonText">Enregistrer</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dish Selection Modal -->
+<div class="modal fade" id="dishSelectionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-utensils"></i> Sélectionner des plats
+                    <span id="courseFilterBadge" class="badge bg-secondary ms-2 d-none"></span>
+                </h5>
+                <button type="button" class="btn-close" data-coreui-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Dish filters -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="dishSearch" placeholder="Rechercher un plat...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="dishCategoryFilter">
+                            <option value="">Toutes les catégories</option>
+                            <!-- Categories will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="dishCuisineFilter">
+                            <option value="">Toutes les cuisines</option>
+                            <option value="marocain">🇲🇦 Marocaine</option>
+                            <option value="italien">🇮🇹 Italienne</option>
+                            <option value="international">🌍 Internationale</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Available dishes grid -->
+                <div class="row g-3" id="availableDishesGrid">
+                    <!-- Dishes will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="confirmDishSelection">
+                    <i class="fas fa-check"></i> Confirmer la sélection
                 </button>
             </div>
         </div>
@@ -428,64 +616,439 @@
 {% block javascripts %}
 <!-- Menu API -->
 <script src="{{ asset('js/admin/managers/menu-api.js') }}"></script>
-<!-- Menu Manager -->
-<script src="{{ asset('js/admin/managers/menu-manager.js') }}"></script>
+<!-- Enhanced Smart Menu Manager -->
+<script src="{{ asset('js/admin/managers/enhanced-menu-manager.js') }}"></script>
 
 <style>
-/* Menu card enhancements */
-.card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,0.125);
+/* Enhanced Widget Cards */
+.jood-widget-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease;
 }
 
-.card:hover {
+.jood-widget-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.widget-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.widget-label {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.9);
+    font-weight: 500;
+}
+
+.widget-sublabel {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+    margin-top: 2px;
+}
+
+/* Enhanced Color System */
+.jood-primary-bg { background: linear-gradient(135deg, #a9b73e 0%, #8ea32a 100%) !important; }
+.jood-secondary-bg { background: linear-gradient(135deg, #202d5b 0%, #1a2347 100%) !important; }
+.jood-info-bg { background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important; }
+.jood-success-bg { background: linear-gradient(135deg, #28a745 0%, #20963a 100%) !important; }
+.jood-warning-bg { background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important; }
+.jood-danger-bg { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important; }
+
+/* Smart Tab System */
+#smartMenuTabs .nav-link {
+    border: none;
+    color: var(--jood-dark);
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.3s ease;
+    margin-right: 4px;
+}
+
+#smartMenuTabs .nav-link:hover {
+    background-color: rgba(169, 183, 62, 0.1);
+    transform: translateY(-1px);
+}
+
+#smartMenuTabs .nav-link.active {
+    background: linear-gradient(135deg, #a9b73e 0%, #8ea32a 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(169, 183, 62, 0.3);
+}
+
+#smartMenuTabs .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+#smartMenuTabs .dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+#smartMenuTabs .dropdown-item:hover {
+    background-color: rgba(169, 183, 62, 0.1);
+    color: var(--jood-primary);
+}
+
+.cuisine-flag {
+    font-size: 1.2em;
+    margin-right: 8px;
+}
+
+/* View Controls */
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn.active {
+    background-color: var(--jood-primary);
+    border-color: var(--jood-primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(169, 183, 62, 0.3);
+}
+
+/* Context Information Bar */
+#contextInfo {
+    background: linear-gradient(45deg, #f8f9fa 0%, #ffffff 100%);
+    border-left: 4px solid var(--jood-primary);
+    margin-bottom: 1rem;
+}
+
+/* Menu Views */
+.menu-view {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.menu-view.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Menu Cards */
+.menu-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.125);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.menu-card:hover {
     transform: translateY(-5px);
     border-color: var(--jood-primary);
     box-shadow: 0 8px 25px rgba(169, 183, 62, 0.15);
 }
 
-/* Tab navigation */
-.nav-tabs .nav-link {
+.menu-card .menu-type-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.menu-card .menu-status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.menu-card .menu-cuisine-flag {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 1.5em;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* List View Table */
+#menusTable {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#menusTable thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: none;
+    font-weight: 600;
     color: var(--jood-dark);
-    font-weight: 500;
+    padding: 12px;
 }
 
-.nav-tabs .nav-link.active {
-    background-color: var(--jood-primary);
-    color: white;
+#menusTable tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#menusTable tbody tr:hover {
+    background-color: rgba(169, 183, 62, 0.05);
+}
+
+/* Calendar View */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.calendar-day {
+    border: 2px dashed #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 200px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+.calendar-day:hover {
     border-color: var(--jood-primary);
+    background-color: rgba(169, 183, 62, 0.02);
 }
 
-.nav-tabs .nav-link:hover {
-    border-color: transparent;
+.calendar-day.has-menus {
+    border-style: solid;
+    border-color: var(--jood-primary);
+    background: linear-gradient(145deg, #ffffff 0%, rgba(169, 183, 62, 0.05) 100%);
+}
+
+.calendar-day-header {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--jood-dark);
+}
+
+.calendar-menu-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.calendar-menu-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Bulk Actions Bar */
+#bulkActionsBar {
+    z-index: 1050;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    border-radius: 12px 12px 0 0;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* Smart Modal Enhancements */
+#menuModal .modal-dialog {
+    max-width: 1200px;
+}
+
+#menuModal .modal-header {
+    background: linear-gradient(135deg, #a9b73e 0%, #8ea32a 100%);
+    border: none;
+}
+
+/* Menu Type Selector */
+#menuTypeSelector .btn-check:checked + .btn {
+    background: linear-gradient(135deg, #a9b73e 0%, #8ea32a 100%);
+    border-color: var(--jood-primary);
+    color: white;
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(169, 183, 62, 0.3);
+}
+
+#menuTypeSelector .btn {
+    padding: 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 200px;
+}
+
+#menuTypeSelector .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Dynamic Fields Animation */
+#dynamicFields > div {
+    transition: all 0.4s ease;
+}
+
+#dynamicFields .d-none {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+#dynamicFields > div:not(.d-none) {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Image Upload Area */
+.image-upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.image-upload-area:hover {
+    border-color: var(--jood-primary);
+    background-color: rgba(169, 183, 62, 0.05);
+}
+
+.image-upload-area.dragover {
+    border-color: var(--jood-primary);
+    background-color: rgba(169, 183, 62, 0.1);
+    transform: scale(1.02);
+}
+
+/* Course Sections for Daily Menus */
+.course-section {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.course-section:hover {
+    border-color: var(--jood-primary);
+    background-color: rgba(169, 183, 62, 0.02);
+}
+
+.course-dishes {
+    min-height: 50px;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+.course-dishes.can-drop {
+    border-color: var(--jood-primary);
     background-color: rgba(169, 183, 62, 0.1);
 }
 
-/* Badge styles */
-.badge.jood-primary-bg {
-    background-color: var(--jood-primary) !important;
+.course-dish-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    transition: all 0.2s ease;
 }
 
-.badge.jood-secondary-bg {
-    background-color: var(--jood-secondary) !important;
+.course-dish-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.badge.jood-info-bg {
-    background-color: #17a2b8 !important;
+/* Selected Dishes for Normal Menus */
+.selected-dishes .dish-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    transition: all 0.2s ease;
 }
 
-.badge.jood-warning-bg {
-    background-color: #f39c12 !important;
+.selected-dishes .dish-item:hover {
+    border-color: var(--jood-primary);
+    box-shadow: 0 2px 8px rgba(169, 183, 62, 0.15);
 }
 
-/* Menu composition styling */
-.menu-items .badge {
-    min-width: 70px;
-    text-align: center;
+/* Dish Selection Modal */
+#dishSelectionModal .modal-dialog {
+    max-width: 1000px;
 }
 
-/* Form enhancements */
+.available-dish-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.available-dish-card:hover {
+    border-color: var(--jood-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(169, 183, 62, 0.15);
+}
+
+.available-dish-card.selected {
+    border-color: var(--jood-primary);
+    background: linear-gradient(145deg, #ffffff 0%, rgba(169, 183, 62, 0.05) 100%);
+    transform: scale(1.02);
+}
+
+.available-dish-card .dish-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--jood-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Enhancements */
 .form-select:focus,
 .form-control:focus {
     border-color: var(--jood-primary);
@@ -501,41 +1064,84 @@
     cursor: pointer;
 }
 
-/* Loading spinner */
-.loading-spinner {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+/* Badge Enhancements */
+.badge.jood-primary-bg {
+    background: linear-gradient(135deg, #a9b73e 0%, #8ea32a 100%) !important;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.badge.jood-secondary-bg {
+    background: linear-gradient(135deg, #202d5b 0%, #1a2347 100%) !important;
 }
 
-/* Widget cards */
-.jood-widget-card {
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
+.badge.jood-info-bg {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
 }
 
-.widget-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: white;
-    line-height: 1;
+.badge.jood-warning-bg {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
 }
 
-.widget-label {
-    font-size: 0.875rem;
-    color: rgba(255,255,255,0.9);
-    font-weight: 500;
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    #menuTypeSelector .btn {
+        min-width: auto;
+        padding: 15px;
+    }
+    
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #smartMenuTabs .nav-link {
+        padding: 8px 12px;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .widget-value {
+        font-size: 1.5rem;
+    }
+    
+    .widget-label {
+        font-size: 0.75rem;
+    }
+    
+    #bulkActionsBar {
+        padding: 12px !important;
+    }
+    
+    #bulkActionsBar .btn-group {
+        flex-wrap: wrap;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .modal, #bulkActionsBar, .btn-group {
+        display: none !important;
+    }
 }
 </style>
+
+<script>
+// Initialize Enhanced Menu Manager when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Enhanced Menu Manager - Initializing...');
+    
+    try {
+        // Initialize the enhanced menu manager
+        window.enhancedMenuManager = new EnhancedMenuManager();
+        console.log('✅ Enhanced Menu Manager initialized successfully');
+    } catch (error) {
+        console.error('❌ Failed to initialize Enhanced Menu Manager:', error);
+        // Fallback to basic functionality if needed
+    }
+});
+</script>
 {% endblock %} 

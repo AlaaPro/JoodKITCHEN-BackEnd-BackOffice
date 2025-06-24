@@ -228,17 +228,49 @@ class MenuAPI {
     }
 
     async updateMenu(id, data) {
-        const response = await fetch(`${this.baseUrl}/menus/${id}`, {
+        const url = `${this.baseUrl}/menus/${id}`;
+        const headers = await this.getAuthHeaders();
+        const body = JSON.stringify(data);
+        
+        console.log('🔄 DEBUG - MenuAPI.updateMenu() called');
+        console.log('🔄 DEBUG - URL:', url);
+        console.log('🔄 DEBUG - Method: PUT');
+        console.log('🔄 DEBUG - Headers:', headers);
+        console.log('🔄 DEBUG - Body:', body);
+        
+        const response = await fetch(url, {
             method: 'PUT',
-            headers: await this.getAuthHeaders(),
-            body: JSON.stringify(data)
+            headers,
+            body
         });
-        return response.json();
+        
+        console.log('🔄 DEBUG - Response status:', response.status);
+        console.log('🔄 DEBUG - Response ok:', response.ok);
+        
+        const responseData = await response.json();
+        console.log('🔄 DEBUG - Response data:', responseData);
+        
+        return responseData;
     }
 
     async deleteMenu(id) {
         const response = await fetch(`${this.baseUrl}/menus/${id}`, {
             method: 'DELETE',
+            headers: await this.getAuthHeaders()
+        });
+        return response.json();
+    }
+
+    async getMenuStats() {
+        const response = await fetch(`${this.baseUrl}/stats`, {
+            headers: await this.getAuthHeaders()
+        });
+        return response.json();
+    }
+
+    async getDishesByCuisine(params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const response = await fetch(`${this.baseUrl}/dishes/by-cuisine?${queryString}`, {
             headers: await this.getAuthHeaders()
         });
         return response.json();
