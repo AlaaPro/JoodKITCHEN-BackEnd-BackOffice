@@ -15,6 +15,7 @@ class EnhancedMenuManager {
         this.editingMenu = null;
         this.currentWeek = new Date();
         this.currentCourseFilter = null;
+        this.menuImageManager = null;
         
         // Initialize the manager
         this.init();
@@ -26,6 +27,9 @@ class EnhancedMenuManager {
         try {
             // Set up event listeners
             this.setupEventListeners();
+            
+            // Initialize MenuImageManager
+            this.initializeImageManager();
             
             // Load initial data
             await this.loadInitialData();
@@ -135,9 +139,6 @@ class EnhancedMenuManager {
 
         // Setup modal cleanup event listeners
         this.setupModalCleanupEvents();
-
-        // Image upload
-        this.setupImageUpload();
     }
 
     setupModalCleanupEvents() {
@@ -184,7 +185,21 @@ class EnhancedMenuManager {
         });
     }
 
-    setupImageUpload() {
+    initializeImageManager() {
+        // Initialize MenuImageManager when DOM is ready
+        setTimeout(() => {
+            if (typeof MenuImageManager !== 'undefined') {
+                this.menuImageManager = new MenuImageManager('menuImageContainer', this.api);
+                console.log('📸 MenuImageManager initialized');
+            } else {
+                console.warn('⚠️ MenuImageManager not available, falling back to basic upload');
+                this.setupBasicImageUpload();
+            }
+        }, 100);
+    }
+
+    setupBasicImageUpload() {
+        // Fallback for basic image upload if MenuImageManager is not available
         const uploadArea = document.getElementById('imageUploadArea');
         const fileInput = document.getElementById('menuImage');
         
@@ -194,27 +209,6 @@ class EnhancedMenuManager {
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
                     this.handleImagePreview(e.target.files[0]);
-                }
-            });
-            
-            // Drag and drop
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    this.handleImagePreview(files[0]);
-                    fileInput.files = files;
                 }
             });
         }
@@ -437,7 +431,7 @@ class EnhancedMenuManager {
             <div class="col-lg-6 col-xl-4">
                 <div class="card menu-card h-100" data-menu-id="${menu.id}">
                     <div class="position-relative">
-                        <img src="${menu.image || this.getDefaultMenuImage(menu.type, menu.tag)}" 
+                        <img src="${this.getMenuImage(menu)}" 
                              class="card-img-top" alt="${menu.nom}" style="height: 200px; object-fit: cover;">
                         
                         <!-- Menu Type Badge -->
@@ -563,6 +557,13 @@ class EnhancedMenuManager {
                 this.fillMenuForm(response.data);
                 this.setModalTitle('Modifier le Menu');
                 this.showModal('menuModal');
+                
+                // Refresh image manager event listeners after modal is shown
+                setTimeout(() => {
+                    if (this.menuImageManager && this.menuImageManager.refreshEventListeners) {
+                        this.menuImageManager.refreshEventListeners();
+                    }
+                }, 100);
             } else {
                 this.showError('Menu introuvable');
             }
@@ -600,6 +601,13 @@ class EnhancedMenuManager {
         this.showMenuTypeSelector(); // Show type selector for creation
         this.preselectMenuType();
         this.showModal('menuModal');
+        
+        // Refresh image manager event listeners after modal is shown
+        setTimeout(() => {
+            if (this.menuImageManager && this.menuImageManager.refreshEventListeners) {
+                this.menuImageManager.refreshEventListeners();
+            }
+        }, 100);
     }
 
     preselectMenuType() {
@@ -702,33 +710,69 @@ class EnhancedMenuManager {
         return flags[tag] || '';
     }
 
-    getDefaultMenuImage(type, tag) {
-        // Use a local placeholder or data URL instead of external service
-        // This avoids network issues with via.placeholder.com
+    getMenuImage(menu) {
+        console.log('🖼️ getMenuImage() called for menu:', menu.nom, 'Image data:', {
+            imageUrl: menu.imageUrl,
+            hasImage: menu.hasImage,
+            imageName: menu.imageName
+        });
         
-        // Option 1: Use your existing logo
-        const logoPath = '/image/Logo-JoodKITCHEN.png';
+        // First priority: Use real uploaded image
+        if (menu.imageUrl && menu.hasImage) {
+            console.log('✅ Using real uploaded image:', menu.imageUrl);
+            return menu.imageUrl;
+        }
         
-        // Option 2: Create a simple data URL placeholder
-        const color = type === 'menu_du_jour' ? '#a9b73e' : '#202d5b';
+        // Second priority: Use JoodKitchen logo as elegant fallback
+        if (menu.type === 'menu_du_jour') {
+            console.log('🍽️ Using JoodKitchen logo for daily menu');
+            return '/image/Logo-JoodKITCHEN.png';
+        }
+        
+        // Third priority: Create branded SVG placeholder
+        console.log('🎨 Generating SVG placeholder for normal menu');
+        const color = menu.type === 'menu_du_jour' ? '#a9b73e' : '#202d5b';
         const textColor = '#ffffff';
-        const text = tag || type;
+        const text = menu.tag || menu.type;
         
-        // Create a simple SVG placeholder
         const svg = `
             <svg width="350" height="200" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="${color}"/>
-                <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="18" 
+                <defs>
+                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:${this.adjustBrightness(color, -20)};stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grad)"/>
+                <text x="50%" y="40%" font-family="Arial, sans-serif" font-size="16" font-weight="bold"
+                      fill="${textColor}" text-anchor="middle" dominant-baseline="middle">
+                    JoodKitchen
+                </text>
+                <text x="50%" y="60%" font-family="Arial, sans-serif" font-size="14" 
                       fill="${textColor}" text-anchor="middle" dominant-baseline="middle">
                     Menu ${text}
                 </text>
             </svg>
         `;
         
-        // Convert SVG to data URL
-        const dataUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+        return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+    }
+
+    adjustBrightness(color, percent) {
+        // Convert hex to RGB
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
         
-        return dataUrl;
+        // Adjust brightness
+        const factor = percent / 100;
+        const newR = Math.max(0, Math.min(255, Math.round(r + (r * factor))));
+        const newG = Math.max(0, Math.min(255, Math.round(g + (g * factor))));
+        const newB = Math.max(0, Math.min(255, Math.round(b + (b * factor))));
+        
+        // Convert back to hex
+        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
     }
 
     formatMenuDate(menu) {
@@ -1651,6 +1695,17 @@ class EnhancedMenuManager {
             // Clear dishes if none exist
             this.selectedDishes = [];
             this.updateMenuComposition();
+        }
+
+        // Handle image upload with MenuImageManager
+        if (this.menuImageManager) {
+            this.menuImageManager.setMenuId(menu.id);
+            this.menuImageManager.loadExistingImage({
+                imageUrl: menu.imageUrl,
+                imageName: menu.imageName,
+                imageSize: menu.imageSize,
+                hasImage: menu.hasImage
+            });
         }
     }
 

@@ -616,7 +616,12 @@ class MenuController extends AbstractController
                 'dishes' => $dishes,
                 'dishCount' => count($dishes),
                 'createdAt' => $menu->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $menu->getUpdatedAt()?->format('Y-m-d H:i:s')
+                'updatedAt' => $menu->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                // Add image data
+                'imageUrl' => $menu->getImageUrl(),
+                'imageName' => $menu->getImageName(),
+                'imageSize' => $menu->getImageSize(),
+                'hasImage' => $menu->hasImage()
             ];
         }
         
@@ -760,7 +765,12 @@ class MenuController extends AbstractController
                 'actif' => $menu->getActif(),
                 'dishes' => $dishes,
                 'createdAt' => $menu->getCreatedAt()?->format('Y-m-d H:i:s'),
-                'updatedAt' => $menu->getUpdatedAt()?->format('Y-m-d H:i:s')
+                'updatedAt' => $menu->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                // Add image data
+                'imageUrl' => $menu->getImageUrl(),
+                'imageName' => $menu->getImageName(),
+                'imageSize' => $menu->getImageSize(),
+                'hasImage' => $menu->hasImage()
             ]
         ]);
     }

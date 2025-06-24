@@ -277,6 +277,63 @@ class MenuAPI {
     }
 
     // ========================
+    // MENU IMAGES
+    // ========================
+
+    async uploadMenuImage(menuId, imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        console.log('📸 MenuAPI.uploadMenuImage() - Uploading image for menu:', menuId);
+        console.log('📸 File details:', {
+            name: imageFile.name,
+            size: imageFile.size,
+            type: imageFile.type
+        });
+
+        try {
+            const response = await fetch(`${this.baseUrl}/${menuId}/image`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                },
+                body: formData
+            });
+
+            console.log('📸 Upload response status:', response.status);
+            
+            const data = await response.json();
+            console.log('📸 Upload response data:', data);
+            
+            return data;
+        } catch (error) {
+            console.error('💥 MenuAPI.uploadMenuImage() Error:', error);
+            throw error;
+        }
+    }
+
+    async deleteMenuImage(menuId) {
+        console.log('🗑️ MenuAPI.deleteMenuImage() - Deleting image for menu:', menuId);
+
+        try {
+            const response = await fetch(`${this.baseUrl}/${menuId}/image`, {
+                method: 'DELETE',
+                headers: await this.getAuthHeaders()
+            });
+
+            console.log('🗑️ Delete response status:', response.status);
+            
+            const data = await response.json();
+            console.log('🗑️ Delete response data:', data);
+            
+            return data;
+        } catch (error) {
+            console.error('💥 MenuAPI.deleteMenuImage() Error:', error);
+            throw error;
+        }
+    }
+
+    // ========================
     // STATISTICS
     // ========================
 

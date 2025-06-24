@@ -20,6 +20,14 @@ vich_uploader:
             delete_on_update: true
             delete_on_remove: true
 
+        menu_images:
+            uri_prefix: /uploads/menus
+            upload_destination: '%kernel.project_dir%/public/uploads/menus'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: false
+            delete_on_update: true
+            delete_on_remove: true
+
     #mappings:
     #    products:
     #        uri_prefix: /images/products

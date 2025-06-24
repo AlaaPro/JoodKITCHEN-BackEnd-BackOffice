@@ -433,22 +433,11 @@
                                             </div>
                                         </div>
 
-                                        <!-- Image Upload -->
+                                        <!-- Professional Image Upload -->
                                         <div class="col-12">
                                             <label class="form-label">Image du menu</label>
-                                            <div class="image-upload-area border border-2 border-dashed rounded p-4 text-center" id="imageUploadArea">
-                                                <input type="file" class="d-none" name="image" id="menuImage" accept="image/*">
-                                                <div id="imageUploadPlaceholder">
-                                                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                                    <p class="text-muted mb-1">Cliquez pour sélectionner une image</p>
-                                                    <small class="text-muted">ou glissez-déposez votre fichier ici</small>
-                                                </div>
-                                                <div id="imagePreview" class="d-none">
-                                                    <img id="previewImage" src="" class="img-fluid rounded" style="max-height: 200px;">
-                                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removeImage">
-                                                        <i class="fas fa-trash"></i> Supprimer
-                                                    </button>
-                                                </div>
+                                            <div id="menuImageContainer">
+                                                <!-- MenuImageManager will be initialized here -->
                                             </div>
                                         </div>
                                     </div>
@@ -616,6 +605,8 @@
 {% block javascripts %}
 <!-- Menu API -->
 <script src="{{ asset('js/admin/managers/menu-api.js') }}"></script>
+<!-- Professional Menu Image Manager -->
+<script src="{{ asset('js/admin/components/menu-image-manager.js') }}"></script>
 <!-- Enhanced Smart Menu Manager -->
 <script src="{{ asset('js/admin/managers/enhanced-menu-manager.js') }}"></script>
 
@@ -1046,6 +1037,144 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Professional Menu Image Manager Styles */
+.menu-image-upload-container {
+    min-height: 250px;
+}
+
+.image-preview-area {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.image-preview-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.menu-image-preview {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-preview-wrapper:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.image-info {
+    padding: 10px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.image-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.image-upload-area:hover {
+    border-color: #a9b73e;
+    background: rgba(169, 183, 62, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(169, 183, 62, 0.15);
+}
+
+.upload-zone {
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.upload-zone.drag-over {
+    border-color: #a9b73e;
+    background: rgba(169, 183, 62, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.upload-icon {
+    color: #a9b73e;
+}
+
+.upload-title {
+    color: #202d5b;
+    font-weight: 600;
+    margin: 0;
+}
+
+.upload-description {
+    color: #6c757d;
+    margin: 0;
+}
+
+.upload-requirements {
+    padding: 8px 16px;
+    background: rgba(169, 183, 62, 0.1);
+    border-radius: 20px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.upload-progress {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .menu-image-preview {
+        height: 150px;
+    }
+    
+    .upload-zone {
+        padding: 30px 15px;
+    }
+    
+    .image-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
 }
 
 /* Form Enhancements */
