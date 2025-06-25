@@ -1,0 +1,1130 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Point de Vente (POS) - JoodKitchen{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ================================
+   JOODKITCHEN POS PROFESSIONAL STYLES
+   ================================ */
+
+/* POS Layout Structure */
+.pos-container {
+    height: calc(100vh - 140px);
+    overflow: hidden;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.pos-header {
+    background: linear-gradient(135deg, #a9b73e 0%, #8b9332 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 2px 10px rgba(169, 183, 62, 0.3);
+}
+
+.pos-header h4 {
+    margin: 0;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.pos-stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.pos-stat-card {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.pos-stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: block;
+}
+
+.pos-stat-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* Main POS Grid */
+.pos-main {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 1rem;
+    height: calc(100% - 80px);
+    padding: 1rem;
+}
+
+/* Left Panel - Menu Categories & Items */
+.pos-menu-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.pos-category-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.pos-category-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.pos-category-tab {
+    flex: 0 0 auto;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pos-category-tab:hover {
+    background: rgba(169, 183, 62, 0.1);
+    color: #a9b73e;
+}
+
+.pos-category-tab.active {
+    background: #a9b73e;
+    color: white;
+}
+
+.pos-category-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #a9b73e;
+}
+
+.pos-category-icon {
+    font-size: 1.2rem;
+}
+
+.pos-items-container {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+/* Advanced Filters */
+.pos-advanced-filters {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
+}
+
+.pos-filters-content {
+    max-width: 100%;
+}
+
+.form-select-sm, .form-control-sm {
+    font-size: 0.8rem;
+}
+
+.form-check-sm {
+    font-size: 0.85rem;
+}
+
+.form-check-sm .form-check-input {
+    margin-top: 0.2rem;
+}
+
+.pos-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* Item Cards */
+.pos-item-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pos-item-card:hover {
+    border-color: #a9b73e;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(169, 183, 62, 0.15);
+}
+
+.pos-item-card.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.pos-item-image {
+    width: 100%;
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #6c757d;
+}
+
+.pos-item-name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #212529;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.pos-item-description {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pos-item-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #a9b73e;
+    text-align: center;
+}
+
+.pos-item-badges {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.pos-item-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.pos-badge-popular {
+    background: linear-gradient(45deg, #da3c33, #ff6b6b);
+    color: white;
+}
+
+.pos-badge-vegetarian {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+}
+
+.pos-badge-new {
+    background: linear-gradient(45deg, #007bff, #00d4ff);
+    color: white;
+}
+
+/* Right Panel - Order Summary */
+.pos-order-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.pos-order-header {
+    background: linear-gradient(135deg, #da3c33 0%, #c82333 100%);
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+.pos-order-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.pos-customer-section {
+    padding: 1rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.pos-customer-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pos-customer-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.pos-customer-input:focus {
+    border-color: #a9b73e;
+    outline: none;
+}
+
+.pos-btn-customer {
+    padding: 0.75rem 1rem;
+    background: #a9b73e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pos-btn-customer:hover {
+    background: #8b9332;
+}
+
+.pos-customer-info {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.pos-customer-info.active {
+    display: block;
+}
+
+.pos-order-type {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.pos-order-type-btn {
+    flex: 1;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.pos-order-type-btn.active {
+    background: #a9b73e;
+    color: white;
+    border-color: #a9b73e;
+}
+
+/* Order Items */
+.pos-order-items {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    min-height: 200px; /* Ensure minimum height so it's always visible */
+}
+
+.pos-order-empty {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 2rem;
+}
+
+.pos-order-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+    gap: 0.75rem;
+}
+
+.pos-order-item:last-child {
+    border-bottom: none;
+}
+
+.pos-item-details {
+    flex: 1;
+}
+
+.pos-item-order-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #212529;
+    margin-bottom: 0.25rem;
+}
+
+.pos-item-order-price {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.pos-quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pos-qty-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: #a9b73e;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pos-qty-btn:hover {
+    background: #8b9332;
+    transform: scale(1.1);
+}
+
+.pos-qty-btn.remove {
+    background: #da3c33;
+}
+
+.pos-qty-btn.remove:hover {
+    background: #c82333;
+}
+
+.pos-qty-display {
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+}
+
+.pos-item-total {
+    font-weight: 700;
+    color: #a9b73e;
+    font-size: 0.9rem;
+}
+
+/* Order Summary & Payment */
+.pos-order-summary {
+    padding: 1rem;
+    border-top: 2px solid #e9ecef;
+    background: #f8f9fa;
+}
+
+.pos-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.pos-summary-row.total {
+    border-top: 2px solid #e9ecef;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #a9b73e;
+}
+
+.pos-payment-section {
+    padding: 1rem;
+    background: white;
+}
+
+.pos-payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pos-payment-btn {
+    padding: 0.75rem;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.pos-payment-btn:hover {
+    border-color: #a9b73e;
+    background: rgba(169, 183, 62, 0.1);
+}
+
+.pos-payment-btn.active {
+    background: #a9b73e;
+    color: white;
+    border-color: #a9b73e;
+}
+
+.pos-finalize-order {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.pos-finalize-order:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.pos-finalize-order:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Loading & States */
+.pos-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.pos-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e9ecef;
+    border-top: 3px solid #a9b73e;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .pos-main {
+        grid-template-columns: 1fr 350px;
+    }
+    
+    .pos-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .pos-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 400px;
+    }
+    
+    .pos-order-panel {
+        order: 2;
+    }
+    
+    .pos-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .pos-container {
+        height: calc(100vh - 120px);
+    }
+    
+    .pos-header {
+        padding: 0.75rem;
+    }
+    
+    .pos-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .pos-stat-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+    
+    .pos-main {
+        padding: 0.5rem;
+    }
+    
+    .pos-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .pos-item-card {
+        padding: 0.75rem;
+    }
+    
+    .pos-item-image {
+        height: 80px;
+        font-size: 1.5rem;
+    }
+    
+    .pos-category-tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Touch-friendly adjustments for tablets */
+@media (pointer: coarse) {
+    .pos-item-card {
+        padding: 1.25rem;
+    }
+    
+    .pos-category-tab {
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .pos-qty-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .pos-payment-btn {
+        padding: 1rem;
+    }
+}
+
+/* Animation Classes */
+.pos-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pos-slideIn {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Success/Error Messages */
+.pos-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 9999;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    animation: slideInRight 0.3s ease-out;
+}
+
+.pos-message.success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.pos-message.error {
+    background: linear-gradient(135deg, #da3c33, #ff6b6b);
+    color: white;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- POS Header Simplified -->
+    <div class="pos-container">
+        <div class="pos-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>
+                        <i class="fas fa-cash-register me-2"></i>
+                        Point de Vente - JoodKitchen
+                    </h4>
+                    <small id="posCurrentTime"></small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light" id="btnOrderHistory">
+                        <i class="fas fa-history me-2"></i>
+                        Historique du jour
+                    </button>
+                    <button class="btn btn-outline-light" id="btnRefreshMenu">
+                        <i class="fas fa-sync-alt me-2"></i>
+                        Actualiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main POS Interface -->
+        <div class="pos-main">
+            <!-- Left Panel: Menu Categories & Items -->
+            <div class="pos-menu-panel">
+                <!-- Category Tabs -->
+                <div class="pos-category-tabs" id="posCategoryTabs">
+                    <button class="pos-category-tab active" data-category="daily">
+                        <span class="pos-category-icon">📅</span>
+                        <span>Menus du Jour</span>
+                    </button>
+                    <button class="pos-category-tab" data-category="normal">
+                        <span class="pos-category-icon">🍽️</span>
+                        <span>Menus Normaux</span>
+                    </button>
+                    <button class="pos-category-tab" data-category="plats">
+                        <span class="pos-category-icon">🥘</span>
+                        <span>Plats/Articles</span>
+                    </button>
+                </div>
+
+                <!-- Advanced Filters for Plats/Articles (hidden by default) -->
+                <div class="pos-advanced-filters" id="posAdvancedFilters" style="display: none;">
+                    <div class="pos-filters-content">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <select class="form-select form-select-sm" id="categoryFilter">
+                                    <option value="">Toutes catégories</option>
+                                </select>
+                            </div>
+                            <!-- Removed status filter - only showing available items -->
+                            <div class="col-md-2">
+                                <input type="number" class="form-control form-control-sm" id="minPriceFilter" placeholder="Prix min" step="0.10">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control form-control-sm" id="maxPriceFilter" placeholder="Prix max" step="0.10">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control form-control-sm" placeholder="Recherche..." id="searchInput">
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-1">
+                            <div class="col-md-4">
+                                <div class="form-check form-check-sm">
+                                    <input class="form-check-input" type="checkbox" id="popularFilter">
+                                    <label class="form-check-label" for="popularFilter">
+                                        <i class="fas fa-star text-warning"></i> Populaires
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-check-sm">
+                                    <input class="form-check-input" type="checkbox" id="vegetarianFilter">
+                                    <label class="form-check-label" for="vegetarianFilter">
+                                        <i class="fas fa-leaf text-success"></i> Végétariens
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button class="btn btn-outline-secondary btn-sm me-1" id="clearFilters">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="applyFilters">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Container -->
+                <div class="pos-items-container">
+                    <div class="pos-loading" id="posMenuLoading">
+                        <div class="pos-spinner"></div>
+                        Chargement du menu...
+                    </div>
+                    
+                    <div class="pos-items-grid" id="posItemsGrid" style="display: none;">
+                        <!-- Dynamic menu items will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Order Summary -->
+            <div class="pos-order-panel">
+                <!-- Order Header -->
+                <div class="pos-order-header">
+                    <h5 class="pos-order-title">Commande en cours</h5>
+                </div>
+
+                <!-- Customer Section -->
+                <div class="pos-customer-section">
+                    <div class="pos-customer-selector">
+                        <input type="text" 
+                               class="pos-customer-input" 
+                               id="customerSearch" 
+                               placeholder="Rechercher un client...">
+                        <button class="pos-btn-customer" id="btnNewCustomer">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="pos-customer-info" id="customerInfo">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong id="customerName">Client Invité</strong><br>
+                                <small id="customerDetails">Commande sur place</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">Points fidélité</small><br>
+                                <strong class="text-success" id="customerPoints">0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Type Selection - Simplified -->
+                    <div class="pos-order-type">
+                        <button class="pos-order-type-btn active" data-type="sur_place">
+                            <i class="fas fa-utensils"></i><br>Sur place
+                        </button>
+                        <button class="pos-order-type-btn" data-type="a_emporter">
+                            <i class="fas fa-shopping-bag"></i><br>À emporter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Order Items List -->
+                <div class="pos-order-items" id="orderItemsList">
+                    <div class="pos-order-empty">
+                        <i class="fas fa-shopping-cart fa-2x text-muted mb-2"></i><br>
+                        Aucun article dans la commande<br>
+                        <small class="text-muted">Sélectionnez des plats pour commencer</small>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="pos-order-summary">
+                    <div class="pos-summary-row">
+                        <span>Sous-total:</span>
+                        <span id="orderSubtotal">0,00€</span>
+                    </div>
+                    <div class="pos-summary-row">
+                        <span>TVA (10%):</span>
+                        <span id="orderTax">0,00€</span>
+                    </div>
+                    <div class="pos-summary-row">
+                        <span>Réduction:</span>
+                        <span id="orderDiscount">-0,00€</span>
+                    </div>
+                    <div class="pos-summary-row total">
+                        <span>TOTAL:</span>
+                        <span id="orderTotal">0,00€</span>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="pos-payment-section">
+                    <div class="pos-payment-methods">
+                        <button class="pos-payment-btn active" data-method="cash">
+                            <i class="fas fa-money-bill-wave"></i><br>Espèces
+                        </button>
+                        <button class="pos-payment-btn" data-method="card">
+                            <i class="fas fa-credit-card"></i><br>Carte
+                        </button>
+                        <button class="pos-payment-btn" data-method="mobile">
+                            <i class="fas fa-mobile-alt"></i><br>Mobile
+                        </button>
+                        <button class="pos-payment-btn" data-method="split">
+                            <i class="fas fa-cut"></i><br>Partager
+                        </button>
+                    </div>
+
+                    <button class="pos-finalize-order" id="finalizeOrderBtn" disabled>
+                        <i class="fas fa-check-circle me-2"></i>
+                        Finaliser la commande
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Search Results Modal -->
+<div class="modal fade" id="customerSearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-search me-2"></i>
+                    Rechercher un client
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="modalCustomerSearch" 
+                           placeholder="Nom, prénom, email ou téléphone...">
+                </div>
+                <div id="customerSearchResults">
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-search fa-2x"></i><br>
+                        Saisissez au moins 2 caractères pour rechercher
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="btnCreateNewCustomer">
+                    <i class="fas fa-plus me-2"></i>Nouveau client
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Customer Modal -->
+<div class="modal fade" id="newCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Nouveau client
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newCustomerForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prénom *</label>
+                            <input type="text" class="form-control" name="prenom" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nom *</label>
+                            <input type="text" class="form-control" name="nom" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input type="tel" class="form-control" name="telephone">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Créer le client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Order History Modal -->
+<div class="modal fade" id="orderHistoryModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-history me-2"></i>
+                    Historique des commandes - <span id="historyDate"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control" id="orderHistorySearch" 
+                               placeholder="Rechercher par numéro de commande, nom du client...">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="orderHistoryFilter">
+                            <option value="all">Tous les statuts</option>
+                            <option value="en_attente">En attente</option>
+                            <option value="confirme">Confirmé</option>
+                            <option value="en_preparation">En préparation</option>
+                            <option value="pret">Prêt</option>
+                            <option value="livre">Livré</option>
+                            <option value="annule">Annulé</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="orderHistoryContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2">Chargement de l'historique...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="refreshHistoryBtn">
+                    <i class="fas fa-sync-alt me-2"></i>Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Success Modal -->
+<div class="modal fade" id="orderSuccessModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Commande créée avec succès !
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-receipt fa-4x text-success mb-3"></i>
+                    <h4 id="orderNumber">Commande #CMD-000001</h4>
+                    <p class="text-muted">Commande envoyée en cuisine</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Client</h6>
+                                <p class="card-text" id="orderCustomerName">Nom du client</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Total</h6>
+                                <p class="card-text h4 text-success" id="orderFinalTotal">0,00€</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="printReceiptBtn">
+                    <i class="fas fa-print me-2"></i>Imprimer le reçu
+                </button>
+                <button type="button" class="btn btn-success" id="newOrderBtn">
+                    <i class="fas fa-plus me-2"></i>Nouvelle commande
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<!-- Bootstrap 5 JavaScript Bundle (CDN backup) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="{{ asset('js/admin/pos/pos-manager.js') }}"></script>
+<script>
+// Check what modal APIs are available
+console.log('🔍 Checking available modal APIs...');
+console.log('- coreui:', typeof coreui !== 'undefined' ? 'Available' : 'Not available');
+console.log('- bootstrap:', typeof bootstrap !== 'undefined' ? 'Available' : 'Not available');
+console.log('- CoreUI Modal:', typeof coreui !== 'undefined' && coreui.Modal ? 'Available' : 'Not available');
+
+// Initialize POS System when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing JoodKitchen POS System...');
+    
+    if (typeof PosManager !== 'undefined') {
+        window.posManager = new PosManager();
+        console.log('✅ POS System initialized successfully');
+    } else {
+        console.error('❌ PosManager not found! Check if pos-manager.js is loaded.');
+    }
+});
+
+// Update current time
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    const dateString = now.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    document.getElementById('posCurrentTime').textContent = 
+        `${dateString} - ${timeString}`;
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+updateCurrentTime();
+</script>
+{% endblock %} 

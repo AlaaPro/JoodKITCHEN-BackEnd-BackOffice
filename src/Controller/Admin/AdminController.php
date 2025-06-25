@@ -172,6 +172,15 @@ class AdminController extends AbstractController
     }
 
     /**
+     * POS System (Point of Sale)
+     */
+    #[Route('/pos', name: 'admin_pos', methods: ['GET'])]
+    public function pos(): Response
+    {
+        return $this->render('admin/pos/index.html.twig');
+    }
+
+    /**
      * Analytics
      */
     #[Route('/analytics', name: 'admin_analytics_dashboard', methods: ['GET'])]

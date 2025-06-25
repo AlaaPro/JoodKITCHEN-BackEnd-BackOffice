@@ -66,4 +66,64 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Search customers for POS
+     */
+    public function searchCustomers(string $query, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :role')
+            ->andWhere('u.isActive = :isActive')
+            ->andWhere('
+                u.nom LIKE :query OR 
+                u.prenom LIKE :query OR 
+                u.email LIKE :query OR 
+                u.telephone LIKE :query OR
+                CONCAT(u.prenom, \' \', u.nom) LIKE :query OR
+                CONCAT(u.nom, \' \', u.prenom) LIKE :query
+            ')
+            ->setParameter('role', '%"ROLE_CLIENT"%')
+            ->setParameter('isActive', true)
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('u.nom', 'ASC')
+            ->addOrderBy('u.prenom', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get customer statistics
+     */
+    public function getCustomerStats(): array
+    {
+        // Total customers
+        $totalCustomers = $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.roles LIKE :role')
+            ->andWhere('u.isActive = :isActive')
+            ->setParameter('role', '%"ROLE_CLIENT"%')
+            ->setParameter('isActive', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // New customers this month
+        $thisMonth = new \DateTime('first day of this month');
+        $newCustomers = $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u.roles LIKE :role')
+            ->andWhere('u.isActive = :isActive')
+            ->andWhere('u.createdAt >= :thisMonth')
+            ->setParameter('role', '%"ROLE_CLIENT"%')
+            ->setParameter('isActive', true)
+            ->setParameter('thisMonth', $thisMonth)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return [
+            'total' => (int)$totalCustomers,
+            'new_this_month' => (int)$newCustomers
+        ];
+    }
 } 

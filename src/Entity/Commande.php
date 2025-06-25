@@ -49,8 +49,7 @@ class Commande
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'commandes')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['commande:read', 'commande:write'])]
     private ?User $user = null;
 
@@ -79,6 +78,18 @@ class Commande
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[Groups(['commande:read', 'commande:write'])]
     private ?string $totalAvantReduction = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?string $typeLivraison = 'sur_place';
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?string $adresseLivraison = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['commande:read', 'commande:write'])]
+    private ?string $commentaire = null;
 
     // Relations
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: CommandeArticle::class, cascade: ['persist', 'remove'])]
@@ -203,6 +214,39 @@ class Commande
     public function setTotalAvantReduction(?string $totalAvantReduction): static
     {
         $this->totalAvantReduction = $totalAvantReduction;
+        return $this;
+    }
+
+    public function getTypeLivraison(): ?string
+    {
+        return $this->typeLivraison;
+    }
+
+    public function setTypeLivraison(?string $typeLivraison): static
+    {
+        $this->typeLivraison = $typeLivraison;
+        return $this;
+    }
+
+    public function getAdresseLivraison(): ?string
+    {
+        return $this->adresseLivraison;
+    }
+
+    public function setAdresseLivraison(?string $adresseLivraison): static
+    {
+        $this->adresseLivraison = $adresseLivraison;
+        return $this;
+    }
+
+    public function getCommentaire(): ?string
+    {
+        return $this->commentaire;
+    }
+
+    public function setCommentaire(?string $commentaire): static
+    {
+        $this->commentaire = $commentaire;
         return $this;
     }
 

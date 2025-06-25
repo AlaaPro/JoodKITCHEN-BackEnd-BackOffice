@@ -64,4 +64,89 @@ class MenuRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Find today's menus (POS compatible)
+     */
+    public function findTodaysMenus(?string $date = null): array
+    {
+        if (!$date) {
+            $date = date('Y-m-d');
+        }
+
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.type = :type')
+            ->andWhere('m.date = :date')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('type', 'menu_du_jour')
+            ->setParameter('date', $date)
+            ->setParameter('actif', true)
+            ->orderBy('m.tag', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get menu statistics
+     */
+    public function getMenuStats(): array
+    {
+        $today = date('Y-m-d');
+        
+        // Total menus count
+        $totalMenus = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Normal menus count
+        $normalMenus = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.type = :type')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('type', 'normal')
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Daily menus count
+        $dailyMenus = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.type = :type')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('type', 'menu_du_jour')
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Today's menus count
+        $todayMenus = $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.type = :type')
+            ->andWhere('m.date = :date')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('type', 'menu_du_jour')
+            ->setParameter('date', $today)
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // Average price
+        $avgPrice = $this->createQueryBuilder('m')
+            ->select('AVG(m.prix)')
+            ->andWhere('m.actif = :actif')
+            ->setParameter('actif', true)
+            ->getQuery()
+            ->getSingleScalarResult() ?: 0;
+
+        return [
+            'total' => (int)$totalMenus,
+            'normal' => (int)$normalMenus,
+            'daily' => (int)$dailyMenus,
+            'today' => (int)$todayMenus,
+            'avg_price' => round((float)$avgPrice, 2)
+        ];
+    }
 } 
