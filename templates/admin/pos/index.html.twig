@@ -14,6 +14,18 @@
     height: calc(100vh - 140px);
     overflow: hidden;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    width: 100%;
+    margin: 0;
+}
+
+/* Ensure full width usage in normal mode too */
+.container-lg.px-4 {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.body {
+    padding: 0 !important;
 }
 
 .pos-header {
@@ -694,6 +706,288 @@
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
 }
+
+/* ================================
+   MODAL FIXES FOR BOOTSTRAP/COREUI CONFLICTS
+   ================================ */
+
+/* Ensure modals appear above everything */
+.modal {
+    z-index: 1060 !important;
+}
+
+.modal-backdrop {
+    z-index: 1055 !important;
+}
+
+/* Special modal handling for fullscreen mode */
+body.pos-fullscreen .modal {
+    z-index: 100000 !important; /* Higher than fullscreen body */
+    position: fixed !important;
+}
+
+body.pos-fullscreen .modal-backdrop {
+    z-index: 999 !important; /* Above fullscreen content but below modal */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: rgba(0, 0, 0, 0.5) !important; /* Standard backdrop opacity */
+}
+
+/* Ensure modal dialogs are properly centered in fullscreen */
+body.pos-fullscreen .modal-dialog {
+    position: relative !important;
+    z-index: 100001 !important;
+    margin: 1rem auto !important;
+    max-height: calc(100vh - 2rem) !important;
+}
+
+/* Ensure modal content scrolls properly in fullscreen */
+body.pos-fullscreen .modal-content {
+    max-height: calc(100vh - 2rem) !important;
+    overflow-y: auto !important;
+    border: none !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+}
+
+/* Fix modal body scrolling in fullscreen */
+body.pos-fullscreen .modal-body {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+}
+
+/* Fix for close button visibility */
+.btn-close {
+    background: transparent !important;
+    border: none !important;
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+    color: #000 !important;
+    opacity: 0.5 !important;
+    cursor: pointer !important;
+    padding: 0.25rem !important;
+    margin: -0.25rem !important;
+}
+
+.btn-close:hover {
+    opacity: 0.75 !important;
+}
+
+.btn-close-white {
+    color: #fff !important;
+}
+
+/* Ensure modal headers have proper styling */
+.modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1rem !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.modal-title {
+    margin: 0 !important;
+    line-height: 1.5 !important;
+}
+
+/* Fix modal backdrop behavior */
+.modal.show {
+    display: block !important;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5 !important;
+}
+
+/* Prevent scroll issues */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* Fix for static backdrop behavior */
+.modal[data-bs-backdrop="static"] .modal-dialog {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+.modal[data-bs-backdrop="static"]:not(.show) .modal-dialog {
+    transform: scale(1);
+}
+
+/* Ensure proper modal transitions */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Fix any potential button conflicts */
+.modal .btn {
+    cursor: pointer !important;
+}
+
+.modal .btn:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.65 !important;
+}
+
+/* ================================
+   FULLSCREEN POS MODE
+   ================================ */
+
+/* Fullscreen toggle button styling */
+#btnToggleFullscreen {
+    transition: all 0.3s ease;
+}
+
+#btnToggleFullscreen:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05);
+}
+
+/* Fullscreen mode styles */
+body.pos-fullscreen #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+body.pos-fullscreen .header {
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+body.pos-fullscreen .wrapper {
+    margin-left: 0 !important;
+    transition: margin-left 0.3s ease;
+}
+
+body.pos-fullscreen .body {
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1000 !important;
+    /* Ensure this doesn't create a stacking context that traps modals */
+    isolation: auto !important;
+}
+
+body.pos-fullscreen .container-lg {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+body.pos-fullscreen .row {
+    margin: 0 !important;
+    height: 100% !important;
+}
+
+body.pos-fullscreen .col-12 {
+    padding: 0 !important;
+    height: 100% !important;
+}
+
+body.pos-fullscreen .pos-container {
+    height: 100vh !important;
+    width: 100vw !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
+}
+
+/* Fullscreen toggle button in fullscreen mode */
+body.pos-fullscreen #btnToggleFullscreen {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 99999 !important;
+    background: rgba(169, 183, 62, 0.95) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50px !important;
+    width: 60px !important;
+    height: 60px !important;
+    padding: 0 !important;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.4) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+body.pos-fullscreen #btnToggleFullscreen:hover {
+    background: rgba(169, 183, 62, 1) !important;
+    transform: scale(1.1) !important;
+}
+
+body.pos-fullscreen #fullscreenText {
+    display: none !important;
+}
+
+body.pos-fullscreen #btnToggleFullscreen i {
+    margin: 0 !important;
+}
+
+/* Smooth transitions for all fullscreen elements */
+#sidebar,
+.header,
+.wrapper,
+.body,
+.pos-container {
+    transition: all 0.3s ease;
+}
+
+/* Hide breadcrumb in fullscreen */
+body.pos-fullscreen .breadcrumb {
+    display: none !important;
+}
+
+/* Hide footer in fullscreen */
+body.pos-fullscreen .footer {
+    display: none !important;
+}
+
+/* Ensure no gaps or margins in fullscreen */
+body.pos-fullscreen {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+body.pos-fullscreen .wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
+}
+
+/* Override any CoreUI default margins/paddings */
+body.pos-fullscreen * {
+    box-sizing: border-box !important;
+}
+
+/* Ensure POS header uses full width */
+body.pos-fullscreen .pos-header {
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* Ensure POS main content uses full dimensions */
+body.pos-fullscreen .pos-main {
+    width: 100% !important;
+    height: calc(100vh - 80px) !important; /* Subtract header height */
+    margin: 0 !important;
+    padding: 0 !important;
+}
 </style>
 {% endblock %}
 
@@ -718,6 +1012,11 @@
                     <button class="btn btn-outline-light" id="btnRefreshMenu">
                         <i class="fas fa-sync-alt me-2"></i>
                         Actualiser
+                    </button>
+                    <div class="vr mx-2 opacity-50"></div>
+                    <button class="btn btn-outline-warning" id="btnToggleFullscreen" title="Mode plein écran (F11)">
+                        <i class="fas fa-expand me-2"></i>
+                        <span id="fullscreenText">Plein écran</span>
                     </button>
                 </div>
             </div>
@@ -886,12 +1185,12 @@
                         <button class="pos-payment-btn" data-method="card">
                             <i class="fas fa-credit-card"></i><br>Carte
                         </button>
-                        <button class="pos-payment-btn" data-method="mobile">
+                        {# <button class="pos-payment-btn" data-method="mobile">
                             <i class="fas fa-mobile-alt"></i><br>Mobile
                         </button>
                         <button class="pos-payment-btn" data-method="split">
                             <i class="fas fa-cut"></i><br>Partager
-                        </button>
+                        </button> #}
                     </div>
 
                     <button class="pos-finalize-order" id="finalizeOrderBtn" disabled>
@@ -905,7 +1204,7 @@
 </div>
 
 <!-- Customer Search Results Modal -->
-<div class="modal fade" id="customerSearchModal" tabindex="-1">
+<div class="modal fade" id="customerSearchModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -913,7 +1212,12 @@
                     <i class="fas fa-search me-2"></i>
                     Rechercher un client
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal" 
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeCustomerSearchModal()"
+                        aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -928,7 +1232,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeCustomerSearchModal()">Annuler</button>
                 <button type="button" class="btn btn-primary" id="btnCreateNewCustomer">
                     <i class="fas fa-plus me-2"></i>Nouveau client
                 </button>
@@ -938,7 +1246,7 @@
 </div>
 
 <!-- New Customer Modal -->
-<div class="modal fade" id="newCustomerModal" tabindex="-1">
+<div class="modal fade" id="newCustomerModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -946,7 +1254,12 @@
                     <i class="fas fa-user-plus me-2"></i>
                     Nouveau client
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeNewCustomerModal()"
+                        aria-label="Fermer"></button>
             </div>
             <form id="newCustomerForm">
                 <div class="modal-body">
@@ -970,7 +1283,11 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            data-bs-dismiss="modal"
+                            data-coreui-dismiss="modal"
+                            onclick="posManager?.closeNewCustomerModal()">Annuler</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Créer le client
                     </button>
@@ -981,7 +1298,7 @@
 </div>
 
 <!-- Order History Modal -->
-<div class="modal fade" id="orderHistoryModal" tabindex="-1">
+<div class="modal fade" id="orderHistoryModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
@@ -989,7 +1306,12 @@
                     <i class="fas fa-history me-2"></i>
                     Historique des commandes - <span id="historyDate"></span>
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeOrderHistoryModal()"
+                        aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
                 <div class="row mb-3">
@@ -1020,7 +1342,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeOrderHistoryModal()">Fermer</button>
                 <button type="button" class="btn btn-primary" id="refreshHistoryBtn">
                     <i class="fas fa-sync-alt me-2"></i>Actualiser
                 </button>
@@ -1030,7 +1356,7 @@
 </div>
 
 <!-- Order Success Modal -->
-<div class="modal fade" id="orderSuccessModal" tabindex="-1">
+<div class="modal fade" id="orderSuccessModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
@@ -1038,7 +1364,12 @@
                     <i class="fas fa-check-circle me-2"></i>
                     Commande créée avec succès !
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" 
+                        class="btn-close btn-close-white" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeOrderSuccessModal()"
+                        aria-label="Fermer"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="mb-4">
@@ -1067,7 +1398,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" 
+                        class="btn btn-secondary" 
+                        data-bs-dismiss="modal"
+                        data-coreui-dismiss="modal"
+                        onclick="posManager?.closeOrderSuccessModal()">Fermer</button>
                 <button type="button" class="btn btn-primary" id="printReceiptBtn">
                     <i class="fas fa-print me-2"></i>Imprimer le reçu
                 </button>
@@ -1088,9 +1423,154 @@
 <script>
 // Check what modal APIs are available
 console.log('🔍 Checking available modal APIs...');
-console.log('- coreui:', typeof coreui !== 'undefined' ? 'Available' : 'Not available');
-console.log('- bootstrap:', typeof bootstrap !== 'undefined' ? 'Available' : 'Not available');
+console.log('- coreui:', typeof coreui !== 'undefined' ? 'Available (' + (coreui?.version || 'unknown version') + ')' : 'Not available');
+console.log('- bootstrap:', typeof bootstrap !== 'undefined' ? 'Available (' + (bootstrap?.Modal?.VERSION || 'unknown version') + ')' : 'Not available');
 console.log('- CoreUI Modal:', typeof coreui !== 'undefined' && coreui.Modal ? 'Available' : 'Not available');
+console.log('- jQuery:', typeof jQuery !== 'undefined' ? 'Available (' + jQuery.fn.jquery + ')' : 'Not available');
+
+// Modal compatibility layer for Bootstrap/CoreUI conflicts with fullscreen support
+function closeModalSafely(modalId) {
+    console.log('🔒 Attempting to close modal:', modalId);
+    
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) {
+        console.warn('⚠️ Modal element not found:', modalId);
+        return;
+    }
+    
+    try {
+        // Try CoreUI API first
+        if (typeof coreui !== 'undefined' && coreui.Modal) {
+            const modal = coreui.Modal.getInstance(modalElement) || new coreui.Modal(modalElement);
+            modal.hide();
+            console.log('✅ Modal closed using CoreUI API');
+            return;
+        }
+        
+        // Try Bootstrap API
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.hide();
+            console.log('✅ Modal closed using Bootstrap API');
+            return;
+        }
+        
+        // Fallback: manipulate DOM directly
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+        
+        // Remove backdrop if exists
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        // Handle body classes based on mode
+        document.body.classList.remove('modal-open');
+        if (!document.body.classList.contains('pos-fullscreen')) {
+            document.body.style.removeProperty('padding-right');
+        }
+        
+        console.log('✅ Modal closed using DOM fallback');
+        
+    } catch (error) {
+        console.error('❌ Error closing modal:', error);
+    }
+}
+
+// Enhanced modal opening function for fullscreen compatibility
+function openModalSafely(modalId) {
+    console.log('🔓 Attempting to open modal:', modalId);
+    
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement) {
+        console.warn('⚠️ Modal element not found:', modalId);
+        return;
+    }
+    
+    // Check if we're in fullscreen mode
+    const isFullscreen = document.body.classList.contains('pos-fullscreen');
+    
+    // Pre-adjust z-index for fullscreen mode
+    if (isFullscreen) {
+        modalElement.style.zIndex = '100000';
+        console.log('🖥️ Modal z-index adjusted for fullscreen mode');
+    }
+    
+    try {
+        // Try CoreUI API first
+        if (typeof coreui !== 'undefined' && coreui.Modal) {
+            const modal = coreui.Modal.getInstance(modalElement) || new coreui.Modal(modalElement);
+            modal.show();
+            console.log('✅ Modal opened using CoreUI API');
+            
+            // Fix backdrop after opening
+            if (isFullscreen) {
+                setTimeout(() => fixModalBackdropForFullscreen(), 100);
+            }
+            return;
+        }
+        
+        // Try Bootstrap API
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.show();
+            console.log('✅ Modal opened using Bootstrap API');
+            
+            // Fix backdrop after opening
+            if (isFullscreen) {
+                setTimeout(() => fixModalBackdropForFullscreen(), 100);
+            }
+            return;
+        }
+        
+        // Fallback: manipulate DOM directly
+        modalElement.classList.add('show');
+        modalElement.style.display = 'block';
+        modalElement.setAttribute('aria-modal', 'true');
+        modalElement.removeAttribute('aria-hidden');
+        
+        // Add backdrop with proper z-index
+        if (!document.querySelector('.modal-backdrop')) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.style.zIndex = isFullscreen ? '1500' : '1055';
+            document.body.appendChild(backdrop);
+        }
+        
+        // Add modal-open class to body
+        document.body.classList.add('modal-open');
+        
+        console.log('✅ Modal opened using DOM fallback');
+        
+        // Fix backdrop after DOM manipulation
+        if (isFullscreen) {
+            setTimeout(() => fixModalBackdropForFullscreen(), 50);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error opening modal:', error);
+    }
+}
+
+// Fix modal backdrop z-index specifically for fullscreen mode
+function fixModalBackdropForFullscreen() {
+    const isFullscreen = document.body.classList.contains('pos-fullscreen');
+    if (!isFullscreen) return;
+    
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => {
+        backdrop.style.zIndex = '1500';
+        backdrop.style.position = 'fixed';
+        backdrop.style.top = '0';
+        backdrop.style.left = '0';
+        backdrop.style.width = '100vw';
+        backdrop.style.height = '100vh';
+        console.log('🔧 Fixed backdrop z-index for fullscreen mode');
+    });
+}
 
 // Initialize POS System when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -1098,11 +1578,170 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (typeof PosManager !== 'undefined') {
         window.posManager = new PosManager();
+        
+        // Add modal close methods to PosManager for onclick handlers
+        window.posManager.closeCustomerSearchModal = () => closeModalSafely('customerSearchModal');
+        window.posManager.closeNewCustomerModal = () => closeModalSafely('newCustomerModal');
+        window.posManager.closeOrderHistoryModal = () => closeModalSafely('orderHistoryModal');
+        window.posManager.closeOrderSuccessModal = () => closeModalSafely('orderSuccessModal');
+        
+        // Add modal open methods for fullscreen compatibility
+        window.posManager.openCustomerSearchModal = () => openModalSafely('customerSearchModal');
+        window.posManager.openNewCustomerModal = () => openModalSafely('newCustomerModal');
+        window.posManager.openOrderHistoryModal = () => openModalSafely('orderHistoryModal');
+        window.posManager.openOrderSuccessModal = () => openModalSafely('orderSuccessModal');
+        
         console.log('✅ POS System initialized successfully');
+        console.log('✅ Modal close methods attached');
+        console.log('✅ Modal open methods attached for fullscreen compatibility');
+        
+        // Debug modal functionality
+        console.log('🔍 Available modals:', ['customerSearchModal', 'newCustomerModal', 'orderHistoryModal', 'orderSuccessModal'].map(id => 
+            `${id}: ${document.getElementById(id) ? 'Found' : 'Missing'}`
+        ).join(', '));
     } else {
         console.error('❌ PosManager not found! Check if pos-manager.js is loaded.');
     }
+    
+    // Add escape key handler for all modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const visibleModal = document.querySelector('.modal.show');
+            if (visibleModal) {
+                closeModalSafely(visibleModal.id);
+            }
+        }
+    });
+    
+    // Add click outside handler for modals (if backdrop is static)
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal') && e.target.classList.contains('show')) {
+            // Optional: Only close on backdrop click if not static
+            const isStatic = e.target.getAttribute('data-bs-backdrop') === 'static';
+            if (!isStatic) {
+                closeModalSafely(e.target.id);
+            }
+        }
+    });
+    
+    // Initialize fullscreen toggle functionality
+    initializePosFullscreenToggle();
 });
+
+// POS Fullscreen Toggle Functionality
+function initializePosFullscreenToggle() {
+    console.log('🖥️ Initializing POS fullscreen toggle...');
+    
+    const toggleBtn = document.getElementById('btnToggleFullscreen');
+    const toggleIcon = toggleBtn.querySelector('i');
+    const toggleText = document.getElementById('fullscreenText');
+    
+    let isFullscreen = false;
+    
+    // Check for saved fullscreen preference
+    const savedFullscreen = localStorage.getItem('pos_fullscreen_mode');
+    if (savedFullscreen === 'true') {
+        toggleFullscreen();
+    }
+    
+    toggleBtn.addEventListener('click', toggleFullscreen);
+    
+    // Add keyboard shortcut (F11 or Ctrl+Shift+F)
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F11' || (e.ctrlKey && e.shiftKey && e.key === 'F')) {
+            e.preventDefault();
+            toggleFullscreen();
+        }
+    });
+    
+    function toggleFullscreen() {
+        isFullscreen = !isFullscreen;
+        
+        if (isFullscreen) {
+            enterFullscreen();
+        } else {
+            exitFullscreen();
+        }
+        
+        // Save preference
+        localStorage.setItem('pos_fullscreen_mode', isFullscreen.toString());
+        
+        console.log('🖥️ POS fullscreen mode:', isFullscreen ? 'ON' : 'OFF');
+    }
+    
+    function enterFullscreen() {
+        // Add fullscreen class to body
+        document.body.classList.add('pos-fullscreen');
+        
+        // Force scroll to top to ensure proper positioning
+        window.scrollTo(0, 0);
+        
+        // Disable body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Update button appearance
+        toggleIcon.className = 'fas fa-compress';
+        toggleText.textContent = 'Quitter';
+        toggleBtn.title = 'Quitter le mode plein écran (F11)';
+        
+        // Add visual feedback
+        showFullscreenMessage('Mode plein écran activé. Appuyez sur F11 ou cliquez sur le bouton pour quitter.', 'success');
+        
+        // Trigger resize event for any responsive components
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+            // Force a repaint
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.display = '';
+        }, 300);
+    }
+    
+    function exitFullscreen() {
+        // Remove fullscreen class from body
+        document.body.classList.remove('pos-fullscreen');
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        
+        // Update button appearance
+        toggleIcon.className = 'fas fa-expand me-2';
+        toggleText.textContent = 'Plein écran';
+        toggleBtn.title = 'Mode plein écran (F11)';
+        
+        // Add visual feedback
+        showFullscreenMessage('Mode normal restauré', 'success');
+        
+        // Trigger resize event for any responsive components
+        setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+            // Force a repaint
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.display = '';
+        }, 300);
+    }
+    
+    function showFullscreenMessage(message, type) {
+        // Create and show a temporary message
+        const messageEl = document.createElement('div');
+        messageEl.className = `pos-message ${type}`;
+        messageEl.innerHTML = `<i class="fas fa-info-circle me-2"></i>${message}`;
+        messageEl.style.top = isFullscreen ? '80px' : '20px';
+        
+        document.body.appendChild(messageEl);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.remove();
+            }
+        }, 3000);
+    }
+    
+    console.log('✅ POS fullscreen toggle initialized');
+    console.log('💡 Shortcuts: F11 or Ctrl+Shift+F');
+}
 
 // Update current time
 function updateCurrentTime() {

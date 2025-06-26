@@ -135,6 +135,11 @@ class PosManager {
             this.loadMenuCategories();
         });
 
+        // Listen for window resize events (triggered by fullscreen toggle)
+        window.addEventListener('resize', () => {
+            this.handleLayoutResize();
+        });
+
         // Advanced filter event listeners
         document.getElementById('categoryFilter').addEventListener('change', () => this.applyFilters());
         // Note: status filter removed - only showing available items
@@ -153,33 +158,62 @@ class PosManager {
     }
 
     /**
-     * Initialize CoreUI/Bootstrap modals
+     * Initialize CoreUI/Bootstrap modals with better conflict handling
      */
     initializeModals() {
+        console.log('🔧 Initializing modals with conflict resolution...');
+        
         try {
-            // Try CoreUI Modal API first
-            if (typeof coreui !== 'undefined' && coreui.Modal) {
-                this.customerSearchModal = new coreui.Modal(document.getElementById('customerSearchModal'));
-                this.newCustomerModal = new coreui.Modal(document.getElementById('newCustomerModal'));
-                this.orderSuccessModal = new coreui.Modal(document.getElementById('orderSuccessModal'));
-                this.orderHistoryModal = new coreui.Modal(document.getElementById('orderHistoryModal'));
-                console.log('✅ Modals initialized with CoreUI API');
-            } 
-            // Fallback to Bootstrap if available
-            else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                this.customerSearchModal = new bootstrap.Modal(document.getElementById('customerSearchModal'));
-                this.newCustomerModal = new bootstrap.Modal(document.getElementById('newCustomerModal'));
-                this.orderSuccessModal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
-                this.orderHistoryModal = new bootstrap.Modal(document.getElementById('orderHistoryModal'));
-                console.log('✅ Modals initialized with Bootstrap API');
-            }
-            // Fallback to native DOM manipulation
-            else {
-                console.warn('⚠️ Neither CoreUI nor Bootstrap Modal API found, using DOM fallback');
-                this.initializeModalsFallback();
-            }
+            // Enhanced modal initialization with better conflict detection
+            this.modalInstances = {};
+            
+            const modalIds = ['customerSearchModal', 'newCustomerModal', 'orderSuccessModal', 'orderHistoryModal'];
+            
+            modalIds.forEach(modalId => {
+                const modalElement = document.getElementById(modalId);
+                if (!modalElement) {
+                    console.warn(`⚠️ Modal element not found: ${modalId}`);
+                    return;
+                }
+                
+                try {
+                    // Try CoreUI first
+                    if (typeof coreui !== 'undefined' && coreui.Modal) {
+                        this.modalInstances[modalId] = new coreui.Modal(modalElement, {
+                            backdrop: 'static',
+                            keyboard: true
+                        });
+                        console.log(`✅ ${modalId} initialized with CoreUI`);
+                    }
+                    // Fallback to Bootstrap
+                    else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        this.modalInstances[modalId] = new bootstrap.Modal(modalElement, {
+                            backdrop: 'static',
+                            keyboard: true
+                        });
+                        console.log(`✅ ${modalId} initialized with Bootstrap`);
+                    }
+                    // DOM fallback
+                    else {
+                        this.modalInstances[modalId] = this.createModalFallback(modalElement);
+                        console.log(`✅ ${modalId} initialized with DOM fallback`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error initializing ${modalId}:`, error);
+                    this.modalInstances[modalId] = this.createModalFallback(modalElement);
+                }
+            });
+            
+            // Set references for backward compatibility
+            this.customerSearchModal = this.modalInstances.customerSearchModal;
+            this.newCustomerModal = this.modalInstances.newCustomerModal;
+            this.orderSuccessModal = this.modalInstances.orderSuccessModal;
+            this.orderHistoryModal = this.modalInstances.orderHistoryModal;
+            
+            console.log('✅ All modals initialized successfully');
+            
         } catch (error) {
-            console.error('❌ Error initializing modals:', error);
+            console.error('❌ Critical error in modal initialization:', error);
             this.initializeModalsFallback();
         }
         
@@ -204,6 +238,78 @@ class PosManager {
         document.getElementById('refreshHistoryBtn').addEventListener('click', () => {
             this.loadOrderHistory();
         });
+    }
+
+    /**
+     * Create a modal fallback object for DOM manipulation
+     */
+    createModalFallback(modalElement) {
+        return {
+            show: () => this.showModalFallback(modalElement.id),
+            hide: () => this.hideModalFallback(modalElement.id),
+            element: modalElement
+        };
+    }
+
+    /**
+     * Show modal using DOM fallback
+     */
+    showModalFallback(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        // Check if in fullscreen mode and adjust z-index
+        const isFullscreen = document.body.classList.contains('pos-fullscreen');
+        if (isFullscreen) {
+            modal.style.zIndex = '100000';
+            console.log('🖥️ Modal z-index adjusted for fullscreen mode');
+        }
+        
+        modal.classList.add('show');
+        modal.style.display = 'block';
+        modal.setAttribute('aria-modal', 'true');
+        modal.removeAttribute('aria-hidden');
+        document.body.classList.add('modal-open');
+        
+        // Add backdrop with appropriate z-index
+        if (!document.querySelector('.modal-backdrop')) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            if (isFullscreen) {
+                backdrop.style.zIndex = '99998';
+            }
+            document.body.appendChild(backdrop);
+        }
+    }
+
+    /**
+     * Hide modal using DOM fallback
+     */
+    hideModalFallback(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('aria-modal');
+        
+        // Reset z-index if it was modified for fullscreen
+        modal.style.removeProperty('z-index');
+        
+        document.body.classList.remove('modal-open');
+        
+        // Remove backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        // Only remove padding if not in fullscreen mode
+        const isFullscreen = document.body.classList.contains('pos-fullscreen');
+        if (!isFullscreen) {
+            document.body.style.removeProperty('padding-right');
+        }
     }
 
     /**
@@ -1218,6 +1324,33 @@ class PosManager {
         // In a real implementation, this would connect to a receipt printer
         console.log('🖨️ Print receipt requested');
         this.showMessage('Fonctionnalité d\'impression bientôt disponible', 'success');
+    }
+
+    /**
+     * Handle layout resize (useful for fullscreen toggle)
+     */
+    handleLayoutResize() {
+        console.log('📐 Handling layout resize...');
+        
+        // Re-render items grid to adjust to new dimensions
+        this.renderMenuItems();
+        
+        // Update any responsive components
+        const isFullscreen = document.body.classList.contains('pos-fullscreen');
+        console.log('🖥️ Current mode:', isFullscreen ? 'Fullscreen' : 'Normal');
+        
+        // Adjust grid layout if needed
+        const itemsGrid = document.getElementById('posItemsGrid');
+        if (itemsGrid && isFullscreen) {
+            // In fullscreen, we can show more items per row
+            itemsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
+        } else if (itemsGrid) {
+            // Normal mode
+            itemsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+        }
+        
+        // Refresh order display to adjust heights
+        this.updateOrderDisplay();
     }
 
     /**
