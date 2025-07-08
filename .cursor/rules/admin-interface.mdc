@@ -1,0 +1,55 @@
+# Admin Interface & CoreUI Rules
+
+## CoreUI 5.x Standards
+- Follow CoreUI 5.x component structure and conventions
+- Maintain consistent admin template organization
+- Use proper CoreUI CSS classes and JavaScript components
+- Implement responsive design patterns
+- Ensure accessibility compliance across all admin interfaces
+
+## Template Organization
+- Maintain base.html.twig as master template
+- Use component-based template structure
+- Implement proper header and sidebar components
+- Follow consistent modal and table patterns
+- Support theme switching and customization
+
+## JavaScript Architecture
+- Modular JavaScript organization in public/js/admin/
+- Component-based managers (menu-manager, orders-manager, etc.)
+- API integration patterns with consistent error handling
+- Real-time updates with proper event handling
+- Performance optimization with lazy loading
+
+## Admin Features Implementation
+- Dashboard with comprehensive widgets and analytics
+- User management with profile pictures and role assignment
+- Menu and order management interfaces
+- System monitoring and logs viewing
+- POS system integration
+
+## UI/UX Standards
+- Consistent color scheme and branding
+- Logo integration with proper theming
+- Responsive design for mobile and tablet
+- Loading states and progress indicators
+- User feedback and notification systems
+
+## Logo & Branding
+- JoodKitchen logo integration across all interfaces
+- Consistent color theme implementation
+- Brand guidelines adherence
+- Favicon and asset management
+- Theme customization capabilities
+
+@docs/COMPLETE_ADMIN_TEMPLATES_SUMMARY.md
+@docs/ADMIN_IMPLEMENTATION_SUMMARY.md
+@docs/LOGO_COLOR_THEME_IMPLEMENTATION.md
+@docs/COREUI_STRUCTURE_FIXES.md
+@templates/admin/base.html.twig
+@public/admin/css/style.css
+@public/js/admin/dashboard.js
+description:
+globs:
+alwaysApply: true
+---

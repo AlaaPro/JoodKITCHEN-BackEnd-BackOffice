@@ -1,0 +1,47 @@
+# Menu Management System Rules
+
+## Menu Structure Requirements
+- Support 3 cuisine types: Moroccan, Italian, International
+- Each menu must have proper 3-course meal structure
+- Implement daily menu rotation with scheduling
+- Support menu versioning and historical tracking
+- Enable menu preview and approval workflow
+
+## Plat Management Standards
+- Each plat must have clear category assignment
+- Support multiple images with VichUploaderBundle
+- Implement price variations and promotional pricing
+- Track ingredient lists and allergen information
+- Support availability status and scheduling
+
+## Category Hierarchy
+- Maintain hierarchical category structure
+- Support multi-language category names
+- Implement proper category sorting and ordering
+- Enable category visibility and status control
+- Support category-based filtering and search
+
+## Advanced Features
+- Enhanced Menu Manager with drag-drop interface
+- Real-time menu updates with Mercure
+- Advanced filtering and search capabilities
+- Menu analytics and performance tracking
+- Integration with order system and inventory
+
+## Image Management
+- Use VichUploaderBundle for all image uploads
+- Support multiple image variants (thumbnail, medium, large)
+- Implement proper image optimization and compression
+- Support image galleries for plats
+- Enable image metadata and SEO optimization
+
+@docs/ADVANCED_MENU_MANAGEMENT_SYSTEM.md
+@docs/PLATS_MANAGEMENT_GUIDE.md
+@docs/CATEGORIES_MANAGEMENT_GUIDE.md
+@src/Entity/Menu.php
+@src/Entity/Plat.php
+@src/Entity/Category.php
+description:
+globs:
+alwaysApply: true
+---

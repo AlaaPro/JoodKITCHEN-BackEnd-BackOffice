@@ -54,27 +54,77 @@ class OrdersManager {
 
     async loadOrdersStats() {
         try {
+            console.log('🔄 Loading orders stats...');
             const response = await this.api.getOrdersStats();
             
-            if (response.success) {
+            if (response.success && response.data) {
+                console.log('✅ Stats data:', response.data);
                 this.updateStatsCards(response.data);
+            } else {
+                console.error('❌ Invalid stats response:', response);
+                this.showNotification('Erreur lors du chargement des statistiques', 'error');
             }
         } catch (error) {
-            console.error('Erreur lors du chargement des statistiques:', error);
-            this.showNotification('Erreur lors du chargement des statistiques', 'error');
+            console.error('❌ Stats loading error:', error);
+            this.showNotification(error.message || 'Erreur lors du chargement des statistiques', 'error');
+            // Set stats to 0 on error
+            this.updateStatsCards({
+                pending: 0,
+                preparing: 0,
+                completed: 0,
+                todayRevenue: 0
+            });
         }
     }
 
+    /**
+     * Update the stats cards with new data
+     * @param {Object} stats The stats data from the API
+     */
     updateStatsCards(stats) {
-        const pendingCard = document.querySelector('.stats-pending .widget-value');
-        const preparingCard = document.querySelector('.stats-preparing .widget-value');
-        const completedCard = document.querySelector('.stats-completed .widget-value');
-        const revenueCard = document.querySelector('.stats-revenue .widget-value');
+        console.log('📊 Updating stats cards with:', stats);
+        
+        try {
+            // Update pending orders
+            const pendingCard = document.querySelector('.stats-pending .widget-value');
+            if (pendingCard) {
+                pendingCard.textContent = stats.pending || 0;
+            }
 
-        if (pendingCard) pendingCard.textContent = stats.pending;
-        if (preparingCard) preparingCard.textContent = stats.preparing;
-        if (completedCard) completedCard.textContent = stats.completed;
-        if (revenueCard) revenueCard.textContent = `${stats.todayRevenue.toFixed(2)}€`;
+            // Update preparing orders
+            const preparingCard = document.querySelector('.stats-preparing .widget-value');
+            if (preparingCard) {
+                preparingCard.textContent = stats.preparing || 0;
+            }
+
+            // Update completed orders
+            const completedCard = document.querySelector('.stats-completed .widget-value');
+            if (completedCard) {
+                const completedCount = (stats.completed || 0) + (stats.delivering || 0);
+                completedCard.textContent = completedCount;
+            }
+
+            // Update today's revenue
+            const revenueCard = document.querySelector('.stats-revenue .widget-value');
+            if (revenueCard) {
+                const formattedRevenue = new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 2
+                }).format(stats.todayRevenue || 0);
+                revenueCard.textContent = formattedRevenue;
+            }
+
+            // Add visual feedback for changes
+            document.querySelectorAll('.jood-widget-card').forEach(card => {
+                card.classList.add('updated');
+                setTimeout(() => card.classList.remove('updated'), 1000);
+            });
+
+        } catch (error) {
+            console.error('❌ Error updating stats cards:', error);
+            this.showNotification('Erreur lors de la mise à jour des statistiques', 'error');
+        }
     }
 
     async loadOrders() {
@@ -503,6 +553,11 @@ class OrdersManager {
         }
     }
 
+    /**
+     * Show a notification message
+     * @param {string} message The message to show
+     * @param {string} type The type of notification ('success', 'error', 'warning')
+     */
     showNotification(message, type = 'info') {
         // Simple notification system
         const alertClass = type === 'error' ? 'alert-danger' : 

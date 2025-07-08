@@ -16,6 +16,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\OrderStatus;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -38,7 +39,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete()
     ],
     normalizationContext: ['groups' => ['commande:read']],
-    denormalizationContext: ['groups' => ['commande:write']]
+    denormalizationContext: ['groups' => ['commande:write']],
+    order: ['dateCommande' => 'DESC'],
+    paginationEnabled: true
 )]
 class Commande
 {
@@ -59,8 +62,9 @@ class Commande
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
+    #[Assert\Choice(callback: [OrderStatus::class, 'getAll'])]
     #[Groups(['commande:read', 'commande:write'])]
-    private ?string $statut = 'en_attente';
+    private ?string $statut = OrderStatus::PENDING->value;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\PositiveOrZero]
@@ -115,7 +119,7 @@ class Commande
         $this->commandeReductions = new ArrayCollection();
         $this->fidelitePointHistories = new ArrayCollection();
         $this->dateCommande = new \DateTime();
-        $this->statut = 'en_attente';
+        $this->statut = OrderStatus::PENDING->value;
         $this->total = '0.00';
     }
 
@@ -382,18 +386,34 @@ class Commande
     }
 
     /**
-     * Get the status of the order in a human-readable format
+     * Get the status as an enum instance
+     */
+    public function getStatusEnum(): OrderStatus
+    {
+        return OrderStatus::from($this->statut);
+    }
+
+    /**
+     * Get the status label
      */
     public function getStatutLabel(): string
     {
-        return match($this->statut) {
-            'en_attente' => 'En attente',
-            'confirmee' => 'Confirmée',
-            'en_preparation' => 'En préparation',
-            'prete' => 'Prête',
-            'livree' => 'Livrée',
-            'annulee' => 'Annulée',
-            default => 'Statut inconnu'
-        };
+        return $this->getStatusEnum()->getLabel();
+    }
+
+    /**
+     * Get the status badge class
+     */
+    public function getStatutBadgeClass(): string
+    {
+        return $this->getStatusEnum()->getBadgeClass();
+    }
+
+    /**
+     * Get the status icon class
+     */
+    public function getStatutIconClass(): string
+    {
+        return $this->getStatusEnum()->getIconClass();
     }
 } 

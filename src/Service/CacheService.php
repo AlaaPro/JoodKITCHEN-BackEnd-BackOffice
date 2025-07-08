@@ -266,4 +266,33 @@ class CacheService
             ];
         });
     }
+
+    /**
+     * Check if a key exists in cache
+     */
+    public function has(string $key): bool
+    {
+        return null !== $this->cache->get($key, function() { return null; });
+    }
+
+    /**
+     * Get a value from cache
+     */
+    public function get(string $key): mixed
+    {
+        return $this->cache->get($key, function (ItemInterface $item) {
+            return null;
+        });
+    }
+
+    /**
+     * Set a value in cache with TTL
+     */
+    public function set(string $key, mixed $value, int $ttl = 3600): void
+    {
+        $this->cache->get($key, function (ItemInterface $item) use ($value, $ttl) {
+            $item->expiresAfter($ttl);
+            return $value;
+        });
+    }
 } 

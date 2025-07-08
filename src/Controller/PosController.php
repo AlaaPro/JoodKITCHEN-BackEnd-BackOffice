@@ -23,6 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Enum\OrderStatus;
 
 class PosController extends AbstractController
 {
@@ -48,7 +49,17 @@ class PosController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function index(): Response
     {
-        return $this->render('admin/pos/index.html.twig');
+        // Map OrderStatus cases to array of value/label pairs
+        $orderStatuses = array_map(function($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->getLabel()
+            ];
+        }, OrderStatus::cases());
+
+        return $this->render('admin/pos/index.html.twig', [
+            'order_statuses' => $orderStatuses
+        ]);
     }
 
     // ========================

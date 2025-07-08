@@ -44,6 +44,8 @@ security:
         - { path: ^/api/auth, roles: PUBLIC_ACCESS }
         - { path: ^/api/plats$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/menus$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/order-status-config, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
         
         # Admin routes - allow public access (authentication handled by frontend JavaScript)
         - { path: ^/admin, roles: PUBLIC_ACCESS }

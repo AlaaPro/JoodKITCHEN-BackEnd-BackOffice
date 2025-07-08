@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Repository\CommandeRepository;
+use App\Service\CacheService;
 
 class AdminController extends AbstractController
 {
@@ -1428,40 +1429,40 @@ class AdminController extends AbstractController
     }
 
     #[Route('/api/admin/orders/stats', name: 'api_admin_orders_stats', methods: ['GET'])]
-    public function getOrdersStats(CommandeRepository $commandeRepository): JsonResponse
+    public function getOrdersStats(
+        CommandeRepository $commandeRepository,
+        CacheService $cacheService
+    ): JsonResponse
     {
-        $today = new \DateTime('today');
+        $cacheKey = 'admin_orders_stats';
         
-        // Debug: Check total orders count
-        $totalOrders = $commandeRepository->count([]);
-        error_log("📊 Total orders in database: " . $totalOrders);
+        // Try to get from cache first
+        if ($cacheService->has($cacheKey)) {
+            return $this->json([
+                'success' => true,
+                'data' => $cacheService->get($cacheKey),
+                'from_cache' => true
+            ]);
+        }
         
-        $stats = [
-            'pending' => $commandeRepository->count(['statut' => 'en_attente']),
-            'preparing' => $commandeRepository->count(['statut' => 'en_preparation']),
-            'completed' => $commandeRepository->count(['statut' => 'livre']),
-            'todayRevenue' => 0
+        // Get fresh stats from database
+        $stats = $commandeRepository->getOrderStats();
+        
+        // Keep only the stats needed for the dashboard
+        $dashboardStats = [
+            'pending' => $stats['pending'],
+            'preparing' => $stats['preparing'],
+            'completed' => $stats['completed'],
+            'todayRevenue' => $stats['todayRevenue']
         ];
-
-        error_log("📊 Raw stats counts: " . json_encode($stats));
-
-        // Calculate today's revenue
-        $qb = $commandeRepository->createQueryBuilder('c')
-            ->select('SUM(c.total) as revenue')
-            ->where('DATE(c.dateCommande) = :today')
-            ->andWhere('c.statut IN (:completedStatuses)')
-            ->setParameter('today', $today->format('Y-m-d'))
-            ->setParameter('completedStatuses', ['livre', 'pret']);
-
-        $result = $qb->getQuery()->getSingleResult();
-        $stats['todayRevenue'] = (float) ($result['revenue'] ?? 0);
-
-        error_log("📊 Final stats with revenue: " . json_encode($stats));
-        error_log("📅 Today date for revenue calc: " . $today->format('Y-m-d'));
-
+        
+        // Cache for 1 minute (stats should be relatively fresh)
+        $cacheService->set($cacheKey, $dashboardStats, 60);
+        
         return $this->json([
             'success' => true,
-            'data' => $stats
+            'data' => $dashboardStats,
+            'from_cache' => false
         ]);
     }
 

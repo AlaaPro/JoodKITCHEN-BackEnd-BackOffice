@@ -1,0 +1,52 @@
+# Kitchen & Delivery Interface Rules
+
+## Kitchen Interface Requirements
+- Real-time order display system for kitchen staff
+- Order queue management with priority handling
+- Preparation time tracking and estimation
+- Ingredient availability and inventory integration
+- Kitchen workflow optimization tools
+
+## Order Processing Workflow
+- Visual order cards with clear item details
+- Status updates (received, preparing, ready, completed)
+- Timer integration for preparation tracking
+- Special instructions and dietary requirements display
+- Order completion confirmation system
+
+## Kitchen Staff Management
+- Role-based access for different kitchen positions
+- Shift management and scheduling integration
+- Performance tracking and analytics
+- Communication tools for kitchen coordination
+- Training and onboarding features
+
+## Delivery System Integration
+- Real-time delivery status tracking
+- Route optimization for delivery personnel
+- Customer communication and notification system
+- Delivery confirmation and feedback collection
+- GPS tracking and estimated delivery times
+
+## Mobile Optimization
+- Touch-friendly interfaces for kitchen tablets
+- Responsive design for various screen sizes
+- Offline functionality for network interruptions
+- Fast loading and minimal data usage
+- Intuitive navigation for busy kitchen environment
+
+## Integration Points
+- Order management system synchronization
+- Customer notification automation
+- Analytics and reporting integration
+- Payment system coordination
+- Inventory management connection
+
+@docs/KITCHEN_INTERFACE_ROADMAP.md
+@src/Controller/KitchenController.php
+@templates/admin/kitchen/index.html.twig
+@templates/admin/orders/kitchen.html.twig
+description:
+globs:
+alwaysApply: true
+---

@@ -79,50 +79,73 @@ class CommandeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get order statistics for POS
+     * Get comprehensive order statistics in a single optimized query
+     * @param bool $includeAverages Include average calculations (slightly more expensive)
      */
-    public function getOrderStats(): array
+    public function getOrderStats(bool $includeAverages = false): array
     {
-        $today = new \DateTime();
-        $today->setTime(0, 0, 0);
-        $tomorrow = clone $today;
-        $tomorrow->add(new \DateInterval('P1D'));
-
-        // Today's orders count
-        $todayCount = $this->createQueryBuilder('c')
-            ->select('COUNT(c.id)')
-            ->andWhere('c.dateCommande >= :today')
-            ->andWhere('c.dateCommande < :tomorrow')
-            ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        // Today's revenue
-        $todayRevenue = $this->createQueryBuilder('c')
-            ->select('SUM(c.total)')
-            ->andWhere('c.dateCommande >= :today')
-            ->andWhere('c.dateCommande < :tomorrow')
-            ->andWhere('c.statut != :cancelled')
-            ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
+        $today = new \DateTime('today');
+        
+        $qb = $this->createQueryBuilder('c')
+            ->select('
+                COUNT(c.id) as total_count,
+                SUM(CASE WHEN c.statut = :pending THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN c.statut = :preparing THEN 1 ELSE 0 END) as preparing_count,
+                SUM(CASE WHEN c.statut = :ready THEN 1 ELSE 0 END) as ready_count,
+                SUM(CASE WHEN c.statut = :completed THEN 1 ELSE 0 END) as completed_count,
+                SUM(CASE WHEN c.statut = :delivering THEN 1 ELSE 0 END) as delivering_count,
+                SUM(CASE WHEN c.statut = :cancelled THEN 1 ELSE 0 END) as cancelled_count,
+                SUM(CASE 
+                    WHEN SUBSTRING(c.dateCommande, 1, 10) = :today THEN 1 
+                    ELSE 0
+                END) as today_count,
+                SUM(CASE 
+                    WHEN SUBSTRING(c.dateCommande, 1, 10) = :today 
+                    AND c.statut != :cancelled
+                    THEN c.total 
+                    ELSE 0 
+                END) as today_revenue,
+                SUM(CASE 
+                    WHEN c.statut IN (:kitchen_statuses) THEN 1 
+                    ELSE 0
+                END) as kitchen_orders
+            ')
+            ->setParameter('pending', 'en_attente')
+            ->setParameter('preparing', 'en_preparation')
+            ->setParameter('ready', 'pret')
+            ->setParameter('completed', 'livre')
+            ->setParameter('delivering', 'en_livraison')
             ->setParameter('cancelled', 'annule')
-            ->getQuery()
-            ->getSingleScalarResult() ?: 0;
+            ->setParameter('today', $today->format('Y-m-d'))
+            ->setParameter('kitchen_statuses', ['en_preparation', 'pret']);
 
-        // Orders in kitchen (preparation + ready)
-        $kitchenOrders = $this->createQueryBuilder('c')
-            ->select('COUNT(c.id)')
-            ->andWhere('c.statut IN (:statuses)')
-            ->setParameter('statuses', ['en_preparation', 'pret'])
-            ->getQuery()
-            ->getSingleScalarResult();
+        $result = $qb->getQuery()->getSingleResult();
 
-        return [
-            'today_count' => (int)$todayCount,
-            'today_revenue' => round((float)$todayRevenue, 2),
-            'kitchen_orders' => (int)$kitchenOrders,
-            'avg_order_value' => $todayCount > 0 ? round((float)$todayRevenue / (int)$todayCount, 2) : 0
+        // Base stats used by all dashboards
+        $stats = [
+            // Admin dashboard stats (used in orders/index.html.twig)
+            'pending' => (int)$result['pending_count'],
+            'preparing' => (int)$result['preparing_count'],
+            'ready' => (int)$result['ready_count'],
+            'completed' => (int)$result['completed_count'],
+            'delivering' => (int)$result['delivering_count'],
+            'cancelled' => (int)$result['cancelled_count'],
+            'todayRevenue' => round((float)($result['today_revenue'] ?? 0), 2),
+            
+            // POS and Kitchen dashboard stats
+            'orders_today' => (int)$result['today_count'],
+            'today_count' => (int)$result['today_count'], // Alias for backward compatibility
+            'pending_orders' => (int)$result['pending_count'], // Alias for backward compatibility
+            'revenue_today' => round((float)($result['today_revenue'] ?? 0), 2),
+            'today_revenue' => round((float)($result['today_revenue'] ?? 0), 2), // Alias for backward compatibility
+            'kitchen_orders' => (int)$result['kitchen_orders']
         ];
+
+        // Add averages if requested (used by POS system)
+        if ($includeAverages && $result['today_count'] > 0) {
+            $stats['avg_order_value'] = round($stats['today_revenue'] / $stats['today_count'], 2);
+        }
+
+        return $stats;
     }
 } 

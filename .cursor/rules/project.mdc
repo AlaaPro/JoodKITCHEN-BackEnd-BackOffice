@@ -1,0 +1,40 @@
+# JoodKitchen Project Rules
+
+## Architecture Overview
+- API-first design with 100% frontend/backend separation
+- Symfony 6+ backend with API Platform
+- CoreUI 5.x admin interface
+- MySQL database with proper entity relationships
+- JWT authentication with role-based access control
+- Redis caching for performance optimization
+- Mercure for real-time communications
+
+## Core Business Logic
+- Daily Menu System with 3 cuisine types (Moroccan, Italian, International)
+- Weekly Subscription System with 5 meals/week
+- Multi-role user system (Admin, Kitchen Staff, Delivery, Customer)
+- Payment integration with Moroccan CMI credit cards and cash on delivery
+- Comprehensive order management with CommandeArticle flexibility
+
+## Development Standards
+- Follow Symfony best practices and conventions
+- Maintain proper entity relationships and cascading
+- Use VichUploaderBundle for all file uploads
+- Implement proper API versioning and documentation
+- Ensure proper error handling and logging
+- Use DataDogAuditBundle for operation tracking
+
+## Security Requirements
+- Never expose sensitive data in API responses
+- Always use proper JWT token validation
+- Implement CORS policies correctly
+- Use environment variables for configuration
+- Follow proper permission checking at all levels
+
+@docs/JOODKITCHEN_PROJECT_OVERVIEW.md
+@src/Kernel.php
+@config/services.yaml
+description:
+globs:
+alwaysApply: true
+---

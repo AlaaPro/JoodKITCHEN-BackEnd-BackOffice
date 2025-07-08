@@ -1,0 +1,52 @@
+# Customer Frontend Interface Rules
+
+## Customer Experience Design
+- Modern, intuitive user interface design
+- Mobile-first responsive design approach
+- Fast loading times with optimized performance
+- Accessibility compliance for all users
+- Multi-language support (Arabic, French, English)
+
+## Menu Browsing & Selection
+- Visual menu display with high-quality images
+- Category-based menu navigation
+- Advanced filtering and search capabilities
+- Nutritional information and allergen warnings
+- Real-time availability status
+
+## Subscription Management
+- Easy subscription setup and modification
+- Weekly meal planning interface
+- Dietary preferences and restrictions management
+- Subscription pause/resume functionality
+- Payment method management
+
+## Order Management
+- Simple order placement workflow
+- Real-time order tracking and updates
+- Order history and reordering functionality
+- Delivery scheduling and preferences
+- Special instructions and customizations
+
+## User Account Features
+- Profile management with preferences
+- Address book for delivery locations
+- Payment method storage and management
+- Loyalty program integration
+- Order history and favorites
+
+## Mobile Application
+- Native mobile app development considerations
+- Push notifications for order updates
+- Offline functionality for browsing
+- Location services for delivery tracking
+- Social sharing and referral features
+
+@docs/CUSTOMER_FRONTEND_ROADMAP.md
+@public/js/customer/managers/
+@templates/customer/
+@src/Controller/MobileApiController.php
+description:
+globs:
+alwaysApply: true
+---

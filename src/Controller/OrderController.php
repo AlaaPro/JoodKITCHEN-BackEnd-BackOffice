@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Entity\User;
+use App\Enum\OrderStatus;
 use App\Service\OrderTrackingService;
 use App\Repository\CommandeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,48 +43,43 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{id}/status', name: 'api_order_update_status', methods: ['PATCH'])]
-    #[IsGranted('ROLE_KITCHEN')]
-    public function updateOrderStatus(int $id, Request $request, CommandeRepository $commandeRepository): JsonResponse
+    #[IsGranted('ROLE_ADMIN')]
+    public function updateStatus(Commande $commande, Request $request): JsonResponse
     {
-        $commande = $commandeRepository->find($id);
-        
-        if (!$commande) {
-            return new JsonResponse(['error' => 'Order not found'], Response::HTTP_NOT_FOUND);
-        }
-
         $data = json_decode($request->getContent(), true);
         
         if (!isset($data['statut'])) {
             return new JsonResponse(['error' => 'Status is required'], Response::HTTP_BAD_REQUEST);
         }
 
-        $validStatuses = ['en_attente', 'en_preparation', 'pret', 'en_livraison', 'livre', 'annule'];
-        if (!in_array($data['statut'], $validStatuses)) {
+        try {
+            $newStatus = OrderStatus::from($data['statut']);
+        } catch (\ValueError $e) {
             return new JsonResponse(['error' => 'Invalid status'], Response::HTTP_BAD_REQUEST);
         }
 
-        $oldStatus = $commande->getStatut();
-        $commande->setStatut($data['statut']);
+        $oldStatus = $commande->getStatusEnum();
         
+        // Check if status transition is allowed
+        if (!$oldStatus->canTransitionTo($newStatus)) {
+            return new JsonResponse([
+                'error' => 'Invalid status transition',
+                'message' => "Cannot change status from {$oldStatus->getLabel()} to {$newStatus->getLabel()}"
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $commande->setStatut($newStatus->value);
         $this->entityManager->flush();
 
         // Send real-time update
         $this->orderTrackingService->publishOrderUpdate($commande, 'order.status_changed');
         
         // Send notification to user
-        $statusMessages = [
-            'en_preparation' => 'Votre commande est en préparation',
-            'pret' => 'Votre commande est prête',
-            'en_livraison' => 'Votre commande est en cours de livraison',
-            'livre' => 'Votre commande a été livrée',
-            'annule' => 'Votre commande a été annulée'
-        ];
-
-        if (isset($statusMessages[$data['statut']])) {
+        if ($commande->getUser()) {
             $this->orderTrackingService->publishNotification(
                 $commande->getUser(),
-                $statusMessages[$data['statut']],
-                $data['statut'] === 'annule' ? 'warning' : 'success'
+                $newStatus->getNotificationMessage(),
+                $newStatus->getNotificationType()
             );
         }
 
@@ -91,8 +87,8 @@ class OrderController extends AbstractController
             'message' => 'Order status updated successfully',
             'order' => [
                 'id' => $commande->getId(),
-                'old_status' => $oldStatus,
-                'new_status' => $commande->getStatut(),
+                'old_status' => $oldStatus->value,
+                'new_status' => $newStatus->value,
                 'updated_at' => $commande->getUpdatedAt()?->format('Y-m-d H:i:s')
             ]
         ]);
@@ -103,8 +99,8 @@ class OrderController extends AbstractController
     public function getKitchenDashboard(CommandeRepository $commandeRepository): JsonResponse
     {
         // Get orders that need attention
-        $pendingOrders = $commandeRepository->findBy(['statut' => 'en_attente'], ['dateCommande' => 'ASC']);
-        $preparingOrders = $commandeRepository->findBy(['statut' => 'en_preparation'], ['dateCommande' => 'ASC']);
+        $pendingOrders = $commandeRepository->findBy(['statut' => OrderStatus::PENDING->value], ['dateCommande' => 'ASC']);
+        $preparingOrders = $commandeRepository->findBy(['statut' => OrderStatus::PREPARING->value], ['dateCommande' => 'ASC']);
 
         $dashboard = [
             'pending_orders' => array_map([$this, 'formatOrderForDashboard'], $pendingOrders),

@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Commande;
 use App\Entity\User;
 use App\Entity\Notification;
+use App\Enum\OrderStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -43,25 +44,22 @@ class NotificationService
      */
     public function sendOrderStatusNotification(Commande $commande, string $event = 'order.updated'): void
     {
-        $statusMessages = [
-            'en_preparation' => '🍳 Votre commande est en préparation',
-            'pret' => '✅ Votre commande est prête',
-            'en_livraison' => '🚚 Votre commande est en cours de livraison',
-            'livre' => '🎉 Votre commande a été livrée',
-            'annule' => '❌ Votre commande a été annulée'
-        ];
+        $status = $commande->getStatusEnum();
+        $message = $status->getNotificationMessage();
+        $type = $status->getNotificationType();
 
-        $message = $statusMessages[$commande->getStatut()] ?? 'Statut de commande mis à jour';
-        $type = $commande->getStatut() === 'annule' ? 'warning' : 'success';
-
-        $data = [
-            'order_id' => $commande->getId(),
-            'status' => $commande->getStatut(),
-            'total' => $commande->getTotal(),
-            'event' => $event
-        ];
-
-        $this->createNotification($commande->getUser(), $message, $type, $data);
+        if ($commande->getUser()) {
+            $this->createNotification(
+                $commande->getUser(),
+                $message,
+                $type,
+                [
+                    'order_id' => $commande->getId(),
+                    'event' => $event,
+                    'status' => $commande->getStatut()
+                ]
+            );
+        }
     }
 
     /**
@@ -281,15 +279,7 @@ class NotificationService
 
     private function calculateEstimatedDelivery(Commande $order): ?string
     {
-        // Simple estimation based on order status
-        $estimations = [
-            'en_attente' => 30,
-            'en_preparation' => 20,
-            'pret' => 10,
-            'en_livraison' => 15
-        ];
-
-        $minutes = $estimations[$order->getStatut()] ?? null;
+        $minutes = $order->getStatusEnum()->getEstimatedDeliveryMinutes();
         
         if ($minutes) {
             return (new \DateTime())->modify("+{$minutes} minutes")->format('H:i');

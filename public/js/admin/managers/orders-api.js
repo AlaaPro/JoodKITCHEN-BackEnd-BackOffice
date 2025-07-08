@@ -46,28 +46,39 @@ class OrdersAPI {
      * Get order statistics
      */
     async getOrdersStats() {
-        console.log('🔗 Calling stats API:', `${this.baseUrl}/stats`);
-        const response = await fetch(`${this.baseUrl}/stats`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${this.token}`,
-                'Accept': 'application/json'
-            }
-        });
+        try {
+            console.log('🔗 Calling stats API:', `${this.baseUrl}/stats`);
+            const response = await fetch(`${this.baseUrl}/stats`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Accept': 'application/json'
+                }
+            });
 
-        console.log('📡 Stats API Response Status:', response.status);
+            console.log('📡 Stats API Response Status:', response.status);
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                AdminAuth.handleTokenExpired();
-                throw new Error('Token expiré, veuillez vous reconnecter');
+            if (!response.ok) {
+                if (response.status === 401) {
+                    AdminAuth.handleTokenExpired();
+                    throw new Error('Token expiré, veuillez vous reconnecter');
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
             }
-            throw new Error(`Erreur HTTP: ${response.status}`);
+
+            const data = await response.json();
+            console.log('📦 Stats API Raw Data:', data);
+            
+            if (!data.success) {
+                throw new Error(data.message || 'Erreur lors de la récupération des statistiques');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('❌ Stats API Error:', error);
+            throw error;
         }
-
-        const data = await response.json();
-        console.log('📦 Stats API Raw Data:', data);
-        return data;
     }
 
     /**

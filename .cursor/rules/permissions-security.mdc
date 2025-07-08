@@ -1,0 +1,46 @@
+# Permission System & Security Rules
+
+## Three-Layer Permission Architecture
+1. **Symfony Roles**: Base security layer (ROLE_ADMIN, ROLE_USER, etc.)
+2. **Business Roles**: Application-specific roles (Admin, Kitchen, Delivery, Customer)
+3. **Granular Permissions**: Fine-grained access control for specific operations
+
+## User Profile Management
+- Support multiple profile types: AdminProfile, KitchenProfile, ClientProfile
+- Implement proper profile picture system with VichUploaderBundle
+- ProfilePictureManager with drag-drop uploads and real-time updates
+- Initials fallback system for users without profile pictures
+- Size variants support (sm/md/lg) with comprehensive CSS styling
+
+## Access Control Implementation
+- Use Symfony Voters for attribute-based access control
+- Implement PermissionVoter for granular permission checking
+- AdminEditVoter for admin-specific operations
+- Support dynamic permission inheritance and hierarchy
+- Real-time permission validation across all operations
+
+## Security Standards
+- JWT authentication with proper token validation
+- Role-based access control with permission inheritance
+- Audit logging with DataDogAuditBundle integration
+- User activity tracking and monitoring
+- Secure API endpoints with proper authorization checks
+
+## Permission UI Enhancement
+- Interactive permission matrix interface
+- Real-time permission updates with visual feedback
+- Role assignment with drag-drop functionality
+- Permission inheritance visualization
+- Bulk permission management capabilities
+
+@docs/PERMISSION_SYSTEM_MIGRATION.md
+@docs/PERMISSION_UI_ENHANCEMENT.md
+@src/Security/Voter/PermissionVoter.php
+@src/Security/Voter/AdminEditVoter.php
+@src/Entity/User.php
+@src/Entity/Permission.php
+@src/Service/PermissionService.php
+description:
+globs:
+alwaysApply: true
+---

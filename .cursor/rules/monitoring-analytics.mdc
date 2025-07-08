@@ -1,0 +1,54 @@
+# System Monitoring & Analytics Rules
+
+## Error Handling & Logging
+- Consistent error reporting across all system components
+- DataDogAuditBundle integration for CRUD operation tracking
+- Real application error tracking from php_errors.log and var/log files
+- Proper error severity classification (critical, error, warning)
+- Comprehensive error detection with source component identification
+
+## Error Reporting Features
+- Detailed error tables with expand/collapse functionality
+- Full-width error display with timestamp, severity, component, source
+- Modal for complete error details viewing
+- Clipboard copy functionality for error sharing
+- Error history tracking and trend analysis
+
+## Statistics & Distribution
+- Consistent statistics calculation across widgets
+- Proper counting of 'remove/delete' operations as errors (not warnings)
+- Real-time error distribution monitoring
+- Performance metrics tracking and visualization
+- System health dashboard integration
+
+## User Activity Monitoring
+- Comprehensive user activity tracking across all interfaces
+- Login/logout event monitoring
+- Permission change auditing
+- Critical operation logging
+- Activity pattern analysis and reporting
+
+## Analytics & Reporting
+- Real-time system performance monitoring
+- User behavior analytics and insights
+- Order pattern analysis and forecasting
+- Revenue tracking and financial reporting
+- Custom dashboard creation capabilities
+
+## Log Management
+- Structured logging with proper categorization
+- Log rotation and archival policies
+- Cross-component log correlation
+- Real-time log streaming and alerting
+- Log search and filtering capabilities
+
+@docs/SYSTEM_ERROR_MONITORING.md
+@docs/USER_ACTIVITIES_INTEGRATION_GUIDE.md
+@src/Service/LogSystemService.php
+@src/Service/AnalyticsService.php
+@src/Service/UserActivityService.php
+@src/Controller/AnalyticsController.php
+description:
+globs:
+alwaysApply: true
+---

@@ -1,0 +1,55 @@
+# Order Management & Subscription System Rules
+
+## Order Structure
+- Flexible CommandeArticle system for various order types
+- Support for individual orders and subscription-based orders
+- Proper order status tracking (pending, confirmed, preparing, ready, delivered)
+- Integration with kitchen workflow and delivery management
+- Real-time order updates with Mercure
+
+## Subscription System
+- Weekly subscription model with 5 meals per week
+- Daily specials selection vs normal menu options
+- Discount rate application to total weekly orders
+- Payment integration with CMI credit cards and cash on delivery
+- Subscription pause/resume functionality
+
+## Beverage Ordering
+- Comprehensive beverage management system
+- Category-based beverage organization
+- Add-on beverages to meal orders
+- Beverage inventory tracking
+- Special beverage promotions and pricing
+
+## Payment Processing
+- Multiple payment methods support
+- CMI credit card integration for Moroccan market
+- Cash on delivery option
+- Payment status tracking and reconciliation
+- Automated payment reminders and notifications
+
+## Order Tracking
+- Real-time order status updates
+- Kitchen display integration
+- Delivery route optimization
+- Customer notification system
+- Order history and analytics
+
+## Kitchen Interface
+- Order queue management for kitchen staff
+- Preparation time tracking
+- Ingredient availability checking
+- Kitchen workflow optimization
+- Order completion tracking
+
+@docs/MENU_AND_ORDER_SYSTEM_GUIDE.md
+@docs/BEVERAGE_ORDERING_GUIDE.md
+@src/Entity/Commande.php
+@src/Entity/CommandeArticle.php
+@src/Entity/Abonnement.php
+@src/Service/OrderTrackingService.php
+@src/Service/SubscriptionService.php
+description:
+globs:
+alwaysApply: true
+---

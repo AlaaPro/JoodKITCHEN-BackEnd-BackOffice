@@ -1,0 +1,52 @@
+# POS System Implementation Rules
+
+## Core POS Features
+- Real-time order processing with instant updates
+- Quick menu item selection with touch-friendly interface
+- Table management and reservation system
+- Multiple payment method support (cash, card, digital)
+- Receipt generation and printing functionality
+
+## Order Management
+- Real-time order status updates across all interfaces
+- Order modification capabilities (add/remove items)
+- Order splitting for shared tables
+- Order history and transaction tracking
+- Integration with kitchen display systems
+
+## Payment Processing
+- Cash transaction handling with change calculation
+- Credit card processing integration
+- Digital payment methods support
+- Receipt generation with customizable formats
+- Payment reconciliation and reporting
+
+## User Interface Requirements
+- Touch-optimized interface for tablet/mobile use
+- Keyboard shortcuts for power users
+- Quick action buttons for common operations
+- Responsive design for various screen sizes
+- Accessibility compliance for all users
+
+## Integration Points
+- Real-time inventory synchronization
+- Kitchen display system integration
+- Customer profile and loyalty program connection
+- Analytics and reporting dashboard integration
+- Notification system for order updates
+
+## Performance & Reliability
+- Offline mode capability for network outages
+- Data synchronization when connection restored
+- Fast response times for high-volume periods
+- Error handling and recovery mechanisms
+- Backup and data protection features
+
+@docs/POS_SYSTEM_IMPLEMENTATION.md
+@src/Controller/PosController.php
+@public/js/admin/pos/pos-manager.js
+@templates/admin/pos/index.html.twig
+description:
+globs:
+alwaysApply: true
+---

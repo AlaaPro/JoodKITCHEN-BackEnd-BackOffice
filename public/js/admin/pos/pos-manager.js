@@ -8,7 +8,12 @@
  */
 
 class PosManager {
-    constructor() {
+    constructor(statusConfig) {
+        if (!statusConfig) {
+            throw new Error('OrderStatus configuration is required');
+        }
+        
+        this.statusConfig = statusConfig;
         console.log('🚀 Initializing JoodKitchen POS Manager v1.0.0 - Simplified...');
         
         // Core properties
@@ -155,6 +160,31 @@ class PosManager {
         // Filter buttons
         document.getElementById('clearFilters').addEventListener('click', () => this.clearFilters());
         document.getElementById('applyFilters').addEventListener('click', () => this.applyFilters());
+
+        // Update status change handler to use OrderStatus
+        document.getElementById('orderStatusSelect')?.addEventListener('change', async (e) => {
+            const newStatus = e.target.value;
+            const orderId = e.target.dataset.orderId;
+            
+            try {
+                await OrderStatus.init(); // Ensure status config is loaded
+                const statusConfig = OrderStatus.config[newStatus];
+                
+                if (statusConfig) {
+                    // Update order status using existing updateOrderStatus method
+                    await this.updateOrderStatus(orderId, newStatus);
+                    
+                    // Show notification using status config
+                    this.showNotification(
+                        statusConfig.notification.message,
+                        statusConfig.notification.type
+                    );
+                }
+            } catch (error) {
+                console.error('Failed to update order status:', error);
+                this.showNotification('Erreur lors de la mise à jour du statut', 'error');
+            }
+        });
     }
 
     /**
@@ -1377,6 +1407,123 @@ class PosManager {
         setTimeout(() => {
             messageEl.remove();
         }, 3000);
+    }
+
+    // Get status label
+    getStatusLabel(statusValue) {
+        const status = Object.values(this.statusConfig).find(s => s.value === statusValue);
+        return status?.label || statusValue;
+    }
+
+    // Get status badge class
+    getStatusBadgeClass(statusValue) {
+        const status = Object.values(this.statusConfig).find(s => s.value === statusValue);
+        return status?.badge_class || 'bg-secondary';
+    }
+
+    // Get status icon class
+    getStatusIconClass(statusValue) {
+        const status = Object.values(this.statusConfig).find(s => s.value === statusValue);
+        return status?.icon_class || 'fas fa-question';
+    }
+
+    // Get status badge HTML
+    getStatusBadgeHtml(statusValue) {
+        return `<span class="badge ${this.getStatusBadgeClass(statusValue)}">
+            <i class="${this.getStatusIconClass(statusValue)} me-1"></i>
+            ${this.getStatusLabel(statusValue)}
+        </span>`;
+    }
+
+    // Check if status is final
+    isStatusFinal(statusValue) {
+        const status = Object.values(this.statusConfig).find(s => s.value === statusValue);
+        return !status?.next_possible_statuses?.length;
+    }
+
+    // Get next possible statuses
+    getNextPossibleStatuses(currentStatus) {
+        const status = Object.values(this.statusConfig).find(s => s.value === currentStatus);
+        return status?.next_possible_statuses || [];
+    }
+
+    // Get status notification config
+    getStatusNotification(statusValue) {
+        const status = Object.values(this.statusConfig).find(s => s.value === statusValue);
+        return status?.notification || { message: 'Status updated', type: 'info' };
+    }
+
+    // Update order status
+    async updateOrderStatus(orderId, newStatus) {
+        if (!this.statusConfig[newStatus]) {
+            console.error('Invalid status:', newStatus);
+            return false;
+        }
+
+        try {
+            const response = await fetch(`/api/orders/${orderId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update order status');
+            }
+
+            const notification = this.getStatusNotification(newStatus);
+            this.showNotification(notification.message, notification.type);
+            return true;
+
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            this.showNotification('Failed to update order status', 'error');
+            return false;
+        }
+    }
+
+    // Show notification
+    showNotification(message, type = 'info') {
+        // Add your notification logic here
+    }
+
+    // Render status select options
+    renderStatusSelect(currentStatus) {
+        const nextStatuses = this.getNextPossibleStatuses(currentStatus);
+        
+        return `
+            <select class="form-select form-select-sm" ${this.isStatusFinal(currentStatus) ? 'disabled' : ''}>
+                <option value="${currentStatus}" selected>
+                    ${this.getStatusLabel(currentStatus)}
+                </option>
+                ${nextStatuses.map(status => `
+                    <option value="${status}">
+                        ${this.getStatusLabel(status)}
+                    </option>
+                `).join('')}
+            </select>
+        `;
+    }
+
+    // Update status display helper
+    updateStatusDisplay(element, status) {
+        if (!element) return;
+        
+        OrderStatus.init().then(() => {
+            const statusConfig = OrderStatus.config[status];
+            if (statusConfig) {
+                element.textContent = statusConfig.label;
+                element.className = `badge ${statusConfig.badge_class}`;
+                
+                // Update icon if it exists
+                const icon = element.querySelector('i');
+                if (icon) {
+                    icon.className = statusConfig.icon_class;
+                }
+            }
+        });
     }
 }
 
