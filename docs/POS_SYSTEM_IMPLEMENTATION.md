@@ -547,6 +547,189 @@ CREATE INDEX idx_menu_actif ON menu(actif);
 
 ## User Interface
 
+### 📺 Fullscreen Mode Support
+
+The POS system includes a professional fullscreen toggle feature for distraction-free operation:
+
+#### Fullscreen Toggle Button
+```html
+<!-- Located in POS header -->
+<div class="pos-fullscreen-separator"></div>
+<button class="btn btn-outline-secondary btn-sm" id="toggleFullscreen" 
+        title="Mode plein écran (F11)">
+    <i class="fas fa-expand"></i>
+</button>
+```
+
+#### Features
+- **Visual Feedback:** Toast notifications for mode changes
+- **Keyboard Shortcuts:** F11, Ctrl+Shift+F for quick access  
+- **State Persistence:** Remembers preference in localStorage
+- **Smooth Transitions:** CSS animations for mode switching
+- **Floating Button:** Minimized circular button in fullscreen mode
+
+#### Implementation Details
+```javascript
+// Fullscreen toggle functionality
+initializePosFullscreenToggle() {
+    const toggleBtn = document.getElementById('toggleFullscreen');
+    const body = document.body;
+    
+    // Load saved preference
+    const isFullscreen = localStorage.getItem('pos-fullscreen') === 'true';
+    if (isFullscreen) {
+        this.enterFullscreen();
+    }
+    
+    // Toggle handler
+    toggleBtn?.addEventListener('click', () => {
+        body.classList.contains('pos-fullscreen') ? 
+            this.exitFullscreen() : this.enterFullscreen();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F11' || (e.ctrlKey && e.shiftKey && e.key === 'F')) {
+            e.preventDefault();
+            body.classList.contains('pos-fullscreen') ? 
+                this.exitFullscreen() : this.enterFullscreen();
+        }
+    });
+}
+```
+
+#### CSS Implementation
+```css
+/* Fullscreen mode styles */
+body.pos-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    z-index: 1000;
+}
+
+body.pos-fullscreen .sidebar {
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+}
+
+body.pos-fullscreen .header {
+    transform: translateY(-100%) !important;
+    transition: transform 0.3s ease !important;
+}
+
+/* Floating fullscreen button */
+body.pos-fullscreen #toggleFullscreen {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+}
+```
+
+### 🔧 Modal System Enhancements
+
+Due to conflicts between Bootstrap and CoreUI modal systems, comprehensive modal handling has been implemented:
+
+#### Modal Close Button Support
+```javascript
+// Universal modal close functionality
+function closeModalSafely(modalId) {
+    try {
+        // Try CoreUI first
+        if (typeof coreui !== 'undefined' && coreui.Modal) {
+            const modal = coreui.Modal.getOrCreateInstance(document.getElementById(modalId));
+            modal?.hide();
+            return true;
+        }
+        
+        // Fallback to Bootstrap
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById(modalId));
+            modal?.hide();
+            return true;
+        }
+        
+        // DOM fallback
+        const modalElement = document.getElementById(modalId);
+        modalElement?.style.setProperty('display', 'none');
+        document.querySelector('.modal-backdrop')?.remove();
+        return true;
+    } catch (error) {
+        console.error('Error closing modal:', error);
+        return false;
+    }
+}
+```
+
+#### Modal Backdrop Z-Index Fix
+```css
+/* Fix modal backdrop positioning in fullscreen mode */
+body.pos-fullscreen .modal-backdrop {
+    z-index: 999 !important; /* Below modal but above fullscreen content */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+body.pos-fullscreen .modal {
+    z-index: 100000 !important; /* Always on top */
+}
+```
+
+#### Enhanced Modal Opening
+```javascript
+// Safe modal opening with backdrop fixes
+function openModalSafely(modalId) {
+    try {
+        const modalElement = document.getElementById(modalId);
+        if (!modalElement) return false;
+        
+        // Pre-adjust z-indexes for fullscreen mode
+        if (document.body.classList.contains('pos-fullscreen')) {
+            modalElement.style.zIndex = '100000';
+        }
+        
+        // Try CoreUI first
+        if (typeof coreui !== 'undefined' && coreui.Modal) {
+            const modal = coreui.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+            
+            // Fix backdrop after modal opens
+            setTimeout(() => fixModalBackdropForFullscreen(), 100);
+            return true;
+        }
+        
+        // Bootstrap fallback with same fixes
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+            setTimeout(() => fixModalBackdropForFullscreen(), 100);
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error opening modal:', error);
+        return false;
+    }
+}
+```
+
 ### Color Scheme
 
 ```css
@@ -887,11 +1070,11 @@ foreach ($data['items'] as $itemData) {
 
 ### Common Issues
 
-#### 1. Bootstrap Modal Not Working
+#### 1. Bootstrap/CoreUI Modal Conflicts
 
-**Symptoms:** Modals don't open or throw JavaScript errors
+**Symptoms:** Modals don't open, close buttons don't work, or throw JavaScript errors
 
-**Solution:** The POS manager includes fallback modal handling:
+**Solution:** The POS manager includes comprehensive modal conflict resolution:
 
 ```javascript
 initializeModals() {
@@ -913,6 +1096,18 @@ initializeModals() {
         this.initializeModalsFallback();
     }
 }
+```
+
+**Close Button Fix:** All modal close buttons now include dual data attributes and onclick fallbacks:
+
+```html
+<!-- Enhanced close buttons with compatibility -->
+<button type="button" class="btn-close" 
+        data-bs-dismiss="modal" 
+        data-coreui-dismiss="modal"
+        onclick="closeModalSafely('customerSearchModal')"
+        aria-label="Close">
+</button>
 ```
 
 #### 2. Database Column Errors
@@ -947,7 +1142,51 @@ curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
      http://localhost:8000/api/pos/categories
 ```
 
-#### 5. Images Not Displaying
+#### 5. Modal Backdrop Covering Everything in Fullscreen
+
+**Symptoms:** Gray backdrop covers the entire screen in fullscreen mode, making modals unusable
+
+**Solution:** Specific z-index hierarchy fix implemented:
+
+```css
+/* Critical z-index fix for fullscreen mode */
+body.pos-fullscreen {
+    z-index: 1000; /* Base fullscreen layer */
+}
+
+body.pos-fullscreen .modal-backdrop {
+    z-index: 999 !important; /* Below modal but above fullscreen content */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+body.pos-fullscreen .modal {
+    z-index: 100000 !important; /* Always on top */
+}
+```
+
+**JavaScript Helper:** Automatic backdrop positioning fix:
+
+```javascript
+function fixModalBackdropForFullscreen() {
+    if (document.body.classList.contains('pos-fullscreen')) {
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.style.zIndex = '999';
+            backdrop.style.position = 'fixed';
+            backdrop.style.top = '0';
+            backdrop.style.left = '0';
+            backdrop.style.width = '100vw';
+            backdrop.style.height = '100vh';
+        }
+    }
+}
+```
+
+#### 6. Images Not Displaying
 
 **Symptoms:** Dish images show 404 errors
 

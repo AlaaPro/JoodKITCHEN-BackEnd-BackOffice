@@ -17,6 +17,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\Repository\CommandeRepository;
 
 class AdminController extends AbstractController
 {
@@ -1342,5 +1343,200 @@ class AdminController extends AbstractController
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    #[Route('/api/admin/orders', name: 'api_admin_orders', methods: ['GET'])]
+    public function getOrders(Request $request, CommandeRepository $commandeRepository): JsonResponse
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(10, (int) $request->query->get('limit', 25)));
+        $status = $request->query->get('status');
+        $type = $request->query->get('type');
+        $search = $request->query->get('search');
+        $date = $request->query->get('date');
+
+        $criteria = [];
+        if ($status) {
+            $criteria['statut'] = $status;
+        }
+        if ($type) {
+            $criteria['typeLivraison'] = $type;
+        }
+
+        $qb = $commandeRepository->createQueryBuilder('c')
+            ->leftJoin('c.user', 'u')
+            ->addSelect('u');
+
+        if ($search) {
+            $qb->andWhere('c.id LIKE :search OR u.nom LIKE :search OR u.email LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($status) {
+            $qb->andWhere('c.statut = :status')
+               ->setParameter('status', $status);
+        }
+
+        if ($type) {
+            $qb->andWhere('c.typeLivraison = :type')
+               ->setParameter('type', $type);
+        }
+
+        if ($date) {
+            $qb->andWhere('DATE(c.dateCommande) = :date')
+               ->setParameter('date', $date);
+        }
+
+        $qb->orderBy('c.dateCommande', 'DESC');
+
+        $total = (clone $qb)->select('COUNT(c.id)')->getQuery()->getSingleScalarResult();
+        
+        $qb->setFirstResult(($page - 1) * $limit)
+           ->setMaxResults($limit);
+
+        $orders = $qb->getQuery()->getResult();
+
+        $ordersData = [];
+        foreach ($orders as $order) {
+            $ordersData[] = [
+                'id' => $order->getId(),
+                'numero' => 'CMD-' . str_pad($order->getId(), 3, '0', STR_PAD_LEFT),
+                'client' => [
+                    'nom' => $order->getUser() ? $order->getUser()->getNom() . ' ' . $order->getUser()->getPrenom() : 'Client Anonyme',
+                    'email' => $order->getUser() ? $order->getUser()->getEmail() : null,
+                ],
+                'dateCommande' => $order->getDateCommande()->format('d/m/Y H:i'),
+                'typeLivraison' => $order->getTypeLivraison(),
+                'total' => $order->getTotal(),
+                'statut' => $order->getStatut(),
+                'adresseLivraison' => $order->getAdresseLivraison(),
+                'commentaire' => $order->getCommentaire(),
+                'articlesCount' => $order->getCommandeArticles()->count()
+            ];
+        }
+
+        return $this->json([
+            'success' => true,
+            'data' => $ordersData,
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+                'total' => (int) $total,
+                'pages' => ceil($total / $limit)
+            ]
+        ]);
+    }
+
+    #[Route('/api/admin/orders/stats', name: 'api_admin_orders_stats', methods: ['GET'])]
+    public function getOrdersStats(CommandeRepository $commandeRepository): JsonResponse
+    {
+        $today = new \DateTime('today');
+        
+        // Debug: Check total orders count
+        $totalOrders = $commandeRepository->count([]);
+        error_log("📊 Total orders in database: " . $totalOrders);
+        
+        $stats = [
+            'pending' => $commandeRepository->count(['statut' => 'en_attente']),
+            'preparing' => $commandeRepository->count(['statut' => 'en_preparation']),
+            'completed' => $commandeRepository->count(['statut' => 'livre']),
+            'todayRevenue' => 0
+        ];
+
+        error_log("📊 Raw stats counts: " . json_encode($stats));
+
+        // Calculate today's revenue
+        $qb = $commandeRepository->createQueryBuilder('c')
+            ->select('SUM(c.total) as revenue')
+            ->where('DATE(c.dateCommande) = :today')
+            ->andWhere('c.statut IN (:completedStatuses)')
+            ->setParameter('today', $today->format('Y-m-d'))
+            ->setParameter('completedStatuses', ['livre', 'pret']);
+
+        $result = $qb->getQuery()->getSingleResult();
+        $stats['todayRevenue'] = (float) ($result['revenue'] ?? 0);
+
+        error_log("📊 Final stats with revenue: " . json_encode($stats));
+        error_log("📅 Today date for revenue calc: " . $today->format('Y-m-d'));
+
+        return $this->json([
+            'success' => true,
+            'data' => $stats
+        ]);
+    }
+
+    #[Route('/api/admin/orders/{id}', name: 'api_admin_order_details', methods: ['GET'])]
+    public function getOrderDetails(int $id, CommandeRepository $commandeRepository): JsonResponse
+    {
+        $order = $commandeRepository->find($id);
+        
+        if (!$order) {
+            return $this->json(['error' => 'Commande non trouvée'], 404);
+        }
+
+        $articles = [];
+        foreach ($order->getCommandeArticles() as $article) {
+            $articles[] = [
+                'id' => $article->getId(),
+                'nom' => $article->getPlat() ? $article->getPlat()->getNom() : 'Article supprimé',
+                'quantite' => $article->getQuantite(),
+                'prixUnitaire' => $article->getPrixUnitaire(),
+                'total' => $article->getQuantite() * $article->getPrixUnitaire(),
+                'commentaire' => $article->getCommentaire()
+            ];
+        }
+
+        $orderData = [
+            'id' => $order->getId(),
+            'numero' => 'CMD-' . str_pad($order->getId(), 3, '0', STR_PAD_LEFT),
+            'client' => [
+                'nom' => $order->getUser() ? $order->getUser()->getNom() . ' ' . $order->getUser()->getPrenom() : 'Client Anonyme',
+                'email' => $order->getUser() ? $order->getUser()->getEmail() : null,
+                'telephone' => $order->getUser() ? $order->getUser()->getTelephone() : null,
+            ],
+            'dateCommande' => $order->getDateCommande()->format('d/m/Y H:i:s'),
+            'typeLivraison' => $order->getTypeLivraison(),
+            'adresseLivraison' => $order->getAdresseLivraison(),
+            'statut' => $order->getStatut(),
+            'total' => $order->getTotal(),
+            'commentaire' => $order->getCommentaire(),
+            'articles' => $articles
+        ];
+
+        return $this->json([
+            'success' => true,
+            'data' => $orderData
+        ]);
+    }
+
+    #[Route('/api/admin/orders/{id}/status', name: 'api_admin_order_update_status', methods: ['PUT'])]
+    public function updateOrderStatus(int $id, Request $request, CommandeRepository $commandeRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $order = $commandeRepository->find($id);
+        
+        if (!$order) {
+            return $this->json(['error' => 'Commande non trouvée'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $newStatus = $data['status'] ?? null;
+
+        $validStatuses = ['en_attente', 'en_preparation', 'pret', 'en_livraison', 'livre', 'annule'];
+        
+        if (!in_array($newStatus, $validStatuses)) {
+            return $this->json(['error' => 'Statut invalide'], 400);
+        }
+
+        $order->setStatut($newStatus);
+        $entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Statut mis à jour avec succès',
+            'data' => [
+                'id' => $order->getId(),
+                'status' => $order->getStatut()
+            ]
+        ]);
     }
 } 
