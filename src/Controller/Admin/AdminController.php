@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Enum\OrderStatus;
 use App\Service\LogSystemService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -145,7 +146,17 @@ class AdminController extends AbstractController
     #[Route('/orders', name: 'admin_orders', methods: ['GET'])]
     public function orders(): Response
     {
-        return $this->render('admin/orders/index.html.twig');
+        // Get OrderStatus choices for the template
+        $orderStatuses = array_map(function($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->getLabel()
+            ];
+        }, OrderStatus::cases());
+
+        return $this->render('admin/orders/index.html.twig', [
+            'order_statuses' => $orderStatuses
+        ]);
     }
 
     #[Route('/orders/{id}', name: 'admin_orders_details', methods: ['GET'])]
