@@ -1,4 +1,58 @@
-# 🔧 Recent Admin System Fixes & Improvements
+# Recent Admin Fixes and Improvements
+
+## July 9, 2025 - Order Status Centralization & Dashboard Date Filtering
+
+### 🎯 **Order Status Management Centralization**
+- **✅ COMPLETED**: Centralized all hardcoded order statuses to use `OrderStatus` enum
+- **Files Updated**: 
+  - `CommandeRepository.php` - Updated status queries to use enum values
+  - `CacheService.php` - Replaced hardcoded status strings
+  - `AnalyticsService.php` - Updated status arrays and checks
+  - `PosController.php` - Fixed status validation and labels
+  - `AdminController.php` - Updated status filtering
+  - `MobileApiController.php` - Fixed status references
+  - `DataFixtures.php` - Fixed incorrect 'confirmee' status
+- **Database Fix**: Created command to fix existing incorrect statuses in database
+- **Result**: ✅ Single source of truth for order statuses, easier maintenance
+
+### 📊 **Dashboard Date Range Filtering System**
+- **✅ COMPLETED**: Added comprehensive date range filtering for order statistics
+- **New Features**:
+  - Date range picker (start date / end date) in dashboard filters
+  - Smart period display ("Aujourd'hui", single dates, or date ranges)
+  - "Appliquer Stats" button to apply custom date ranges
+  - "Aujourd'hui" reset button for quick today's view
+- **Backend Enhancements**:
+  - New `getOrderStatsForDateRange()` method in CommandeRepository
+  - Updated AdminController stats API to accept date parameters
+  - Flexible caching with date-specific cache keys
+  - Proper Doctrine DQL date filtering (fixed DATE() function issues)
+- **Frontend Improvements**:
+  - Updated OrdersManager and OrdersAPI for date parameter support
+  - Fixed JavaScript element selector mapping for stats cards
+  - Enhanced business insights calculations
+  - Real-time period text updates
+- **Result**: ✅ Complete flexibility to analyze orders for any time period
+
+### 🔧 **Technical Fixes**
+- **API Response Structure**: Fixed stats API data mapping between backend and frontend
+- **JavaScript Errors**: Resolved duplicate class definitions and method name mismatches
+- **CSS Selectors**: Fixed element targeting to match actual HTML structure
+- **Error Handling**: Improved debugging with detailed error responses (temporary)
+- **Performance**: Optimized caching strategy for date-range specific stats
+
+### 📈 **Dashboard Stats Now Working**
+- ✅ **Status Cards**: All counts display correctly (En attente, Confirmées, etc.)
+- ✅ **Revenue Tracking**: Accurate financial metrics per period
+- ✅ **Business Insights**: Average order value, conversion rates, orders per hour
+- ✅ **Real-time Updates**: 30-second caching for balance of performance and freshness
+- ✅ **Historical Analysis**: View stats for any date range (not just today)
+
+---
+
+## Previous Improvements
+
+## 🔧 Recent Admin System Fixes & Improvements
 
 ## 📅 **Latest Updates Summary**
 This document covers the critical fixes and improvements made to the JoodKitchen admin system, specifically addressing JavaScript errors, modal functionality, API endpoints, and database constraints.
