@@ -98,16 +98,23 @@ class OrderController extends AbstractController
     #[IsGranted('ROLE_KITCHEN')]
     public function getKitchenDashboard(CommandeRepository $commandeRepository): JsonResponse
     {
-        // Get orders that need attention
+        // Get orders for kitchen workflow
         $pendingOrders = $commandeRepository->findBy(['statut' => OrderStatus::PENDING->value], ['dateCommande' => 'ASC']);
+        $confirmedOrders = $commandeRepository->findBy(['statut' => OrderStatus::CONFIRMED->value], ['dateCommande' => 'ASC']);
         $preparingOrders = $commandeRepository->findBy(['statut' => OrderStatus::PREPARING->value], ['dateCommande' => 'ASC']);
+        $readyOrders = $commandeRepository->findBy(['statut' => OrderStatus::READY->value], ['dateCommande' => 'ASC']);
 
+        // Combine pending and confirmed orders for "new orders" column
+        $newOrders = array_merge($pendingOrders, $confirmedOrders);
+        
         $dashboard = [
-            'pending_orders' => array_map([$this, 'formatOrderForDashboard'], $pendingOrders),
-            'preparing_orders' => array_map([$this, 'formatOrderForDashboard'], $preparingOrders),
+            'pending_orders' => array_map([$this, 'formatOrderForKitchen'], $newOrders),
+            'preparing_orders' => array_map([$this, 'formatOrderForKitchen'], $preparingOrders),
+            'ready_orders' => array_map([$this, 'formatOrderForKitchen'], $readyOrders),
             'statistics' => [
-                'total_pending' => count($pendingOrders),
+                'total_pending' => count($newOrders),
                 'total_preparing' => count($preparingOrders),
+                'total_ready' => count($readyOrders),
                 'avg_preparation_time' => $this->calculateAveragePreparationTime()
             ]
         ];
@@ -166,6 +173,42 @@ class OrderController extends AbstractController
             'total' => $commande->getTotal(),
             'date_commande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
             'articles_count' => $commande->getCommandeArticles()->count(),
+            'elapsed_time' => $this->calculateElapsedTime($commande->getDateCommande())
+        ];
+    }
+
+    private function formatOrderForKitchen(Commande $commande): array
+    {
+        $items = [];
+        foreach ($commande->getCommandeArticles() as $article) {
+            $itemName = '';
+            if ($article->getPlat()) {
+                $itemName = $article->getPlat()->getNom();
+            } elseif ($article->getMenu()) {
+                $itemName = $article->getMenu()->getNom();
+            }
+            
+            $items[] = [
+                'nom' => $itemName,
+                'quantite' => $article->getQuantite(),
+                'status' => 'pending', // Default status
+                'commentaire' => $article->getCommentaire()
+            ];
+        }
+
+        return [
+            'id' => $commande->getId(),
+            'user' => [
+                'nom' => $commande->getUser() ? $commande->getUser()->getNom() : 'Client',
+                'prenom' => $commande->getUser() ? $commande->getUser()->getPrenom() : ''
+            ],
+            'statut' => $commande->getStatut(),
+            'total' => $commande->getTotal(),
+            'dateCommande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
+            'created_at' => $commande->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'articles_count' => $commande->getCommandeArticles()->count(),
+            'items' => $items,
+            'commentaire' => $commande->getCommentaire(),
             'elapsed_time' => $this->calculateElapsedTime($commande->getDateCommande())
         ];
     }

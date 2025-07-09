@@ -31,11 +31,11 @@
 <!-- Kitchen Stats -->
 <div class="row g-4 mb-4">
     <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-warning-bg">
+        <div class="card jood-widget-card jood-warning-bg widget-nouvelles">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">8</div>
+                        <div class="widget-value">{{ stats.pending ?? 0 }}</div>
                         <div class="widget-label">Nouvelles</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -47,11 +47,11 @@
     </div>
     
     <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-primary-bg">
+        <div class="card jood-widget-card jood-primary-bg widget-en-cours">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">12</div>
+                        <div class="widget-value">{{ stats.preparing ?? 0 }}</div>
                         <div class="widget-label">En cours</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -63,11 +63,11 @@
     </div>
     
     <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-success-bg">
+        <div class="card jood-widget-card jood-success-bg widget-pretes">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">6</div>
+                        <div class="widget-value">{{ stats.ready ?? 0 }}</div>
                         <div class="widget-label">Prêtes</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -79,11 +79,11 @@
     </div>
     
     <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-info-bg">
+        <div class="card jood-widget-card jood-info-bg widget-temps-moyen">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">18 min</div>
+                        <div class="widget-value">{{ stats.avg_order_value ?? '18' }} min</div>
                         <div class="widget-label">Temps moyen</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -99,80 +99,17 @@
 <div class="row g-4">
     <!-- New Orders -->
     <div class="col-lg-4">
-        <div class="card h-100">
+        <div class="card h-100" id="nouvelles-commandes">
             <div class="card-header jood-warning-bg">
                 <h4 class="card-title mb-0 text-white">
                     <i class="fas fa-plus-circle"></i> Nouvelles Commandes
-                    <span class="badge bg-white text-dark ms-2">8</span>
+                    <span class="badge bg-white text-dark ms-2" id="nouvelles-badge">{{ stats.pending ?? 0 }}</span>
                 </h4>
             </div>
             <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
-                <!-- Order Card 1 -->
-                <div class="p-3 border-bottom kitchen-order" data-order="001" data-time="300">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-001</h6>
-                            <small class="text-muted">Commande à 14:32</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-warning-bg">Nouveau</span>
-                            <div class="mt-1">
-                                <small class="text-muted countdown-timer" data-seconds="300">5:00</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>2x Couscous Royal</span>
-                            <span class="text-muted">Normal</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>1x Tajine Agneau</span>
-                            <span class="badge bg-danger">Urgent</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary btn-sm flex-fill" onclick="startOrder('001')">
-                            <i class="fas fa-play"></i> Commencer
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" title="Détails">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Order Card 2 -->
-                <div class="p-3 border-bottom kitchen-order" data-order="002" data-time="180">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-002</h6>
-                            <small class="text-muted">Commande à 14:35</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-warning-bg">Nouveau</span>
-                            <div class="mt-1">
-                                <small class="text-muted countdown-timer" data-seconds="180">3:00</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>1x Menu Découverte</span>
-                            <span class="text-muted">Normal</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>1x Pastilla Poulet</span>
-                            <span class="text-muted">Normal</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary btn-sm flex-fill" onclick="startOrder('002')">
-                            <i class="fas fa-play"></i> Commencer
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" title="Détails">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
+                <div class="text-center p-4 text-muted">
+                    <i class="fas fa-spinner fa-spin mb-2"></i>
+                    <div>Chargement des commandes...</div>
                 </div>
             </div>
         </div>
@@ -180,86 +117,17 @@
 
     <!-- In Progress Orders -->
     <div class="col-lg-4">
-        <div class="card h-100">
+        <div class="card h-100" id="en-cours-commandes">
             <div class="card-header jood-primary-bg">
                 <h4 class="card-title mb-0 text-white">
                     <i class="fas fa-fire"></i> En Cours de Préparation
-                    <span class="badge bg-white text-dark ms-2">12</span>
+                    <span class="badge bg-white text-dark ms-2" id="en-cours-badge">{{ stats.preparing ?? 0 }}</span>
                 </h4>
             </div>
             <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
-                <!-- Order Card 3 -->
-                <div class="p-3 border-bottom kitchen-order in-progress" data-order="003" data-time="720">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-003</h6>
-                            <small class="text-muted">Démarrée à 14:20</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-primary-bg">En cours</span>
-                            <div class="mt-1">
-                                <small class="text-success countdown-timer" data-seconds="720">12:00</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="progress mb-2" style="height: 6px;">
-                        <div class="progress-bar jood-primary-bg" style="width: 65%"></div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>1x Couscous Familial</span>
-                            <span class="badge bg-success">Prêt</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>2x Tajine Légumes</span>
-                            <span class="text-warning">En cours</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success btn-sm flex-fill" onclick="completeOrder('003')">
-                            <i class="fas fa-check"></i> Terminer
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm" title="Pause">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Order Card 4 -->
-                <div class="p-3 border-bottom kitchen-order in-progress" data-order="004" data-time="420">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-004</h6>
-                            <small class="text-muted">Démarrée à 14:25</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-primary-bg">En cours</span>
-                            <div class="mt-1">
-                                <small class="text-primary countdown-timer" data-seconds="420">7:00</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="progress mb-2" style="height: 6px;">
-                        <div class="progress-bar jood-primary-bg" style="width: 40%"></div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>3x Menu Royal</span>
-                            <span class="text-warning">En cours</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>1x Thé à la menthe</span>
-                            <span class="text-muted">En attente</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success btn-sm flex-fill" onclick="completeOrder('004')">
-                            <i class="fas fa-check"></i> Terminer
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm" title="Pause">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                    </div>
+                <div class="text-center p-4 text-muted">
+                    <i class="fas fa-spinner fa-spin mb-2"></i>
+                    <div>Chargement des commandes...</div>
                 </div>
             </div>
         </div>
@@ -267,80 +135,17 @@
 
     <!-- Ready Orders -->
     <div class="col-lg-4">
-        <div class="card h-100">
+        <div class="card h-100" id="pretes-commandes">
             <div class="card-header jood-success-bg">
                 <h4 class="card-title mb-0 text-white">
                     <i class="fas fa-check-circle"></i> Prêtes à Servir
-                    <span class="badge bg-white text-dark ms-2">6</span>
+                    <span class="badge bg-white text-dark ms-2" id="pretes-badge">{{ stats.ready ?? 0 }}</span>
                 </h4>
             </div>
             <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
-                <!-- Order Card 5 -->
-                <div class="p-3 border-bottom kitchen-order ready" data-order="005">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-005</h6>
-                            <small class="text-muted">Terminée à 14:28</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-success-bg">Prête</span>
-                            <div class="mt-1">
-                                <small class="text-success">Depuis 5 min</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>2x Tajine Poulet</span>
-                            <span class="badge bg-success">✓</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>1x Salade Marocaine</span>
-                            <span class="badge bg-success">✓</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-warning btn-sm flex-fill" onclick="deliverOrder('005')">
-                            <i class="fas fa-truck"></i> Livrer
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" title="Détails">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Order Card 6 -->
-                <div class="p-3 border-bottom kitchen-order ready" data-order="006">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h6 class="mb-1 fw-bold">#CMD-006</h6>
-                            <small class="text-muted">Terminée à 14:30</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge jood-success-bg">Prête</span>
-                            <div class="mt-1">
-                                <small class="text-success">Depuis 3 min</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="order-items mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>1x Menu Familial</span>
-                            <span class="badge bg-success">✓</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span>2x Pâtisseries</span>
-                            <span class="badge bg-success">✓</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-warning btn-sm flex-fill" onclick="deliverOrder('006')">
-                            <i class="fas fa-truck"></i> Livrer
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" title="Détails">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
+                <div class="text-center p-4 text-muted">
+                    <i class="fas fa-spinner fa-spin mb-2"></i>
+                    <div>Chargement des commandes...</div>
                 </div>
             </div>
         </div>
@@ -349,35 +154,7 @@
 
 <!-- Kitchen Tools & Equipment -->
 <div class="row g-4 mt-2">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header jood-info-bg">
-                <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-tools"></i> Équipements
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Four principal</span>
-                    <span class="badge bg-success">Actif</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Friteuse</span>
-                    <span class="badge bg-success">Actif</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Grill</span>
-                    <span class="badge bg-warning">Maintenance</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Plaque de cuisson</span>
-                    <span class="badge bg-success">Actif</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
+    <div class="col-md-6 offset-md-3">
         <div class="card">
             <div class="card-header jood-warning-bg">
                 <h5 class="card-title mb-0 text-white">
@@ -385,43 +162,21 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Fatima Alaoui</span>
-                    <span class="badge jood-primary-bg">Chef</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Youssef Tadlaoui</span>
-                    <span class="badge bg-secondary">Cuisinier</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Karim Bennani</span>
-                    <span class="badge bg-secondary">Cuisinier</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Hassan Ouali</span>
-                    <span class="badge bg-warning">Pause</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header jood-secondary-bg">
-                <h5 class="card-title mb-0 text-white">
-                    <i class="fas fa-exclamation-triangle"></i> Alertes
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning alert-sm mb-2">
-                    <i class="fas fa-clock"></i> Commande #001 dépasse 5 min
-                </div>
-                <div class="alert alert-info alert-sm mb-2">
-                    <i class="fas fa-utensils"></i> Stock couscous bas (8 portions)
-                </div>
-                <div class="alert alert-success alert-sm mb-0">
-                    <i class="fas fa-check"></i> Service en temps
-                </div>
+                {% if kitchen_staff is not empty %}
+                    {% for staff in kitchen_staff %}
+                        <div class="d-flex justify-content-between align-items-center {% if not loop.last %}mb-2{% endif %}">
+                            <span>{{ staff.user.prenom }} {{ staff.user.nom }}</span>
+                            <span class="badge {{ staff.posteCuisine == 'chef' ? 'jood-primary-bg' : 'bg-secondary' }}">
+                                {{ staff.posteCuisine|title }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-user-plus mb-2"></i>
+                        <div>Aucun membre d'équipe actif</div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -429,100 +184,5 @@
 {% endblock %}
 
 {% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Start countdown timers
-    updateTimers();
-    setInterval(updateTimers, 1000);
-    
-    // Auto-refresh orders every 30 seconds
-    setInterval(refreshKitchenOrders, 30000);
-    
-    function updateTimers() {
-        document.querySelectorAll('.countdown-timer').forEach(timer => {
-            let seconds = parseInt(timer.dataset.seconds);
-            if (seconds > 0) {
-                seconds--;
-                timer.dataset.seconds = seconds;
-                
-                const minutes = Math.floor(seconds / 60);
-                const remainingSeconds = seconds % 60;
-                timer.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-                
-                // Update color based on urgency
-                if (seconds < 300) { // Less than 5 minutes
-                    timer.className = 'text-danger countdown-timer';
-                } else if (seconds < 600) { // Less than 10 minutes
-                    timer.className = 'text-warning countdown-timer';
-                } else {
-                    timer.className = 'text-success countdown-timer';
-                }
-            }
-        });
-    }
-    
-    function refreshKitchenOrders() {
-        console.log('Refreshing kitchen orders...');
-        // In real app, this would fetch updated orders from API
-    }
-    
-    // Manual refresh button
-    document.getElementById('refreshOrders').addEventListener('click', function() {
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
-            refreshKitchenOrders();
-        }, 1500);
-    });
-});
-
-// Kitchen workflow functions
-function startOrder(orderId) {
-    const orderCard = document.querySelector(`[data-order="${orderId}"]`);
-    if (orderCard) {
-        // Move to in-progress column
-        showNotification(`Commande #CMD-${orderId} démarrée`, 'success');
-        // In real app, this would update the order status via API
-    }
-}
-
-function completeOrder(orderId) {
-    const orderCard = document.querySelector(`[data-order="${orderId}"]`);
-    if (orderCard) {
-        // Move to ready column
-        showNotification(`Commande #CMD-${orderId} terminée`, 'success');
-        // In real app, this would update the order status via API
-    }
-}
-
-function deliverOrder(orderId) {
-    const orderCard = document.querySelector(`[data-order="${orderId}"]`);
-    if (orderCard) {
-        // Remove from kitchen view
-        showNotification(`Commande #CMD-${orderId} en livraison`, 'info');
-        // In real app, this would update the order status via API
-    }
-}
-
-function showNotification(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `alert alert-${type} position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    toast.innerHTML = `
-        <div class="d-flex align-items-center">
-            <i class="fas fa-check-circle me-2"></i>
-            ${message}
-            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
-    `;
-    document.body.appendChild(toast);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.remove();
-        }
-    }, 5000);
-}
-</script>
+<script src="{{ asset('js/admin/managers/kitchen-manager.js') }}"></script>
 {% endblock %} 

@@ -2,8 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\KitchenProfile;
 use App\Enum\OrderStatus;
+use App\Repository\CommandeRepository;
 use App\Service\LogSystemService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -177,9 +180,21 @@ class AdminController extends AbstractController
      * Kitchen dashboard (Kitchen staff and Admin+)
      */
     #[Route('/kitchen', name: 'admin_kitchen', methods: ['GET'])]
-    public function kitchen(): Response
+    public function kitchen(CommandeRepository $commandeRepository, EntityManagerInterface $entityManager): Response
     {
-        return $this->render('admin/orders/kitchen.html.twig');
+        // Get initial stats for the dashboard
+        $stats = $commandeRepository->getOrderStats(true, true); // Include averages, today only
+        
+        // Get kitchen staff (for team section)
+        $kitchenStaff = $entityManager->getRepository(KitchenProfile::class)->findBy(
+            ['statutTravail' => 'actif'], 
+            ['posteCuisine' => 'ASC']
+        );
+        
+        return $this->render('admin/orders/kitchen.html.twig', [
+            'stats' => $stats,
+            'kitchen_staff' => $kitchenStaff
+        ]);
     }
 
     /**

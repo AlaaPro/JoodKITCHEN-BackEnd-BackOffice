@@ -131,8 +131,15 @@ class CommandeRepository extends ServiceEntityRepository
 
         // Filter by today only if requested
         if ($todayOnly) {
-            $qb->andWhere('DATE(c.dateCommande) = :today_date')
-               ->setParameter('today_date', $today->format('Y-m-d'));
+            $todayStart = clone $today;
+            $todayStart->setTime(0, 0, 0);
+            $todayEnd = clone $today;
+            $todayEnd->setTime(23, 59, 59);
+            
+            $qb->andWhere('c.dateCommande >= :today_start')
+               ->andWhere('c.dateCommande <= :today_end')
+               ->setParameter('today_start', $todayStart)
+               ->setParameter('today_end', $todayEnd);
         }
 
         $result = $qb->getQuery()->getSingleResult();
