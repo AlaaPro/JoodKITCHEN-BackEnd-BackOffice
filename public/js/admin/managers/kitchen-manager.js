@@ -135,6 +135,7 @@ class KitchenManager {
         const card = document.createElement('div');
         card.className = 'p-3 border-bottom kitchen-order';
         card.dataset.orderId = order.id;
+        card.dataset.orderType = type;
         card.dataset.type = type;
 
         const timeInfo = this.getTimeInfo(order, type);
@@ -151,7 +152,7 @@ class KitchenManager {
                 <div class="text-end">
                     <span class="badge ${this.getStatusBadgeClass(type)}">${this.getStatusLabel(type)}</span>
                     <div class="mt-1">
-                        <small class="${timeInfo.class} countdown-timer" data-seconds="${timeInfo.seconds}">
+                        <small class="${timeInfo.class} countdown-timer" data-seconds="${timeInfo.seconds}" data-order-time="${order.dateCommande}">
                             ${timeInfo.display}
                         </small>
                     </div>
@@ -176,35 +177,35 @@ class KitchenManager {
 
         switch (type) {
             case 'new':
-                const waitingTime = elapsed;
+                // New orders: Show waiting time with urgency indicators
                 return {
                     label: `Commande à ${orderDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
-                    seconds: Math.max(0, 1800 - waitingTime), // 30 min limit
-                    display: this.formatTime(Math.max(0, 1800 - waitingTime)),
-                    class: waitingTime > 300 ? 'text-danger' : waitingTime > 180 ? 'text-warning' : 'text-muted'
+                    seconds: elapsed,
+                    display: this.formatElapsedTime(elapsed),
+                    class: this.getWaitingTimeUrgencyClass(elapsed)
                 };
             
             case 'progress':
-                const prepTime = elapsed;
+                // Orders in preparation: Show cooking time with performance indicators
                 return {
                     label: `Démarrée à ${orderDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
-                    seconds: prepTime,
-                    display: this.formatTime(prepTime),
-                    class: prepTime > 1200 ? 'text-danger' : prepTime > 900 ? 'text-warning' : 'text-success'
+                    seconds: elapsed,
+                    display: this.formatElapsedTime(elapsed),
+                    class: this.getPreparationTimeClass(elapsed)
                 };
             
             case 'ready':
-                const readyTime = elapsed;
+                // Ready orders: Show waiting for pickup/delivery time
                 return {
                     label: `Terminée à ${orderDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
-                    seconds: readyTime,
-                    display: `Depuis ${this.formatTime(readyTime)}`,
-                    class: 'text-success'
+                    seconds: elapsed,
+                    display: this.formatElapsedTime(elapsed),
+                    class: this.getReadyTimeClass(elapsed)
                 };
             
             default:
                 return {
-                    label: orderDate.toLocaleTimeString('fr-FR'),
+                    label: 'Heure inconnue',
                     seconds: 0,
                     display: '0:00',
                     class: 'text-muted'
@@ -395,6 +396,55 @@ class KitchenManager {
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
+    /**
+     * Format elapsed time with professional display (handles hours properly)
+     */
+    formatElapsedTime(seconds) {
+        if (seconds < 60) {
+            return `0:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    /**
+     * Get urgency class for new orders waiting time
+     */
+    getWaitingTimeUrgencyClass(seconds) {
+        if (seconds > 900) return 'text-danger fw-bold'; // > 15 minutes - URGENT
+        if (seconds > 600) return 'text-warning fw-semibold'; // > 10 minutes - Warning
+        if (seconds > 300) return 'text-info'; // > 5 minutes - Info
+        return 'text-muted'; // < 5 minutes - Normal
+    }
+
+    /**
+     * Get performance class for preparation time
+     */
+    getPreparationTimeClass(seconds) {
+        if (seconds > 2400) return 'text-danger fw-bold'; // > 40 minutes - Too long
+        if (seconds > 1800) return 'text-warning fw-semibold'; // > 30 minutes - Slow
+        if (seconds > 1200) return 'text-info'; // > 20 minutes - Normal
+        return 'text-success'; // < 20 minutes - Fast
+    }
+
+    /**
+     * Get urgency class for ready orders waiting for pickup/delivery
+     */
+    getReadyTimeClass(seconds) {
+        if (seconds > 1800) return 'text-danger fw-bold'; // > 30 minutes - Getting cold
+        if (seconds > 900) return 'text-warning fw-semibold'; // > 15 minutes - Should deliver soon
+        if (seconds > 300) return 'text-info'; // > 5 minutes - Normal
+        return 'text-success'; // < 5 minutes - Fresh
+    }
+
     initializeCountdowns() {
         this.updateCountdowns();
         setInterval(() => this.updateCountdowns(), 1000);
@@ -402,22 +452,53 @@ class KitchenManager {
 
     updateCountdowns() {
         document.querySelectorAll('.countdown-timer').forEach(timer => {
-            let seconds = parseInt(timer.dataset.seconds);
-            if (seconds >= 0) {
-                timer.textContent = this.formatTime(seconds);
-                timer.dataset.seconds = seconds + 1; // Increment for progress timers
+            const parentCard = timer.closest('.kitchen-order');
+            if (!parentCard) return;
+
+            const orderId = parentCard.dataset.orderId;
+            const orderType = parentCard.dataset.type;
+            
+            // Find the order data to get the current timestamp
+            const orderElement = document.querySelector(`[data-order-id="${orderId}"]`);
+            if (orderElement) {
+                const currentTime = new Date();
+                let baseTime = new Date();
                 
-                // Update color based on urgency for new orders
-                const parentCard = timer.closest('.kitchen-order');
-                if (parentCard && parentCard.dataset.type === 'new') {
-                    if (seconds > 1200) { // More than 20 minutes
-                        timer.className = 'text-danger countdown-timer';
-                    } else if (seconds > 600) { // More than 10 minutes
-                        timer.className = 'text-warning countdown-timer';
-                    } else {
-                        timer.className = 'text-muted countdown-timer';
-                    }
+                // Try to get the time from the order's dateCommande attribute
+                const timeElement = orderElement.querySelector('.countdown-timer');
+                if (timeElement && timeElement.dataset.orderTime) {
+                    baseTime = new Date(timeElement.dataset.orderTime);
+                } else {
+                    // Fallback: calculate from current seconds in dataset
+                    const initialSeconds = parseInt(timer.dataset.seconds) || 0;
+                    baseTime = new Date(currentTime.getTime() - (initialSeconds * 1000));
                 }
+                
+                const elapsedSeconds = Math.floor((currentTime - baseTime) / 1000);
+                
+                // Update display with professional formatting
+                timer.textContent = this.formatElapsedTime(elapsedSeconds);
+                
+                // Update urgency class based on order type and elapsed time
+                let newClass = 'countdown-timer ';
+                switch (orderType) {
+                    case 'new':
+                        newClass += this.getWaitingTimeUrgencyClass(elapsedSeconds);
+                        break;
+                    case 'progress':
+                        newClass += this.getPreparationTimeClass(elapsedSeconds);
+                        break;
+                    case 'ready':
+                        newClass += this.getReadyTimeClass(elapsedSeconds);
+                        break;
+                    default:
+                        newClass += 'text-muted';
+                }
+                
+                timer.className = newClass;
+                
+                // Store the current elapsed time for next update
+                timer.dataset.seconds = elapsedSeconds;
             }
         });
     }

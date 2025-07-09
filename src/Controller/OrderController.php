@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Commande;
 use App\Entity\User;
+use App\Entity\OrderStatusHistory;
 use App\Enum\OrderStatus;
 use App\Service\OrderTrackingService;
 use App\Repository\CommandeRepository;
+use App\Repository\OrderStatusHistoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +22,8 @@ class OrderController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private OrderTrackingService $orderTrackingService
+        private OrderTrackingService $orderTrackingService,
+        private OrderStatusHistoryRepository $statusHistoryRepository
     ) {}
 
     #[Route('/tracking/subscribe', name: 'api_order_tracking_subscribe', methods: ['GET'])]
@@ -68,6 +71,17 @@ class OrderController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        // Create status history record BEFORE updating the order
+        $statusHistory = new OrderStatusHistory();
+        $statusHistory->setCommande($commande);
+        $statusHistory->setStatus($newStatus->value);
+        $statusHistory->setPreviousStatus($oldStatus->value);
+        $statusHistory->setChangedBy($this->getUser());
+        $statusHistory->setComment($data['comment'] ?? null);
+
+        $this->entityManager->persist($statusHistory);
+
+        // Update order status
         $commande->setStatut($newStatus->value);
         $this->entityManager->flush();
 
@@ -138,12 +152,14 @@ class OrderController extends AbstractController
             return new JsonResponse(['error' => 'Estimated minutes is required'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Send real-time update with preparation estimate
-        $this->orderTrackingService->publishNotification(
-            $commande->getUser(),
-            "Temps de préparation estimé: {$data['estimated_minutes']} minutes",
-            'info'
-        );
+        // Send real-time update with preparation estimate only if user exists
+        if ($commande->getUser()) {
+            $this->orderTrackingService->publishNotification(
+                $commande->getUser(),
+                "Temps de préparation estimé: {$data['estimated_minutes']} minutes",
+                'info'
+            );
+        }
 
         // Update kitchen dashboard
         $this->orderTrackingService->publishKitchenUpdate(
@@ -163,15 +179,16 @@ class OrderController extends AbstractController
 
     private function formatOrderForDashboard(Commande $commande): array
     {
+        $user = $commande->getUser();
         return [
             'id' => $commande->getId(),
             'user' => [
-                'nom' => $commande->getUser()->getNom(),
-                'prenom' => $commande->getUser()->getPrenom()
+                'nom' => $user ? $user->getNom() : 'Client',
+                'prenom' => $user ? $user->getPrenom() : ''
             ],
             'statut' => $commande->getStatut(),
             'total' => $commande->getTotal(),
-            'date_commande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
+            'date_commande' => $commande->getDateCommande()?->format('c'), // ISO 8601 with timezone
             'articles_count' => $commande->getCommandeArticles()->count(),
             'elapsed_time' => $this->calculateElapsedTime($commande->getDateCommande())
         ];
@@ -196,6 +213,44 @@ class OrderController extends AbstractController
             ];
         }
 
+        // Use status history to get accurate timing for each order type
+        $status = $commande->getStatusEnum();
+        $dateForTiming = null;
+        
+        switch ($status) {
+            case \App\Enum\OrderStatus::PENDING:
+            case \App\Enum\OrderStatus::CONFIRMED:
+                // For new orders: use timestamp when status changed to PENDING/CONFIRMED
+                $dateForTiming = $this->statusHistoryRepository->getStatusTimestamp($commande, $status->value);
+                // Fallback to dateCommande if no history found
+                if (!$dateForTiming) {
+                    $dateForTiming = $commande->getDateCommande();
+                }
+                break;
+                
+            case \App\Enum\OrderStatus::PREPARING:
+                // For orders in progress: use timestamp when status changed to PREPARING
+                $dateForTiming = $this->statusHistoryRepository->getStatusTimestamp($commande, OrderStatus::PREPARING->value);
+                // Fallback to dateCommande if no history found
+                if (!$dateForTiming) {
+                    $dateForTiming = $commande->getDateCommande();
+                }
+                break;
+                
+            case \App\Enum\OrderStatus::READY:
+                // For ready orders: use timestamp when status changed to READY
+                $dateForTiming = $this->statusHistoryRepository->getStatusTimestamp($commande, OrderStatus::READY->value);
+                // Fallback to dateCommande if no history found
+                if (!$dateForTiming) {
+                    $dateForTiming = $commande->getDateCommande();
+                }
+                break;
+                
+            default:
+                $dateForTiming = $commande->getDateCommande();
+                break;
+        }
+
         return [
             'id' => $commande->getId(),
             'user' => [
@@ -204,12 +259,12 @@ class OrderController extends AbstractController
             ],
             'statut' => $commande->getStatut(),
             'total' => $commande->getTotal(),
-            'dateCommande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
-            'created_at' => $commande->getCreatedAt()?->format('Y-m-d H:i:s'),
+            'dateCommande' => $dateForTiming?->format('c'), // ISO 8601 with timezone info for JavaScript
+            'created_at' => $commande->getCreatedAt()?->format('c'),
             'articles_count' => $commande->getCommandeArticles()->count(),
             'items' => $items,
             'commentaire' => $commande->getCommentaire(),
-            'elapsed_time' => $this->calculateElapsedTime($commande->getDateCommande())
+            'elapsed_time' => $this->calculateElapsedTime($dateForTiming) // Kept for consistency but JS uses dateCommande
         ];
     }
 
@@ -220,9 +275,12 @@ class OrderController extends AbstractController
         }
         
         $now = new \DateTime();
-        $interval = $now->diff($dateCommande);
         
-        return ($interval->h * 60) + $interval->i;
+        // Calculate total seconds difference (JavaScript expects seconds)
+        $totalSeconds = $now->getTimestamp() - $dateCommande->getTimestamp();
+        
+        // Return total seconds for JavaScript formatting
+        return (int) $totalSeconds;
     }
 
     private function calculateAveragePreparationTime(): int

@@ -112,10 +112,15 @@ enum OrderStatus: string
         }
 
         return match($this) {
-            self::PENDING => in_array($newStatus, [self::CONFIRMED, self::CANCELLED]),
+            // Kitchen workflow: PENDING orders can be confirmed, started directly, or cancelled
+            self::PENDING => in_array($newStatus, [self::CONFIRMED, self::PREPARING, self::CANCELLED]),
+            // Confirmed orders can be prepared or cancelled
             self::CONFIRMED => in_array($newStatus, [self::PREPARING, self::CANCELLED]),
+            // Preparing orders can be completed or cancelled
             self::PREPARING => in_array($newStatus, [self::READY, self::CANCELLED]),
+            // Ready orders can be dispatched, delivered directly, or cancelled
             self::READY => in_array($newStatus, [self::DELIVERING, self::DELIVERED, self::CANCELLED]),
+            // Delivering orders can only be delivered or cancelled
             self::DELIVERING => in_array($newStatus, [self::DELIVERED, self::CANCELLED]),
             default => false
         };
@@ -194,7 +199,7 @@ enum OrderStatus: string
         }
 
         return match($this) {
-            self::PENDING => [self::CONFIRMED, self::CANCELLED],
+            self::PENDING => [self::CONFIRMED, self::PREPARING, self::CANCELLED],
             self::CONFIRMED => [self::PREPARING, self::CANCELLED],
             self::PREPARING => [self::READY, self::CANCELLED],
             self::READY => [self::DELIVERING, self::DELIVERED, self::CANCELLED],

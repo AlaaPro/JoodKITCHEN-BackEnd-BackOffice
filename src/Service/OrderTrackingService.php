@@ -7,12 +7,14 @@ use App\Entity\User;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+use Psr\Log\LoggerInterface;
 
 class OrderTrackingService
 {
     public function __construct(
         private HubInterface $hub,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private ?LoggerInterface $logger = null
     ) {}
 
     /**
@@ -20,62 +22,87 @@ class OrderTrackingService
      */
     public function publishOrderUpdate(Commande $commande, string $event = 'order.updated'): void
     {
-        $data = [
-            'id' => $commande->getId(),
-            'statut' => $commande->getStatut(),
-            'total' => $commande->getTotal(),
-            'dateCommande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
-            'updatedAt' => $commande->getUpdatedAt()?->format('Y-m-d H:i:s'),
-            'event' => $event,
-            'user' => [
-                'id' => $commande->getUser()->getId(),
-                'nom' => $commande->getUser()->getNom(),
-                'prenom' => $commande->getUser()->getPrenom()
-            ]
-        ];
+        try {
+            $user = $commande->getUser();
+            if (!$user) {
+                // If no user is associated with the order, skip real-time updates
+                return;
+            }
 
-        // Create update for specific user (private channel)
-        $userUpdate = new Update(
-            "order/user/{$commande->getUser()->getId()}",
-            json_encode($data)
-        );
+            $data = [
+                'id' => $commande->getId(),
+                'statut' => $commande->getStatut(),
+                'total' => $commande->getTotal(),
+                'dateCommande' => $commande->getDateCommande()?->format('Y-m-d H:i:s'),
+                'updatedAt' => $commande->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'event' => $event,
+                'user' => [
+                    'id' => $user->getId(),
+                    'nom' => $user->getNom(),
+                    'prenom' => $user->getPrenom()
+                ]
+            ];
 
-        // Create update for kitchen staff (public channel for staff)
-        $kitchenUpdate = new Update(
-            "order/kitchen",
-            json_encode($data)
-        );
+            // Create update for specific user (private channel)
+            $userUpdate = new Update(
+                "order/user/{$user->getId()}",
+                json_encode($data)
+            );
 
-        // Create update for admins
-        $adminUpdate = new Update(
-            "order/admin", 
-            json_encode($data)
-        );
+            // Create update for kitchen staff (public channel for staff)
+            $kitchenUpdate = new Update(
+                "order/kitchen",
+                json_encode($data)
+            );
 
-        // Publish updates
-        $this->hub->publish($userUpdate);
-        $this->hub->publish($kitchenUpdate);
-        $this->hub->publish($adminUpdate);
+            // Create update for admins
+            $adminUpdate = new Update(
+                "order/admin", 
+                json_encode($data)
+            );
+
+            // Publish updates
+            $this->hub->publish($userUpdate);
+            $this->hub->publish($kitchenUpdate);
+            $this->hub->publish($adminUpdate);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to avoid breaking the main functionality
+            if ($this->logger) {
+                $this->logger->warning('Failed to publish Mercure order update: ' . $e->getMessage());
+            }
+        }
     }
 
     /**
      * Publish notification to user
      */
-    public function publishNotification(User $user, string $message, string $type = 'info'): void
+    public function publishNotification(?User $user, string $message, string $type = 'info'): void
     {
-        $data = [
-            'message' => $message,
-            'type' => $type,
-            'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
-            'userId' => $user->getId()
-        ];
+        if (!$user) {
+            // Skip notification if no user provided
+            return;
+        }
 
-        $update = new Update(
-            "notification/user/{$user->getId()}",
-            json_encode($data)
-        );
+        try {
+            $data = [
+                'message' => $message,
+                'type' => $type,
+                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s'),
+                'userId' => $user->getId()
+            ];
 
-        $this->hub->publish($update);
+            $update = new Update(
+                "notification/user/{$user->getId()}",
+                json_encode($data)
+            );
+
+            $this->hub->publish($update);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to avoid breaking the main functionality
+            if ($this->logger) {
+                $this->logger->warning('Failed to publish Mercure notification: ' . $e->getMessage());
+            }
+        }
     }
 
     /**
@@ -83,18 +110,25 @@ class OrderTrackingService
      */
     public function publishKitchenUpdate(string $message, array $data = []): void
     {
-        $updateData = [
-            'message' => $message,
-            'data' => $data,
-            'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
-        ];
+        try {
+            $updateData = [
+                'message' => $message,
+                'data' => $data,
+                'timestamp' => (new \DateTime())->format('Y-m-d H:i:s')
+            ];
 
-        $update = new Update(
-            "kitchen/updates",
-            json_encode($updateData)
-        );
+            $update = new Update(
+                "kitchen/updates",
+                json_encode($updateData)
+            );
 
-        $this->hub->publish($update);
+            $this->hub->publish($update);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it to avoid breaking the main functionality
+            if ($this->logger) {
+                $this->logger->warning('Failed to publish Mercure kitchen update: ' . $e->getMessage());
+            }
+        }
     }
 
     /**
