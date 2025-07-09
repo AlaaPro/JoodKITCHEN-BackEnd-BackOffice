@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Commande;
+use App\Enum\OrderStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -41,6 +42,14 @@ class CommandeRepository extends ServiceEntityRepository
             ->orderBy('c.dateCommande', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Find orders by OrderStatus enum
+     */
+    public function findByOrderStatus(OrderStatus $status): array
+    {
+        return $this->findByStatus($status->value);
     }
 
     /**
@@ -110,14 +119,14 @@ class CommandeRepository extends ServiceEntityRepository
                     ELSE 0
                 END) as kitchen_orders
             ')
-            ->setParameter('pending', 'en_attente')
-            ->setParameter('preparing', 'en_preparation')
-            ->setParameter('ready', 'pret')
-            ->setParameter('completed', 'livre')
-            ->setParameter('delivering', 'en_livraison')
-            ->setParameter('cancelled', 'annule')
+            ->setParameter('pending', OrderStatus::PENDING->value)
+            ->setParameter('preparing', OrderStatus::PREPARING->value)
+            ->setParameter('ready', OrderStatus::READY->value)
+            ->setParameter('completed', OrderStatus::DELIVERED->value)
+            ->setParameter('delivering', OrderStatus::DELIVERING->value)
+            ->setParameter('cancelled', OrderStatus::CANCELLED->value)
             ->setParameter('today', $today->format('Y-m-d'))
-            ->setParameter('kitchen_statuses', ['en_preparation', 'pret']);
+            ->setParameter('kitchen_statuses', [OrderStatus::PREPARING->value, OrderStatus::READY->value]);
 
         $result = $qb->getQuery()->getSingleResult();
 

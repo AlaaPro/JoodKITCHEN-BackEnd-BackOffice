@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Enum\OrderStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -19,20 +20,20 @@ class AnalyticsService
     public function getDailySalesReport(?\DateTime $date = null): array
     {
         $date = $date ?? new \DateTime();
-        $cacheKey = 'analytics.daily_sales.' . $date->format('Y-m-d');
+        $cacheKey = 'analytics.daily.' . $date->format('Y-m-d');
         
         return $this->cache->get($cacheKey, function (ItemInterface $item) use ($date) {
-            $item->expiresAfter(3600); // 1 hour cache
+            $item->expiresAfter(3600); // 1 hour cache for daily reports
             
             $qb = $this->entityManager->createQueryBuilder();
             
-            // Orders count and revenue
+            // Order statistics
             $orderStats = $qb->select('COUNT(c.id) as total_orders, SUM(c.total) as total_revenue')
                 ->from('App\Entity\Commande', 'c')
                 ->where('DATE(c.dateCommande) = :date')
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('date', $date->format('Y-m-d'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->getQuery()
                 ->getOneOrNullResult();
 
@@ -50,7 +51,7 @@ class AnalyticsService
                 ->where('DATE(c.dateCommande) = :date')
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('date', $date->format('Y-m-d'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->groupBy('p.id')
                 ->orderBy('quantity_sold', 'DESC')
                 ->setMaxResults(10)
@@ -104,7 +105,7 @@ class AnalyticsService
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('start', $startDate)
                 ->setParameter('end', $endDate->modify('+1 day'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->groupBy('date')
                 ->orderBy('date', 'ASC')
                 ->getQuery()
@@ -118,7 +119,7 @@ class AnalyticsService
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('start', $startDate)
                 ->setParameter('end', $endDate->modify('+1 day'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->getQuery()
                 ->getOneOrNullResult();
 
@@ -132,7 +133,7 @@ class AnalyticsService
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('start', $startDate)
                 ->setParameter('end', $endDate->modify('+1 day'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->groupBy('m.id')
                 ->orderBy('revenue', 'DESC')
                 ->getQuery()
@@ -168,7 +169,7 @@ class AnalyticsService
                 ->where('c.dateCommande >= :lastMonth')
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('lastMonth', new \DateTime('-1 month'))
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->groupBy('u.id')
                 ->orderBy('total_spent', 'DESC')
                 ->setMaxResults(10)
@@ -273,7 +274,7 @@ class AnalyticsService
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('start', $startDate)
                 ->setParameter('end', $endDate)
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->getQuery()
                 ->getOneOrNullResult();
 
@@ -301,7 +302,7 @@ class AnalyticsService
                 ->andWhere('c.statut != :cancelled')
                 ->setParameter('start', $startDate)
                 ->setParameter('end', $endDate)
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->groupBy('p.categorie')
                 ->orderBy('revenue', 'DESC')
                 ->getQuery()
@@ -332,48 +333,70 @@ class AnalyticsService
     public function getOperationalMetrics(): array
     {
         return $this->cache->get('analytics.operational', function (ItemInterface $item) {
-            $item->expiresAfter(600); // 10 minutes cache
+            $item->expiresAfter(1800); // 30 minutes cache
             
             $qb = $this->entityManager->createQueryBuilder();
             
-            // Average preparation time by status
-            $preparationTimes = $qb->select('c.statut, AVG(TIME_TO_SEC(TIMEDIFF(c.updatedAt, c.dateCommande))/60) as avg_minutes')
-                ->from('App\Entity\Commande', 'c')
-                ->where('c.dateCommande >= :today')
-                ->andWhere('c.statut IN (:statuses)')
-                ->setParameter('today', new \DateTime('today'))
-                ->setParameter('statuses', ['en_preparation', 'pret', 'livre'])
-                ->groupBy('c.statut')
-                ->getQuery()
-                ->getArrayResult();
-
-            // Order status distribution
-            $qb = $this->entityManager->createQueryBuilder();
+            // Order distribution by status
             $statusDistribution = $qb->select('c.statut, COUNT(c.id) as count')
-                ->from('App\Entity\Commande', 'c')
-                ->where('c.dateCommande >= :today')
-                ->setParameter('today', new \DateTime('today'))
-                ->groupBy('c.statut')
-                ->getQuery()
-                ->getArrayResult();
-
-            // Peak hours analysis
-            $qb = $this->entityManager->createQueryBuilder();
-            $peakHours = $qb->select('HOUR(c.dateCommande) as hour, COUNT(c.id) as orders, AVG(c.total) as avg_value')
                 ->from('App\Entity\Commande', 'c')
                 ->where('c.dateCommande >= :lastWeek')
                 ->setParameter('lastWeek', new \DateTime('-1 week'))
-                ->groupBy('hour')
-                ->orderBy('orders', 'DESC')
-                ->setMaxResults(5)
+                ->groupBy('c.statut')
                 ->getQuery()
                 ->getArrayResult();
-
+            
+            // Kitchen efficiency - orders in preparation vs ready
+            $qb = $this->entityManager->createQueryBuilder();
+            $kitchenMetrics = $qb->select('COUNT(c.id) as kitchen_orders')
+                ->from('App\Entity\Commande', 'c')
+                ->where('c.statut IN (:statuses)')
+                ->setParameter('statuses', [OrderStatus::PREPARING->value, OrderStatus::READY->value])
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            // Calculate completion rate
+            $qb = $this->entityManager->createQueryBuilder();
+            $completedOrders = $qb->select('COUNT(c.id)')
+                ->from('App\Entity\Commande', 'c')
+                ->where('c.dateCommande >= :lastWeek')
+                ->andWhere('c.statut = :completed')
+                ->setParameter('lastWeek', new \DateTime('-1 week'))
+                ->setParameter('completed', OrderStatus::DELIVERED->value)
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            $totalOrders = array_sum(array_map(fn($s) => $s['count'], $statusDistribution));
+            $completionRate = $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 2) : 0;
+            
+            // Revenue trends
+            $qb = $this->entityManager->createQueryBuilder();
+            $revenueMetrics = $qb->select('
+                    SUM(CASE WHEN DATE(c.dateCommande) = CURRENT_DATE() THEN c.total ELSE 0 END) as today_revenue,
+                    SUM(CASE WHEN DATE(c.dateCommande) = DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) THEN c.total ELSE 0 END) as yesterday_revenue
+                ')
+                ->from('App\Entity\Commande', 'c')
+                ->where('c.dateCommande >= :twoDaysAgo')
+                ->andWhere('c.statut != :cancelled')
+                ->setParameter('twoDaysAgo', new \DateTime('-2 days'))
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
+                ->getQuery()
+                ->getOneOrNullResult();
+            
+            $todayRevenue = (float)($revenueMetrics['today_revenue'] ?? 0);
+            $yesterdayRevenue = (float)($revenueMetrics['yesterday_revenue'] ?? 0);
+            $revenueGrowth = $yesterdayRevenue > 0 ? round((($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100, 2) : 0;
+            
             return [
-                'preparation_times' => $preparationTimes,
                 'status_distribution' => $statusDistribution,
-                'peak_hours' => $peakHours,
-                'efficiency_score' => $this->calculateEfficiencyScore($preparationTimes, $statusDistribution),
+                'kitchen_orders' => (int)$kitchenMetrics,
+                'completion_rate' => $completionRate,
+                'revenue_metrics' => [
+                    'today' => $todayRevenue,
+                    'yesterday' => $yesterdayRevenue,
+                    'growth_percentage' => $revenueGrowth
+                ],
+                'efficiency_score' => $this->calculateEfficiencyScore([], $statusDistribution),
                 'generated_at' => (new \DateTime())->format('Y-m-d H:i:s')
             ];
         });
@@ -431,13 +454,17 @@ class AnalyticsService
 
     private function calculateEfficiencyScore(array $preparationTimes, array $statusDistribution): int
     {
-        // Simple efficiency calculation based on completion rate and average preparation time
-        $completedOrders = array_sum(array_map(fn($s) => $s['statut'] === 'livre' ? $s['count'] : 0, $statusDistribution));
+        // Simple efficiency calculation based on completion rate and order flow
+        $completedOrders = array_sum(array_map(fn($s) => $s['statut'] === OrderStatus::DELIVERED->value ? $s['count'] : 0, $statusDistribution));
         $totalOrders = array_sum(array_map(fn($s) => $s['count'], $statusDistribution));
         
-        $completionRate = $totalOrders > 0 ? ($completedOrders / $totalOrders) * 100 : 0;
+        if ($totalOrders === 0) {
+            return 0;
+        }
         
-        // Normalize to 0-100 scale
-        return min(100, max(0, round($completionRate)));
+        $completionRate = ($completedOrders / $totalOrders) * 100;
+        
+        // Additional factors could include preparation time, customer satisfaction, etc.
+        return min(100, max(0, (int)$completionRate));
     }
 } 

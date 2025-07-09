@@ -7,6 +7,11 @@ use Symfony\Contracts\Cache\ItemInterface;
 use App\Repository\PlatRepository;
 use App\Repository\MenuRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Menu;
+use App\Entity\Plat;
+use App\Enum\OrderStatus;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
+use Psr\Cache\CacheException;
 
 class CacheService
 {
@@ -244,7 +249,7 @@ class CacheService
             $pendingOrders = $qb->select('COUNT(c.id)')
                 ->from('App\Entity\Commande', 'c')
                 ->where('c.statut = :status')
-                ->setParameter('status', 'en_attente')
+                ->setParameter('status', OrderStatus::PENDING->value)
                 ->getQuery()
                 ->getSingleScalarResult();
             
@@ -254,7 +259,7 @@ class CacheService
                 ->from('App\Entity\Commande', 'c')
                 ->where('DATE(c.dateCommande) = CURRENT_DATE()')
                 ->andWhere('c.statut != :cancelled')
-                ->setParameter('cancelled', 'annule')
+                ->setParameter('cancelled', OrderStatus::CANCELLED->value)
                 ->getQuery()
                 ->getSingleScalarResult() ?? 0;
             

@@ -394,34 +394,27 @@ class PosController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function createOrder(Request $request): JsonResponse
     {
+        $this->entityManager->beginTransaction();
+        
         try {
             $data = json_decode($request->getContent(), true);
             
             if (!$data || empty($data['items'])) {
-                return $this->json([
-                    'success' => false,
-                    'message' => 'Aucun article dans la commande'
-                ], 400);
+                throw new \Exception('Données de commande invalides');
             }
             
-            $this->entityManager->beginTransaction();
-            
-            // Get customer if provided (optional for POS)
+            // Create customer if provided
             $customer = null;
-            if (!empty($data['customer_id'])) {
-                $customer = $this->userRepository->find($data['customer_id']);
-                if (!$customer) {
-                    throw new \Exception('Client introuvable');
-                }
+            if (!empty($data['customer']['email'])) {
+                $customer = $this->userRepository->findOneBy(['email' => $data['customer']['email']]);
             }
-            // Note: Customer is optional for POS orders (anonymous orders allowed)
             
-            // Create order
+            // Create new order
             $order = new Commande();
             if ($customer) {
                 $order->setUser($customer);
             }
-            $order->setStatut('en_attente');
+            $order->setStatut(OrderStatus::PENDING->value);
             $order->setTypeLivraison($data['type_livraison'] ?? 'sur_place');
             
             // Add table number for dine-in
@@ -487,7 +480,7 @@ class PosController extends AbstractController
                 $this->entityManager->persist($payment);
                 
                 // Update order status to confirmed if payment is successful
-                $order->setStatut('confirme');
+                $order->setStatut(OrderStatus::CONFIRMED->value);
             }
             
             $this->entityManager->flush();
@@ -540,7 +533,7 @@ class PosController extends AbstractController
             $orders = $this->commandeRepository->findOrdersByDateRange($dateStart, $dateEnd);
             
             // Filter by status if specified
-            if ($status !== 'all') {
+            if ($status !== 'all' && !empty($status)) {
                 $orders = array_filter($orders, fn($order) => $order->getStatut() === $status);
             }
             
@@ -729,6 +722,14 @@ class PosController extends AbstractController
 
     private function getStatusLabel(string $status): string
     {
+        // Try to get label from OrderStatus enum first
+        foreach (OrderStatus::cases() as $orderStatus) {
+            if ($orderStatus->value === $status) {
+                return $orderStatus->getLabel();
+            }
+        }
+        
+        // Fallback to hardcoded for any status not in enum
         $statusLabels = [
             'en_attente' => 'En attente',
             'confirme' => 'Confirmé',

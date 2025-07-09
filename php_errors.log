@@ -9,3 +9,4 @@ You may be looking for a command provided by the "Debug Bundle" which is current
 [23-Jun-2025 11:07:13 UTC] [critical] Error thrown while running command ""server:status"". Message: "There are no commands defined in the "server" namespace.
 
 You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[09-Jul-2025 18:07:01 UTC] PHP Parse error:  syntax error, unexpected end of file, expecting variable or "${" or "{$" in Command line code on line 1

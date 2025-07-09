@@ -2,15 +2,16 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\User;
-use App\Entity\ClientProfile;
-use App\Entity\KitchenProfile;
 use App\Entity\AdminProfile;
-use App\Entity\Menu;
-use App\Entity\Plat;
-use App\Entity\MenuPlat;
+use App\Entity\ClientProfile;
 use App\Entity\Commande;
 use App\Entity\CommandeArticle;
+use App\Entity\KitchenProfile;
+use App\Entity\Menu;
+use App\Entity\MenuPlat;
+use App\Entity\Plat;
+use App\Entity\User;
+use App\Enum\OrderStatus;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -188,7 +189,7 @@ class AppFixtures extends Fixture
         $commande = new Commande();
         $commande->setUser($client);
         $commande->setDateCommande(new \DateTime());
-        $commande->setStatut('confirmee');
+        $commande->setStatut(OrderStatus::CONFIRMED->value);
         $manager->persist($commande);
 
         // Add items to order

@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\AdminProfile;
 use App\Entity\Permission;
 use App\Entity\Role;
+use App\Enum\OrderStatus;
 use App\Service\PermissionService;
 use App\Service\LogSystemService;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -1522,7 +1523,8 @@ class AdminController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $newStatus = $data['status'] ?? null;
 
-        $validStatuses = ['en_attente', 'en_preparation', 'pret', 'en_livraison', 'livre', 'annule'];
+        // Validate status using OrderStatus enum
+        $validStatuses = OrderStatus::getAll();
         
         if (!in_array($newStatus, $validStatuses)) {
             return $this->json(['error' => 'Statut invalide'], 400);

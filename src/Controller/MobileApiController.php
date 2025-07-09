@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Enum\OrderStatus;
 use App\Service\CacheService;
 use App\Service\NotificationService;
 use App\Repository\CommandeRepository;
@@ -176,7 +177,7 @@ class MobileApiController extends AbstractController
             'message' => 'Order created successfully',
             'order_id' => 'mobile_' . time(), // Placeholder
             'estimated_time' => '25 minutes',
-            'status' => 'en_attente'
+            'status' => OrderStatus::PENDING->value
         ], Response::HTTP_CREATED);
     }
 
