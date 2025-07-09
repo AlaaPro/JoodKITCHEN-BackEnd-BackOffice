@@ -405,7 +405,10 @@ class PosController extends AbstractController
             
             // Create customer if provided
             $customer = null;
-            if (!empty($data['customer']['email'])) {
+            if (!empty($data['customer_id'])) {
+                $customer = $this->userRepository->find($data['customer_id']);
+            } elseif (!empty($data['customer']['email'])) {
+                // Fallback to email search for backward compatibility
                 $customer = $this->userRepository->findOneBy(['email' => $data['customer']['email']]);
             }
             
