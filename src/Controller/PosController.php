@@ -472,31 +472,51 @@ class PosController extends AbstractController
             
             $this->entityManager->persist($order);
             
-            // Process payment if provided
+            // Process payment if provided and validate payment details
+            $paymentSuccessful = false;
             if (!empty($data['payment'])) {
-                $payment = new Payment();
-                $payment->setCommande($order);
-                $payment->setMontant($order->getTotal());
-                $payment->setMethodePaiement($data['payment']['method'] ?? 'especes');
-                $payment->setStatut('valide');
+                $paymentMethod = $data['payment']['method'] ?? 'especes';
+                $paymentAmount = (float)($data['payment']['amount'] ?? $order->getTotal());
                 
-                $this->entityManager->persist($payment);
-                
-                // Update order status to confirmed if payment is successful
-                $order->setStatut(OrderStatus::CONFIRMED->value);
+                // Validate payment amount (should match order total)
+                if ($paymentAmount >= (float)$order->getTotal()) {
+                    $payment = new Payment();
+                    $payment->setCommande($order);
+                    $payment->setMontant($order->getTotal());
+                    $payment->setMethodePaiement($paymentMethod);
+                    $payment->setStatut('valide');
+                    
+                    $this->entityManager->persist($payment);
+                    $paymentSuccessful = true;
+                    
+                    // Update order status to confirmed if payment is successful
+                    $order->setStatut(OrderStatus::CONFIRMED->value);
+                } else {
+                    // Payment amount insufficient - keep order pending
+                    $order->setStatut(OrderStatus::PENDING->value);
+                }
+            } else {
+                // No payment provided - order remains pending for later payment
+                $order->setStatut(OrderStatus::PENDING->value);
             }
             
             $this->entityManager->flush();
             $this->entityManager->commit();
             
+            $responseMessage = $paymentSuccessful ? 
+                'Commande créée et payée avec succès' : 
+                'Commande créée - En attente de paiement';
+            
             return $this->json([
                 'success' => true,
-                'message' => 'Commande créée avec succès',
+                'message' => $responseMessage,
                 'data' => [
                     'order_id' => $order->getId(),
                     'order_number' => 'CMD-' . str_pad($order->getId(), 6, '0', STR_PAD_LEFT),
                     'total' => $order->getTotal(),
                     'status' => $order->getStatut(),
+                    'status_label' => $this->getStatusLabel($order->getStatut()),
+                    'payment_status' => $paymentSuccessful ? 'paid' : 'pending',
                     'customer' => $customer ? [
                         'id' => $customer->getId(),
                         'name' => $customer->getPrenom() . ' ' . $customer->getNom()

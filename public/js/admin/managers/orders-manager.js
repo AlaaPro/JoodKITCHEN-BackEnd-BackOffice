@@ -13,9 +13,73 @@ class OrdersManager {
     }
 
     init() {
+        console.log('🔄 Initializing OrdersManager...');
         this.bindEvents();
+        this.initializeDatePickers();
         this.loadOrdersStats();
         this.loadOrders();
+    }
+
+    /**
+     * Initialize date picker event listeners
+     */
+    initializeDatePickers() {
+        const applyBtn = document.getElementById('applyDateFilter');
+        const resetBtn = document.getElementById('resetDateFilter');
+        const startDateInput = document.getElementById('statsDateStart');
+        const endDateInput = document.getElementById('statsDateEnd');
+        const periodText = document.getElementById('currentPeriodText');
+
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                const startDate = startDateInput?.value;
+                const endDate = endDateInput?.value;
+                
+                if (startDate && endDate) {
+                    if (new Date(startDate) > new Date(endDate)) {
+                        this.showNotification('La date de début doit être antérieure à la date de fin', 'error');
+                        return;
+                    }
+                    
+                    this.loadOrdersStats(startDate, endDate);
+                    this.updatePeriodText(startDate, endDate);
+                } else {
+                    this.showNotification('Veuillez sélectionner les deux dates', 'error');
+                }
+            });
+        }
+
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (startDateInput) startDateInput.value = today;
+                if (endDateInput) endDateInput.value = today;
+                this.loadOrdersStats(today, today);
+                this.updatePeriodText(today, today);
+            });
+        }
+    }
+
+    /**
+     * Update period text display
+     */
+    updatePeriodText(startDate, endDate) {
+        const periodText = document.getElementById('currentPeriodText');
+        if (!periodText) return;
+
+        const today = new Date().toISOString().split('T')[0];
+        
+        if (startDate === endDate) {
+            if (startDate === today) {
+                periodText.textContent = "Aujourd'hui";
+            } else {
+                periodText.textContent = new Date(startDate).toLocaleDateString('fr-FR');
+            }
+        } else {
+            const start = new Date(startDate).toLocaleDateString('fr-FR');
+            const end = new Date(endDate).toLocaleDateString('fr-FR');
+            periodText.textContent = `${start} - ${end}`;
+        }
     }
 
     bindEvents() {
@@ -52,79 +116,145 @@ class OrdersManager {
         }
     }
 
-    async loadOrdersStats() {
+    /**
+     * Load orders statistics
+     */
+    async loadOrdersStats(startDate = null, endDate = null) {
+        console.log('🔄 Loading orders stats...');
+        
         try {
-            console.log('🔄 Loading orders stats...');
-            const response = await this.api.getOrdersStats();
+            const stats = await this.api.getOrdersStats(startDate, endDate);
+            console.log('📊 Stats loaded:', stats);
             
-            if (response.success && response.data) {
-                console.log('✅ Stats data:', response.data);
-                this.updateStatsCards(response.data);
-            } else {
-                console.error('❌ Invalid stats response:', response);
-                this.showNotification('Erreur lors du chargement des statistiques', 'error');
-            }
+            this.updateStatsCards(stats);
+            this.updateBusinessInsights(stats);
+            
         } catch (error) {
             console.error('❌ Stats loading error:', error);
-            this.showNotification(error.message || 'Erreur lors du chargement des statistiques', 'error');
-            // Set stats to 0 on error
+            this.showNotification('Erreur lors du chargement des statistiques', 'error');
+            
+            // Show empty stats on error
             this.updateStatsCards({
                 pending: 0,
+                confirmed: 0,
                 preparing: 0,
+                ready: 0,
                 completed: 0,
-                todayRevenue: 0
+                delivering: 0,
+                cancelled: 0,
+                totalRevenue: 0
             });
         }
     }
 
     /**
-     * Update the stats cards with new data
-     * @param {Object} stats The stats data from the API
+     * Update the statistics cards
      */
     updateStatsCards(stats) {
         console.log('📊 Updating stats cards with:', stats);
-        
-        try {
-            // Update pending orders
-            const pendingCard = document.querySelector('.stats-pending .widget-value');
-            if (pendingCard) {
-                pendingCard.textContent = stats.pending || 0;
+
+        // Define the card mappings with correct CSS selectors (only existing cards)
+        const cardMappings = [
+            { selector: '.stats-pending .widget-value', key: 'pending', label: 'En attente' },
+            { selector: '.stats-confirmed .widget-value', key: 'confirmed', label: 'Confirmées' },
+            { selector: '.stats-preparing .widget-value', key: 'preparing', label: 'En préparation' },
+            { selector: '.stats-ready .widget-value', key: 'ready', label: 'Prêtes' },
+            { selector: '.stats-completed .widget-value', key: 'completed', label: 'Livrées' }
+        ];
+
+        // Update each status card
+        cardMappings.forEach(mapping => {
+            const element = document.querySelector(mapping.selector);
+            if (element) {
+                const count = stats[mapping.key] || 0;
+                element.textContent = count;
+                console.log(`✅ Updated ${mapping.label}: ${count}`);
+            } else {
+                console.warn(`❌ Element not found: ${mapping.selector}`);
             }
+        });
 
-            // Update preparing orders
-            const preparingCard = document.querySelector('.stats-preparing .widget-value');
-            if (preparingCard) {
-                preparingCard.textContent = stats.preparing || 0;
-            }
-
-            // Update completed orders
-            const completedCard = document.querySelector('.stats-completed .widget-value');
-            if (completedCard) {
-                const completedCount = (stats.completed || 0) + (stats.delivering || 0);
-                completedCard.textContent = completedCount;
-            }
-
-            // Update today's revenue
-            const revenueCard = document.querySelector('.stats-revenue .widget-value');
-            if (revenueCard) {
-                const formattedRevenue = new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR',
-                    minimumFractionDigits: 2
-                }).format(stats.todayRevenue || 0);
-                revenueCard.textContent = formattedRevenue;
-            }
-
-            // Add visual feedback for changes
-            document.querySelectorAll('.jood-widget-card').forEach(card => {
-                card.classList.add('updated');
-                setTimeout(() => card.classList.remove('updated'), 1000);
-            });
-
-        } catch (error) {
-            console.error('❌ Error updating stats cards:', error);
-            this.showNotification('Erreur lors de la mise à jour des statistiques', 'error');
+        // Update revenue card
+        const revenueElement = document.querySelector('.stats-revenue .widget-value');
+        if (revenueElement) {
+            const revenue = stats.totalRevenue || stats.todayRevenue || 0;
+            revenueElement.textContent = `${revenue.toFixed(2)}€`;
+            console.log('✅ Updated Revenue:', revenue);
+        } else {
+            console.warn('❌ Revenue element not found');
         }
+
+        console.log('📊 All stats cards updated successfully');
+    }
+
+    /**
+     * Update a single status card
+     */
+    updateStatusCard(selector, value) {
+        const card = document.querySelector(selector);
+        if (card) {
+            card.textContent = value;
+        }
+    }
+
+    /**
+     * Update business insights section
+     */
+    updateBusinessInsights(stats) {
+        console.log('📈 Updating business insights with:', stats);
+        
+        // Average order value
+        const avgOrderCard = document.querySelector('.stats-avg-order');
+        if (avgOrderCard && stats.totalOrdersCount > 0) {
+            const avgOrder = stats.totalRevenue / stats.totalOrdersCount;
+            const formattedAvg = new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2
+            }).format(avgOrder);
+            avgOrderCard.textContent = formattedAvg;
+            console.log('✅ Updated Average Order Value:', formattedAvg);
+        } else if (avgOrderCard) {
+            avgOrderCard.textContent = '0.00€';
+        }
+
+        // Orders per hour (last hour)
+        const ordersPerHourCard = document.querySelector('.stats-orders-per-hour');
+        if (ordersPerHourCard) {
+            ordersPerHourCard.textContent = stats.ordersLastHour || 0;
+            console.log('✅ Updated Orders Last Hour:', stats.ordersLastHour);
+        }
+
+        // Conversion rate (pending to confirmed)
+        const conversionRateCard = document.querySelector('.stats-conversion-rate');
+        if (conversionRateCard) {
+            let conversionRate = 0;
+            const totalPending = stats.pending || 0;
+            const totalConfirmed = stats.confirmed || 0;
+            
+            if (totalPending > 0 && totalConfirmed > 0) {
+                conversionRate = ((totalConfirmed / (totalPending + totalConfirmed)) * 100).toFixed(1);
+            } else if (totalConfirmed > 0 && totalPending === 0) {
+                conversionRate = 100;
+            }
+            conversionRateCard.textContent = conversionRate + '%';
+            console.log('✅ Updated Conversion Rate:', conversionRate + '%');
+        }
+
+        // Average preparation time
+        const avgTimeCard = document.querySelector('.stats-avg-time');
+        if (avgTimeCard) {
+            if (stats.avgPreparationTime && stats.avgPreparationTime > 0) {
+                const minutes = Math.floor(stats.avgPreparationTime);
+                const seconds = Math.floor((stats.avgPreparationTime - minutes) * 60);
+                avgTimeCard.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                avgTimeCard.textContent = '--:--';
+            }
+            console.log('✅ Updated Average Prep Time:', avgTimeCard.textContent);
+        }
+        
+        console.log('📈 Business insights updated successfully');
     }
 
     async loadOrders() {

@@ -30,13 +30,14 @@
 
 <!-- Stats Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-primary-bg stats-pending">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-warning-bg stats-pending">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <div class="widget-value">0</div>
                         <div class="widget-label">En attente</div>
+                        <small class="text-muted">Non payées</small>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-clock fa-2x opacity-75"></i>
@@ -46,13 +47,31 @@
         </div>
     </div>
     
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-warning-bg stats-preparing">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg stats-confirmed">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">0</div>
+                        <div class="widget-label">Confirmées</div>
+                        <small class="text-muted">Payées</small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-primary-bg stats-preparing">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <div class="widget-value">0</div>
                         <div class="widget-label">En préparation</div>
+                        <small class="text-muted">Cuisine</small>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-fire fa-2x opacity-75"></i>
@@ -62,13 +81,31 @@
         </div>
     </div>
     
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-info-bg stats-completed">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-info-bg stats-ready">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="widget-value">0</div>
+                        <div class="widget-label">Prêtes</div>
+                        <small class="text-muted">À livrer</small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-bell fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-success-bg stats-completed">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <div class="widget-value">0</div>
                         <div class="widget-label">Livrées</div>
+                        <small class="text-muted">Terminées</small>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-check-circle fa-2x opacity-75"></i>
@@ -78,13 +115,14 @@
         </div>
     </div>
     
-    <div class="col-lg-3 col-sm-6">
-        <div class="card jood-widget-card jood-secondary-bg stats-revenue">
+    <div class="col-lg-2 col-md-4 col-sm-6">
+        <div class="card jood-widget-card jood-dark-bg stats-revenue">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <div class="widget-value">0.00€</div>
                         <div class="widget-label">CA Aujourd'hui</div>
+                        <small class="text-muted">Total des ventes</small>
                     </div>
                     <div class="flex-shrink-0">
                         <i class="fas fa-euro-sign fa-2x opacity-75"></i>
@@ -95,55 +133,153 @@
     </div>
 </div>
 
-<!-- Filters and Search -->
-<div class="card mb-4">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="card-title mb-0">Filtres et Recherche</h4>
-            <button class="btn btn-outline-secondary btn-sm" id="toggleFilters">
-                <i class="fas fa-filter"></i> Filtres
-            </button>
+<!-- Additional Business Insights -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">Commandes moyennes</h6>
+                        <h4 class="mb-0 text-primary stats-avg-order">0.00€</h4>
+                        <small class="text-muted">Panier moyen</small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chart-line fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="card-body" id="filtersPanel">
-        <div class="row g-3">
-                                <div class="col-md-3">
-                        <label class="form-label">Recherche</label>
-                        <input type="text" class="form-control" id="orderSearch" placeholder="N° commande, client...">
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">Commandes/Heure</h6>
+                        <h4 class="mb-0 text-success stats-orders-per-hour">0</h4>
+                        <small class="text-muted">Dernière heure</small>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Statut</label>
-                        <select class="form-select" id="orderStatus">
-                            <option value="">Tous</option>
-                            {% for status in order_statuses %}
-                                <option value="{{ status.value }}">{{ status.label }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-tachometer-alt fa-2x text-success"></i>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Date</label>
-                        <input type="date" class="form-control" id="orderDate">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">Taux conversion</h6>
+                        <h4 class="mb-0 text-info stats-conversion-rate">0%</h4>
+                        <small class="text-muted">En attente → Confirmé</small>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Type</label>
-                        <select class="form-select" id="orderType">
-                            <option value="">Tous</option>
-                            <option value="livraison">Livraison</option>
-                            <option value="a_emporter">À emporter</option>
-                            <option value="sur_place">Sur place</option>
-                        </select>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-percentage fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">Temps moyen</h6>
+                        <h4 class="mb-0 text-warning stats-avg-time">--:--</h4>
+                        <small class="text-muted">Préparation</small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-stopwatch fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="icon cil-filter"></i> Filtres et Recherche
+            </div>
+            <div class="card-body">
+                <!-- Date Range Filter for Stats -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="statsDateStart" class="form-label">Période Stats - Début</label>
+                        <input type="date" class="form-control" id="statsDateStart" value="{{ 'now'|date('Y-m-d') }}">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-primary" id="searchOrders">
-                                <i class="fas fa-search"></i> Rechercher
-                            </button>
-                            <button class="btn btn-outline-secondary" id="resetFilters">
-                                <i class="fas fa-times"></i> Reset
-                            </button>
+                        <label for="statsDateEnd" class="form-label">Fin</label>
+                        <input type="date" class="form-control" id="statsDateEnd" value="{{ 'now'|date('Y-m-d') }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary me-2" id="applyDateFilter">
+                            <i class="icon cil-chart-line"></i> Appliquer Stats
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetDateFilter">
+                            <i class="icon cil-reload"></i> Aujourd'hui
+                        </button>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="text-muted small">
+                            <i class="icon cil-info"></i> 
+                            <span id="currentPeriodText">Aujourd'hui</span>
                         </div>
                     </div>
+                </div>
+                <hr>
+                <!-- Existing Order List Filters -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="searchOrders" class="form-label">Recherche</label>
+                        <input type="text" class="form-control" id="searchOrders" placeholder="N° commande, client...">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="statusFilter" class="form-label">Statut</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Tous</option>
+                            <option value="en_attente">En attente</option>
+                            <option value="confirme">Confirmées</option>
+                            <option value="en_preparation">En préparation</option>
+                            <option value="pret">Prêtes</option>
+                            <option value="en_livraison">En livraison</option>
+                            <option value="livre">Livrées</option>
+                            <option value="annule">Annulées</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="dateFilter" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="dateFilter">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="typeFilter" class="form-label">Type</label>
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Tous</option>
+                            <option value="emporter">À emporter</option>
+                            <option value="sur_place">Sur place</option>
+                            <option value="livraison">Livraison</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-success me-2" id="searchBtn">
+                            <i class="icon cil-magnifying-glass"></i> Rechercher
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="resetBtn">
+                            <i class="icon cil-x"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

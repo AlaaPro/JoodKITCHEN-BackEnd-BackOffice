@@ -1431,40 +1431,159 @@ class AdminController extends AbstractController
 
     #[Route('/api/admin/orders/stats', name: 'api_admin_orders_stats', methods: ['GET'])]
     public function getOrdersStats(
+        Request $request,
         CommandeRepository $commandeRepository,
+        EntityManagerInterface $entityManager,
         CacheService $cacheService
-    ): JsonResponse
-    {
-        $cacheKey = 'admin_orders_stats';
+    ): JsonResponse {
+        // Get date range parameters
+        $startDate = $request->query->get('start_date');
+        $endDate = $request->query->get('end_date');
+        
+        // Validate and set default dates
+        if (!$startDate) {
+            $startDate = (new \DateTime('today'))->format('Y-m-d');
+        }
+        if (!$endDate) {
+            $endDate = (new \DateTime('today'))->format('Y-m-d');
+        }
+        
+        // Create cache key with date range
+        $cacheKey = "admin_orders_stats_{$startDate}_{$endDate}";
         
         // Try to get from cache first
-        if ($cacheService->has($cacheKey)) {
+        $cachedStats = $cacheService->get($cacheKey);
+        if ($cachedStats !== null) {
             return $this->json([
                 'success' => true,
-                'data' => $cacheService->get($cacheKey),
-                'from_cache' => true
+                'data' => $cachedStats,
+                'from_cache' => true,
+                'date_range' => ['start' => $startDate, 'end' => $endDate]
             ]);
         }
         
-        // Get fresh stats from database
-        $stats = $commandeRepository->getOrderStats();
-        
-        // Keep only the stats needed for the dashboard
-        $dashboardStats = [
-            'pending' => $stats['pending'],
-            'preparing' => $stats['preparing'],
-            'completed' => $stats['completed'],
-            'todayRevenue' => $stats['todayRevenue']
-        ];
-        
-        // Cache for 1 minute (stats should be relatively fresh)
-        $cacheService->set($cacheKey, $dashboardStats, 60);
-        
-        return $this->json([
-            'success' => true,
-            'data' => $dashboardStats,
-            'from_cache' => false
-        ]);
+        try {
+            // Debug: Log what we're about to do
+            $debugInfo = ['step' => 'Starting getOrdersStats'];
+            $debugInfo['date_range'] = ['start' => $startDate, 'end' => $endDate];
+            
+            // Convert string dates to DateTime objects
+            $startDateTime = new \DateTime($startDate . ' 00:00:00');
+            $endDateTime = new \DateTime($endDate . ' 23:59:59');
+            
+            // Get fresh stats from database for the specified date range
+            $stats = $commandeRepository->getOrderStatsForDateRange($startDateTime, $endDateTime);
+            $debugInfo['step'] = 'Got CommandeRepository stats';
+            $debugInfo['repository_stats'] = $stats;
+            
+            // Get additional business insights for the same date range
+            $oneHourAgo = new \DateTime('-1 hour');
+            $debugInfo['step'] = 'Created DateTime objects';
+            
+            // Orders in last hour (only if we're viewing today's stats)
+            $ordersLastHour = 0;
+            if ($startDate === (new \DateTime('today'))->format('Y-m-d') && 
+                $endDate === (new \DateTime('today'))->format('Y-m-d')) {
+                $ordersLastHour = $entityManager->createQueryBuilder()
+                    ->select('COUNT(c.id)')
+                    ->from('App\Entity\Commande', 'c')
+                    ->where('c.dateCommande >= :oneHourAgo')
+                    ->setParameter('oneHourAgo', $oneHourAgo)
+                    ->getQuery()
+                    ->getSingleScalarResult();
+            }
+            $debugInfo['step'] = 'Got orders last hour';
+            $debugInfo['ordersLastHour'] = $ordersLastHour;
+            
+            // Confirmed orders count for the date range
+            $confirmedCount = $entityManager->createQueryBuilder()
+                ->select('COUNT(c.id)')
+                ->from('App\Entity\Commande', 'c')
+                ->where('c.statut = :confirmed')
+                ->andWhere('c.dateCommande >= :startDate')
+                ->andWhere('c.dateCommande <= :endDate')
+                ->setParameter('confirmed', OrderStatus::CONFIRMED->value)
+                ->setParameter('startDate', $startDateTime)
+                ->setParameter('endDate', $endDateTime)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $debugInfo['step'] = 'Got confirmed count';
+            $debugInfo['confirmedCount'] = $confirmedCount;
+            
+            // Comprehensive dashboard stats
+            $dashboardStats = [
+                // Main status counts
+                'pending' => $stats['pending'],
+                'confirmed' => (int)$confirmedCount,
+                'preparing' => $stats['preparing'],
+                'ready' => $stats['ready'],
+                'completed' => $stats['completed'],
+                'delivering' => $stats['delivering'],
+                'cancelled' => $stats['cancelled'],
+                
+                // Financial metrics (for the selected date range)
+                'totalRevenue' => $stats['totalRevenue'] ?? $stats['todayRevenue'] ?? 0,
+                'totalOrdersCount' => $stats['totalOrders'] ?? $stats['today_count'] ?? 0,
+                
+                // Business insights
+                'ordersLastHour' => (int)$ordersLastHour,
+                'avgPreparationTime' => 0, // Simplified for now
+                
+                // Kitchen metrics
+                'kitchenOrders' => $stats['kitchen_orders'],
+                
+                // Date range info
+                'dateRange' => [
+                    'start' => $startDate,
+                    'end' => $endDate,
+                    'isToday' => ($startDate === $endDate && $startDate === (new \DateTime('today'))->format('Y-m-d'))
+                ],
+                
+                // Updated timestamp
+                'lastUpdate' => (new \DateTime())->format('Y-m-d H:i:s')
+            ];
+            $debugInfo['step'] = 'Created dashboard stats array';
+            $debugInfo['dashboardStats'] = $dashboardStats;
+            
+            // Cache for 30 seconds (balance between freshness and performance)
+            $cacheService->set($cacheKey, $dashboardStats, 30);
+            $debugInfo['step'] = 'Cached stats successfully';
+            
+            return $this->json([
+                'success' => true,
+                'data' => $dashboardStats,
+                'from_cache' => false,
+                'date_range' => ['start' => $startDate, 'end' => $endDate],
+                'debug_info' => $debugInfo
+            ]);
+            
+        } catch (\Exception $e) {
+            // Return detailed error information for debugging (since we don't have Monolog yet)
+            return $this->json([
+                'success' => false,
+                'error' => 'Exception caught in getOrdersStats',
+                'exception_message' => $e->getMessage(),
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine(),
+                'exception_trace' => $e->getTraceAsString(),
+                'data' => [
+                    'pending' => 0,
+                    'confirmed' => 0,
+                    'preparing' => 0,
+                    'ready' => 0,
+                    'completed' => 0,
+                    'delivering' => 0,
+                    'cancelled' => 0,
+                    'todayRevenue' => 0,
+                    'todayOrdersCount' => 0,
+                    'ordersLastHour' => 0,
+                    'avgPreparationTime' => 0,
+                    'kitchenOrders' => 0,
+                    'lastUpdate' => (new \DateTime())->format('Y-m-d H:i:s'),
+                ],
+                'from_cache' => false
+            ]);
+        }
     }
 
     #[Route('/api/admin/orders/{id}', name: 'api_admin_order_details', methods: ['GET'])]
