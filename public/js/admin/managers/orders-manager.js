@@ -12,8 +12,15 @@ class OrdersManager {
         this.init();
     }
 
-    init() {
+    async init() {
         console.log('🔄 Initializing OrdersManager...');
+        
+        // Initialize OrderStatus first
+        await OrderStatus.init();
+        
+        // Populate status filter options dynamically
+        this.populateStatusFilter();
+        
         this.bindEvents();
         this.initializeDatePickers();
         this.loadOrdersStats();
@@ -82,11 +89,35 @@ class OrdersManager {
         }
     }
 
+    /**
+     * Populate status filter options dynamically from OrderStatus utility
+     */
+    populateStatusFilter() {
+        if (!OrderStatus.config) {
+            // Retry if config not loaded yet
+            setTimeout(() => this.populateStatusFilter(), 500);
+            return;
+        }
+        
+        if (!document.getElementById('statusFilter')) {
+            // Retry if DOM element not ready yet
+            setTimeout(() => this.populateStatusFilter(), 500);
+            return;
+        }
+        
+        const success = OrderStatus.populateSelect('statusFilter', 'Tous');
+        if (!success) {
+            // Retry on failure
+            setTimeout(() => this.populateStatusFilter(), 500);
+        }
+    }
+
     bindEvents() {
         // Search and filter events
-        const searchBtn = document.querySelector('#searchOrders');
-        const resetBtn = document.querySelector('#resetFilters');
+        const searchBtn = document.querySelector('#searchBtn');
+        const resetBtn = document.querySelector('#resetBtn');
         const limitSelect = document.querySelector('#ordersLimit');
+        const searchInput = document.querySelector('#searchOrders');
 
         if (searchBtn) {
             searchBtn.addEventListener('click', () => this.applyFilters());
@@ -101,6 +132,16 @@ class OrdersManager {
                 this.currentLimit = parseInt(limitSelect.value);
                 this.currentPage = 1;
                 this.loadOrders();
+            });
+        }
+
+        // Allow Enter key to trigger search
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.applyFilters();
+                }
             });
         }
 
@@ -351,17 +392,8 @@ class OrdersManager {
     }
 
     getStatusBadge(status) {
-        const statusMap = {
-            'en_attente': { class: 'jood-warning-bg', text: 'En attente' },
-            'en_preparation': { class: 'bg-info', text: 'En préparation' },
-            'pret': { class: 'bg-primary', text: 'Prête' },
-            'en_livraison': { class: 'bg-warning', text: 'En livraison' },
-            'livre': { class: 'jood-primary-bg', text: 'Livrée' },
-            'annule': { class: 'bg-danger', text: 'Annulée' }
-        };
-
-        const statusInfo = statusMap[status] || { class: 'bg-secondary', text: status };
-        return `<span class="badge ${statusInfo.class}">${statusInfo.text}</span>`;
+        // Use centralized OrderStatus utility
+        return OrderStatus.getBadgeHtml(status);
     }
 
     getTypeBadge(type) {
@@ -435,10 +467,10 @@ class OrdersManager {
     }
 
     applyFilters() {
-        const searchInput = document.querySelector('#orderSearch');
-        const statusSelect = document.querySelector('#orderStatus');
-        const typeSelect = document.querySelector('#orderType');
-        const dateInput = document.querySelector('#orderDate');
+        const searchInput = document.querySelector('#searchOrders');
+        const statusSelect = document.querySelector('#statusFilter');
+        const typeSelect = document.querySelector('#typeFilter');
+        const dateInput = document.querySelector('#dateFilter');
 
         this.currentFilters = {};
 
@@ -460,10 +492,10 @@ class OrdersManager {
     }
 
     resetFilters() {
-        const searchInput = document.querySelector('#orderSearch');
-        const statusSelect = document.querySelector('#orderStatus');
-        const typeSelect = document.querySelector('#orderType');
-        const dateInput = document.querySelector('#orderDate');
+        const searchInput = document.querySelector('#searchOrders');
+        const statusSelect = document.querySelector('#statusFilter');
+        const typeSelect = document.querySelector('#typeFilter');
+        const dateInput = document.querySelector('#dateFilter');
 
         if (searchInput) searchInput.value = '';
         if (statusSelect) statusSelect.value = '';
@@ -596,16 +628,8 @@ class OrdersManager {
     }
 
     renderStatusModal(orderId, currentStatus) {
-        const statuses = [
-            { value: 'en_attente', label: 'En attente' },
-            { value: 'en_preparation', label: 'En préparation' },
-            { value: 'pret', label: 'Prête' },
-            { value: 'en_livraison', label: 'En livraison' },
-            { value: 'livre', label: 'Livrée' },
-            { value: 'annule', label: 'Annulée' }
-        ];
-
-        const statusOptions = statuses.map(status => 
+        // Use centralized OrderStatus utility
+        const statusOptions = OrderStatus.getAll().map(status => 
             `<option value="${status.value}" ${status.value === currentStatus ? 'selected' : ''}>${status.label}</option>`
         ).join('');
 
@@ -714,7 +738,7 @@ class OrdersManager {
 }
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     if (document.querySelector('#ordersTableBody')) {
         window.ordersManager = new OrdersManager();
     }

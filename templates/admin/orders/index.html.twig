@@ -242,19 +242,13 @@
                 <div class="row">
                     <div class="col-md-3">
                         <label for="searchOrders" class="form-label">Recherche</label>
-                        <input type="text" class="form-control" id="searchOrders" placeholder="N° commande, client...">
+                        <input type="text" class="form-control" id="searchOrders" placeholder="CMD-026, nom client, email...">
                     </div>
                     <div class="col-md-2">
                         <label for="statusFilter" class="form-label">Statut</label>
                         <select class="form-select" id="statusFilter">
                             <option value="">Tous</option>
-                            <option value="en_attente">En attente</option>
-                            <option value="confirme">Confirmées</option>
-                            <option value="en_preparation">En préparation</option>
-                            <option value="pret">Prêtes</option>
-                            <option value="en_livraison">En livraison</option>
-                            <option value="livre">Livrées</option>
-                            <option value="annule">Annulées</option>
+                            <!-- Options will be populated by OrderStatus utility -->
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -338,6 +332,7 @@
 
 {% block javascripts %}
 <!-- Orders API and Manager -->
+<script src="{{ asset('js/admin/utils/order-status.js') }}"></script>
 <script src="{{ asset('js/admin/managers/orders-api.js') }}"></script>
 <script src="{{ asset('js/admin/managers/orders-manager.js') }}"></script>
 {% endblock %} 

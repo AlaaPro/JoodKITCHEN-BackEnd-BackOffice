@@ -162,7 +162,8 @@ enum OrderStatus: string
                     'message' => $case->getNotificationMessage(),
                     'type' => $case->getNotificationType()
                 ],
-                'estimated_minutes' => $case->getEstimatedDeliveryMinutes()
+                'estimated_minutes' => $case->getEstimatedDeliveryMinutes(),
+                'next_possible_statuses' => array_map(fn($status) => $status->value, $case->getNextPossibleStatuses())
             ];
         }
         return $config;

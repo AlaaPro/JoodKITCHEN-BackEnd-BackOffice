@@ -1370,8 +1370,36 @@ class AdminController extends AbstractController
             ->addSelect('u');
 
         if ($search) {
-            $qb->andWhere('c.id LIKE :search OR u.nom LIKE :search OR u.email LIKE :search')
-               ->setParameter('search', '%' . $search . '%');
+            // Handle different search formats
+            $searchConditions = [];
+            $searchParams = [];
+            
+            // Check if search looks like an order number (CMD-xxx or just the number)
+            if (preg_match('/^CMD-?(\d+)$/i', $search, $matches)) {
+                // Searching for specific order number like "CMD-026" or "026"
+                $orderId = (int) $matches[1];
+                $searchConditions[] = 'c.id = :orderId';
+                $searchParams['orderId'] = $orderId;
+            } elseif (is_numeric($search)) {
+                // Pure numeric search - could be order ID
+                $searchConditions[] = 'c.id = :numericSearch';
+                $searchParams['numericSearch'] = (int) $search;
+            }
+            
+            // Always search in client information
+            $searchConditions[] = 'u.nom LIKE :clientSearch';
+            $searchConditions[] = 'u.prenom LIKE :clientSearch';
+            $searchConditions[] = 'u.email LIKE :clientSearch';
+            $searchConditions[] = 'CONCAT(u.nom, \' \', u.prenom) LIKE :clientSearch';
+            $searchParams['clientSearch'] = '%' . $search . '%';
+            
+            // Combine all conditions with OR
+            $qb->andWhere('(' . implode(' OR ', $searchConditions) . ')');
+            
+            // Set all parameters
+            foreach ($searchParams as $param => $value) {
+                $qb->setParameter($param, $value);
+            }
         }
 
         if ($status) {
