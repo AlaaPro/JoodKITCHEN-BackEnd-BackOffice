@@ -520,8 +520,13 @@ class OrdersManager {
         }
     }
 
-    openOrderDetailsModal(order) {
-        const modalHtml = this.renderOrderDetailsModal(order);
+    openOrderDetailsModal(orderData) {
+        // Handle both old and new response format
+        const order = orderData.order || orderData; // New format has nested 'order' object
+        const articles = orderData.articles || orderData.articles || [];
+        const validation = orderData.validation || {};
+        
+        const modalHtml = this.renderOrderDetailsModal(order, articles, validation);
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         
         const modal = new coreui.Modal(document.getElementById('orderDetailsModal'));
@@ -533,15 +538,59 @@ class OrdersManager {
         });
     }
 
-    renderOrderDetailsModal(order) {
-        const articlesHtml = order.articles.map(article => `
-            <tr>
-                <td>${article.nom}</td>
-                <td class="text-center">${article.quantite}</td>
-                <td class="text-end">${article.prixUnitaire}€</td>
-                <td class="text-end fw-bold">${article.total.toFixed(2)}€</td>
-            </tr>
-        `).join('');
+    renderOrderDetailsModal(order, articles = [], validation = {}) {
+        const articlesHtml = articles.map(article => {
+            const rowClass = article.isDeleted ? 'table-warning' : '';
+            const nameStyle = article.isDeleted ? 'text-muted fst-italic' : '';
+            const tooltip = article.isDeleted ? 'title="Cet article a été supprimé du menu"' : '';
+            const itemIcon = article.isDeleted ? '🗑️ ' : '';
+            const typeInfo = article.type !== 'deleted' ? `<small class="text-muted">(${article.type})</small>` : '';
+            
+            return `
+                <tr class="${rowClass}" ${tooltip}>
+                    <td class="${nameStyle}">
+                        ${itemIcon}${article.name || article.nom}
+                        ${typeInfo}
+                        ${article.originalName && article.originalName !== (article.name || article.nom) ? 
+                            `<br><small class="text-success">Original: ${article.originalName}</small>` : ''}
+                        ${article.snapshotDate ? 
+                            `<br><small class="text-info">Snapshot: ${article.snapshotDate}</small>` : ''}
+                    </td>
+                    <td class="text-center">${article.quantite || article.quantity}</td>
+                    <td class="text-end">${(article.prixUnitaire || article.price)}€</td>
+                    <td class="text-end fw-bold">${article.total.toFixed(2)}€</td>
+                </tr>
+            `;
+        }).join('');
+
+        // Validation alerts
+        const validationAlerts = [];
+        if (validation.issues && validation.issues.length > 0) {
+            validationAlerts.push(`
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>⚠️ Problèmes détectés:</strong>
+                    <ul class="mb-0 mt-2">
+                        ${validation.issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+        }
+        if (validation.warnings && validation.warnings.length > 0) {
+            validationAlerts.push(`
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <strong>ℹ️ Informations:</strong>
+                    <ul class="mb-0 mt-2">
+                        ${validation.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+        }
+
+        const clientInfo = order.client || {};
+        const deliveryInfo = order.delivery || {};
+        const totals = order.totals || {};
 
         return `
             <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
@@ -549,36 +598,43 @@ class OrdersManager {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="orderDetailsModalLabel">
-                                Détails de la commande ${order.numero}
+                                Détails de la commande ${order.numeroCommande || order.numero}
+                                ${validation.score ? `<span class="badge bg-${validation.score >= 80 ? 'success' : validation.score >= 60 ? 'warning' : 'danger'} ms-2">${validation.score}% santé</span>` : ''}
                             </h5>
                             <button type="button" class="btn-close" data-coreui-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            ${validationAlerts.join('')}
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>Informations client</h6>
-                                    <p><strong>Nom:</strong> ${order.client.nom}</p>
-                                    ${order.client.email ? `<p><strong>Email:</strong> ${order.client.email}</p>` : ''}
-                                    ${order.client.telephone ? `<p><strong>Téléphone:</strong> ${order.client.telephone}</p>` : ''}
+                                    <p><strong>Nom:</strong> ${clientInfo.nom || clientInfo.prenom ? `${clientInfo.prenom || ''} ${clientInfo.nom || ''}`.trim() : 'Client Anonyme'}</p>
+                                    ${clientInfo.email ? `<p><strong>Email:</strong> ${clientInfo.email}</p>` : ''}
+                                    ${clientInfo.telephone ? `<p><strong>Téléphone:</strong> ${clientInfo.telephone}</p>` : ''}
+                                    ${clientInfo.adresse ? `<p><strong>Adresse:</strong> ${clientInfo.adresse}</p>` : ''}
                                 </div>
                                 <div class="col-md-6">
                                     <h6>Informations commande</h6>
                                     <p><strong>Date:</strong> ${order.dateCommande}</p>
-                                    <p><strong>Type:</strong> ${this.getTypeBadge(order.typeLivraison)}</p>
-                                    <p><strong>Statut:</strong> ${this.getStatusBadge(order.statut)}</p>
-                                    ${order.adresseLivraison ? `<p><strong>Adresse:</strong> ${order.adresseLivraison}</p>` : ''}
+                                    <p><strong>Type:</strong> ${this.getTypeBadge(deliveryInfo.type || order.typeLivraison)}</p>
+                                    <p><strong>Statut:</strong> ${this.getStatusBadge(order.status || order.statut)}</p>
+                                    ${deliveryInfo.adresse ? `<p><strong>Adresse livraison:</strong> ${deliveryInfo.adresse}</p>` : ''}
                                 </div>
                             </div>
                             
-                            ${order.commentaire ? `
+                            ${(deliveryInfo.commentaire || order.commentaire) ? `
                                 <div class="mt-3">
                                     <h6>Commentaire</h6>
-                                    <p class="bg-light p-2 rounded">${order.commentaire}</p>
+                                    <p class="bg-light p-2 rounded">${deliveryInfo.commentaire || order.commentaire}</p>
                                 </div>
                             ` : ''}
 
                             <div class="mt-4">
-                                <h6>Articles commandés</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6>Articles commandés (${totals.items || articles.length})</h6>
+                                    ${totals.deleted > 0 ? `<span class="badge bg-warning">${totals.deleted} supprimé(s)</span>` : ''}
+                                </div>
                                 <div class="table-responsive">
                                     <table class="table table-sm">
                                         <thead>
@@ -593,9 +649,19 @@ class OrdersManager {
                                             ${articlesHtml}
                                         </tbody>
                                         <tfoot>
+                                            ${totals.discount > 0 ? `
+                                                <tr>
+                                                    <th colspan="3">Sous-total</th>
+                                                    <th class="text-end">${totals.amount || order.total}€</th>
+                                                </tr>
+                                                <tr>
+                                                    <th colspan="3">Réduction</th>
+                                                    <th class="text-end text-success">-${totals.discount}€</th>
+                                                </tr>
+                                            ` : ''}
                                             <tr class="table-dark">
                                                 <th colspan="3">Total de la commande</th>
-                                                <th class="text-end">${order.total}€</th>
+                                                <th class="text-end">${totals.final || order.total}€</th>
                                             </tr>
                                         </tfoot>
                                     </table>

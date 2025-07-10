@@ -73,6 +73,18 @@ class CommandeArticle
     #[Groups(['commande_article:read', 'commande_article:write', 'commande:read'])]
     private ?string $commentaire = null;
 
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['commande_article:read', 'commande:read'])]
+    private ?string $nomOriginal = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['commande_article:read', 'commande:read'])]
+    private ?string $descriptionOriginale = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['commande_article:read'])]
+    private ?\DateTimeInterface $dateSnapshot = null;
+
     public function __construct()
     {
         $this->quantite = 1;
@@ -156,5 +168,121 @@ class CommandeArticle
     public function getTotalPrice(): string
     {
         return number_format((float)$this->prixUnitaire * $this->quantite, 2, '.', '');
+    }
+
+    public function getNomOriginal(): ?string
+    {
+        return $this->nomOriginal;
+    }
+
+    public function setNomOriginal(?string $nomOriginal): static
+    {
+        $this->nomOriginal = $nomOriginal;
+        return $this;
+    }
+
+    public function getDescriptionOriginale(): ?string
+    {
+        return $this->descriptionOriginale;
+    }
+
+    public function setDescriptionOriginale(?string $descriptionOriginale): static
+    {
+        $this->descriptionOriginale = $descriptionOriginale;
+        return $this;
+    }
+
+    public function getDateSnapshot(): ?\DateTimeInterface
+    {
+        return $this->dateSnapshot;
+    }
+
+    public function setDateSnapshot(?\DateTimeInterface $dateSnapshot): static
+    {
+        $this->dateSnapshot = $dateSnapshot;
+        return $this;
+    }
+
+    /**
+     * Get the display name for this article (original name if available, current name if still exists, or fallback)
+     */
+    public function getDisplayName(): string
+    {
+        // Priority: Original name > Current item name > Fallback
+        if ($this->nomOriginal) {
+            return $this->nomOriginal;
+        }
+        
+        // Check if it's a plat (individual dish)
+        if ($this->plat) {
+            return $this->plat->getNom();
+        }
+        
+        // Check if it's a menu (daily menu, package, etc.)
+        if ($this->menu) {
+            return $this->menu->getNom();
+        }
+        
+        return '🗑️ Article supprimé';
+    }
+
+    /**
+     * Check if this article references a deleted item
+     */
+    public function isDeleted(): bool
+    {
+        // Item is deleted if both plat and menu are null
+        return $this->plat === null && $this->menu === null;
+    }
+
+    /**
+     * Get the item type for this article
+     */
+    public function getItemType(): string
+    {
+        if ($this->plat) {
+            return 'plat';
+        }
+        
+        if ($this->menu) {
+            return 'menu';
+        }
+        
+        return 'deleted';
+    }
+
+    /**
+     * Get the current item entity (plat or menu)
+     */
+    public function getCurrentItem(): ?object
+    {
+        return $this->plat ?? $this->menu;
+    }
+
+    /**
+     * Get comprehensive item information for display
+     */
+    public function getItemInfo(): array
+    {
+        $item = $this->getCurrentItem();
+        
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getDisplayName(),
+            'type' => $this->getItemType(),
+            'isDeleted' => $this->isDeleted(),
+            'originalName' => $this->getNomOriginal(),
+            'description' => $this->getDescriptionOriginale(),
+            'snapshotDate' => $this->getDateSnapshot()?->format('d/m/Y H:i'),
+            'currentItem' => $item ? [
+                'id' => $item->getId(),
+                'name' => $item->getNom(),
+                'type' => $this->getItemType()
+            ] : null,
+            'quantite' => $this->getQuantite(),
+            'prixUnitaire' => $this->getPrixUnitaire(),
+            'total' => $this->getQuantite() * $this->getPrixUnitaire(),
+            'commentaire' => $this->getCommentaire()
+        ];
     }
 } 

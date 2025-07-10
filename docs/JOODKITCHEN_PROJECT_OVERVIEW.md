@@ -236,6 +236,39 @@ Desserts: ['Yaourt', 'Mhalabiah', 'Cake aux Trois Lait', 'Cheesecake', 'Flan Car
 
 ### **📦 Order Management System**
 
+#### **🚀 Enhanced Order Display System (January 2025)**
+
+JoodKitchen now features a comprehensive **OrderDisplayService** that provides consistent, reusable order handling across the entire application.
+
+```php
+// NEW OrderDisplayService - Reusable Across Application
+use App\Service\OrderDisplayService;
+
+$orderDisplayService->getOrderDetails($commande);     // Complete order with validation
+$orderDisplayService->getArticlesList($commande);     // Simplified article list
+$orderDisplayService->getOrderSummary($commande);     // Table/list summary
+$orderDisplayService->validateOrder($commande);       // Health score & validation
+$orderDisplayService->hasDeletedItems($commande);     // Quick deleted items check
+```
+
+#### **CRITICAL BUG FIXED: Enhanced CommandeArticle**
+
+**Problem Solved**: Orders containing menus were showing "Article supprimé" (Deleted Item) even when data existed.
+
+```php
+// ENHANCED CommandeArticle Methods
+$article->getDisplayName();     // ✅ Now checks BOTH plat AND menu
+$article->isDeleted();          // ✅ Only deleted if BOTH are null
+$article->getItemType();        // ✅ Returns 'plat', 'menu', or 'deleted'
+$article->getCurrentItem();     // ✅ Gets actual item entity (plat or menu)
+$article->getItemInfo();        // ✅ Comprehensive item data array
+```
+
+#### **Order Health Scoring & Validation**
+- **Health Score**: 0-100% based on data integrity
+- **Validation Alerts**: Proactive issue detection
+- **Visual Indicators**: Color-coded health status (Green/Yellow/Red)
+
 #### **Order Workflow States**
 ```php
 Order Status Flow:
@@ -256,12 +289,15 @@ Commande (Order) {
     ├── dateCommande: Order timestamp
     ├── commentaire: Special instructions
     │
-    ├── CommandeArticles[] (Order Items) - **FLEXIBLE ORDERING**
+    ├── CommandeArticles[] (Order Items) - **ENHANCED FLEXIBLE ORDERING**
     │   ├── Plat (Individual dish) - Optional
     │   ├── Menu (Complete menu) - Optional
     │   ├── quantite: Item quantity
     │   ├── prixUnitaire: Unit price at time of order
-    │   └── commentaire: Special instructions per item
+    │   ├── commentaire: Special instructions per item
+    │   ├── nomOriginal: Original item name (for history)
+    │   ├── descriptionOriginale: Original description
+    │   └── dateSnapshot: When item was captured
     │
     ├── CommandeReductions[] (Applied Discounts)
     │   ├── type: 'pourcentage' | 'montant_fixe'
@@ -278,14 +314,15 @@ Commande (Order) {
 
 #### **Order Item Flexibility**
 ```php
-CommandeArticle supports both:
+CommandeArticle supports both (ENHANCED):
 1. Individual Dishes: CommandeArticle.plat = Plat entity (menu = null)
 2. Complete Menus: CommandeArticle.menu = Menu entity (plat = null)
+3. Mixed Orders: Combination of both types in single order
 
 Examples:
 - Order individual "Tajine Poulet" → CommandeArticle.plat = Tajine
-- Order "Menu du Jour Marocain" → CommandeArticle.menu = Menu entity
-- Mixed order: 2x individual dishes + 1x complete menu
+- Order "Menu du Jour Marocain" → CommandeArticle.menu = Menu entity  
+- Mixed order: 2x individual dishes + 1x complete menu → ✅ ALL DISPLAY CORRECTLY
 ```
 
 ### **💳 Payment System**
@@ -948,6 +985,15 @@ MERCURE_PUBLIC_URL=https://localhost/.well-known/mercure
 **📊 Project Status**: Advanced Development (Admin System v2.0 Complete, Subscription System v2.0 Backend Complete, Customer Interface In Progress) 
 
 ## 🚀 Recent Major Developments
+
+### Enhanced Order Display System (January 2025) 🏆
+- **🐛 CRITICAL BUG FIXED**: "Article supprimé" issue - Orders containing menus now display correctly
+- **OrderDisplayService**: New comprehensive service for consistent order handling across entire application
+- **Enhanced CommandeArticle**: Now properly handles both `plat` AND `menu` relationships
+- **Order Health Scoring**: Orders receive health scores (0-100%) based on data integrity
+- **Validation System**: Proactive detection of order issues with visual alerts
+- **Reusable Architecture**: Service usable in admin, kitchen, POS, mobile apps, and all modules
+- **Enhanced Frontend**: Order details modal with validation alerts and comprehensive information
 
 ### Order Management & Dashboard Enhancements (July 2025)
 - **Order Status Centralization**: All hardcoded order statuses centralized to `OrderStatus` enum for consistency

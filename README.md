@@ -120,9 +120,13 @@ All CRUD operations available for:
 ### 🎯 Business Logic Features
 
 #### Order Management
+- **🚀 NEW: Enhanced OrderDisplayService** - Comprehensive order display system
+- **🐛 FIXED: "Article supprimé" Issue** - Menu orders now display correctly
 - Order status tracking (pending → confirmed → preparing → ready → delivered)
 - Automatic total calculation with discounts
 - Order history and analytics
+- **Order health scoring** and validation system
+- **Reusable service** across all application modules
 
 #### Loyalty System
 - Points earned on purchases

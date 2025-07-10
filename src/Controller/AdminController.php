@@ -20,6 +20,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Repository\CommandeRepository;
 use App\Service\CacheService;
+use App\Service\OrderDisplayService;
 
 class AdminController extends AbstractController
 {
@@ -1615,7 +1616,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/api/admin/orders/{id}', name: 'api_admin_order_details', methods: ['GET'])]
-    public function getOrderDetails(int $id, CommandeRepository $commandeRepository): JsonResponse
+    public function getOrderDetails(int $id, CommandeRepository $commandeRepository, OrderDisplayService $orderDisplayService): JsonResponse
     {
         $order = $commandeRepository->find($id);
         
@@ -1623,38 +1624,16 @@ class AdminController extends AbstractController
             return $this->json(['error' => 'Commande non trouvée'], 404);
         }
 
-        $articles = [];
-        foreach ($order->getCommandeArticles() as $article) {
-            $articles[] = [
-                'id' => $article->getId(),
-                'nom' => $article->getPlat() ? $article->getPlat()->getNom() : 'Article supprimé',
-                'quantite' => $article->getQuantite(),
-                'prixUnitaire' => $article->getPrixUnitaire(),
-                'total' => $article->getQuantite() * $article->getPrixUnitaire(),
-                'commentaire' => $article->getCommentaire()
-            ];
-        }
-
-        $orderData = [
-            'id' => $order->getId(),
-            'numero' => 'CMD-' . str_pad($order->getId(), 3, '0', STR_PAD_LEFT),
-            'client' => [
-                'nom' => $order->getUser() ? $order->getUser()->getNom() . ' ' . $order->getUser()->getPrenom() : 'Client Anonyme',
-                'email' => $order->getUser() ? $order->getUser()->getEmail() : null,
-                'telephone' => $order->getUser() ? $order->getUser()->getTelephone() : null,
-            ],
-            'dateCommande' => $order->getDateCommande()->format('d/m/Y H:i:s'),
-            'typeLivraison' => $order->getTypeLivraison(),
-            'adresseLivraison' => $order->getAdresseLivraison(),
-            'statut' => $order->getStatut(),
-            'total' => $order->getTotal(),
-            'commentaire' => $order->getCommentaire(),
-            'articles' => $articles
-        ];
+        // Use the new OrderDisplayService for comprehensive order details
+        $orderDetails = $orderDisplayService->getOrderDetails($order);
+        
+        // Also include validation information
+        $validation = $orderDisplayService->validateOrder($order);
 
         return $this->json([
             'success' => true,
-            'data' => $orderData
+            'data' => $orderDetails,
+            'validation' => $validation
         ]);
     }
 
