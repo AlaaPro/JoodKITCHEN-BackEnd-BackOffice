@@ -77,9 +77,9 @@ class Abonnement
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['actif', 'suspendu', 'expire', 'annule'])]
+    #[Assert\Choice(choices: ['en_confirmation', 'actif', 'suspendu', 'expire', 'annule'])]
     #[Groups(['abonnement:read', 'abonnement:write'])]
-    private ?string $statut = 'actif';
+    private ?string $statut = 'en_confirmation';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['abonnement:read'])]
@@ -95,7 +95,7 @@ class Abonnement
 
     public function __construct()
     {
-        $this->statut = 'actif';
+        $this->statut = 'en_confirmation';
         $this->selections = new ArrayCollection();
     }
 
@@ -255,6 +255,7 @@ class Abonnement
     public function getStatutLabel(): string
     {
         return match($this->statut) {
+            'en_confirmation' => 'En Confirmation',
             'actif' => 'Actif',
             'suspendu' => 'Suspendu',
             'expire' => 'Expiré',
@@ -329,5 +330,84 @@ class Abonnement
         // Check if user hasn't completed payment setup
         // This will be implemented when integrating with CMI
         return true; // For now, assume all subscriptions need payment setup
+    }
+
+    /**
+     * Check if subscription is waiting for payment confirmation
+     */
+    public function isWaitingForConfirmation(): bool
+    {
+        return $this->statut === 'en_confirmation';
+    }
+
+    /**
+     * Check if subscription can be activated
+     */
+    public function canBeActivated(): bool
+    {
+        return in_array($this->statut, ['en_confirmation', 'suspendu']);
+    }
+
+    /**
+     * Check if subscription can be suspended
+     */
+    public function canBeSuspended(): bool
+    {
+        return $this->statut === 'actif';
+    }
+
+    /**
+     * Get payment method expected for this subscription
+     */
+    public function getExpectedPaymentMethod(): ?string
+    {
+        // This will be determined during subscription creation
+        // For now, return null (will be set later)
+        return null;
+    }
+
+    /**
+     * Get the subscription status color for UI
+     */
+    public function getStatusColor(): string
+    {
+        return match($this->statut) {
+            'en_confirmation' => 'warning',
+            'actif' => 'success',
+            'suspendu' => 'info',
+            'expire' => 'secondary',
+            'annule' => 'danger',
+            default => 'light'
+        };
+    }
+
+    /**
+     * Get the subscription status icon for UI
+     */
+    public function getStatusIcon(): string
+    {
+        return match($this->statut) {
+            'en_confirmation' => 'fas fa-clock',
+            'actif' => 'fas fa-check-circle',
+            'suspendu' => 'fas fa-pause-circle',
+            'expire' => 'fas fa-calendar-times',
+            'annule' => 'fas fa-times-circle',
+            default => 'fas fa-question-circle'
+        };
+    }
+
+    /**
+     * Get detailed status description for admin interface
+     */
+    public function getStatusDescription(): string
+    {
+        return match($this->statut) {
+            'en_confirmation' => 'Abonnement configuré, en attente de confirmation de paiement',
+            'actif' => 'Abonnement actif avec sélections de repas quotidiennes',
+            'suspendu' => 'Abonnement temporairement suspendu',
+            'expire' => 'Abonnement terminé à la date de fin',
+            'annule' => 'Abonnement annulé avant activation',
+            default => 'Statut d\'abonnement indéterminé'
+        };
     }
 } 

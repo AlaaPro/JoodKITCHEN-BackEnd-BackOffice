@@ -240,12 +240,71 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Subscriptions management
+     * Abonnements (Subscriptions) management - NEW Enhanced System
+     */
+    #[Route('/abonnements', name: 'admin_abonnements', methods: ['GET'])]
+    public function abonnements(): Response
+    {
+        return $this->render('admin/abonnements/index.html.twig', [
+            'page_title' => 'Gestion des Abonnements',
+            'api_endpoints' => [
+                'subscriptions' => '/admin/abonnements',
+                'statistics' => '/admin/abonnements/stats',
+                'calendar' => '/admin/abonnements/calendar',
+                'pending_count' => '/admin/abonnements/pending-count',
+                'status_update' => '/admin/abonnements/status-update',
+                'bulk_actions' => '/admin/abonnements/bulk',
+                'export' => '/admin/abonnements/export',
+                'selections' => '/admin/abonnement-selections',
+            ]
+        ]);
+    }
+
+    #[Route('/abonnements/calendar', name: 'admin_abonnements_calendar', methods: ['GET'])]
+    public function abonnementsCalendar(): Response
+    {
+        return $this->render('admin/abonnements/calendar.html.twig', [
+            'page_title' => 'Calendrier des Sélections',
+            'api_endpoints' => [
+                'calendar_data' => '/admin/abonnements/calendar',
+                'meal_selections' => '/admin/abonnement-selections',
+                'cuisine_stats' => '/admin/abonnements/cuisine-stats',
+            ]
+        ]);
+    }
+
+    #[Route('/abonnements/{id}', name: 'admin_abonnements_details', methods: ['GET'])]
+    public function abonnementDetails(int $id): Response
+    {
+        return $this->render('admin/abonnements/details.html.twig', [
+            'abonnement_id' => $id,
+            'page_title' => 'Détails de l\'Abonnement',
+            'api_endpoints' => [
+                'abonnement' => '/admin/abonnements/' . $id,
+                'selections' => '/admin/abonnement-selections?abonnement=' . $id,
+                'payments' => '/admin/abonnements/' . $id . '/payments',
+                'status_update' => '/admin/abonnements/status-update',
+            ]
+        ]);
+    }
+
+    #[Route('/abonnements/{id}/edit', name: 'admin_abonnements_edit', methods: ['GET'])]
+    public function editAbonnement(int $id): Response
+    {
+        return $this->render('admin/abonnements/edit.html.twig', [
+            'abonnement_id' => $id,
+            'page_title' => 'Modifier l\'Abonnement'
+        ]);
+    }
+
+    /**
+     * Legacy subscriptions route - keep for backward compatibility
      */
     #[Route('/subscriptions', name: 'admin_subscriptions', methods: ['GET'])]
     public function subscriptions(): Response
     {
-        return $this->render('admin/subscriptions/index.html.twig');
+        // Redirect to new abonnements route
+        return $this->redirectToRoute('admin_abonnements');
     }
 
     /**

@@ -67,4 +67,86 @@ class AbonnementRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Find subscriptions with filters, pagination and search
+     */
+    public function findWithFilters(array $filters = [], int $limit = 20, int $offset = 0, ?string $dateFrom = null, ?string $dateTo = null): array
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->leftJoin('a.user', 'u')
+            ->addSelect('u');
+
+        // Apply filters
+        if (isset($filters['statut'])) {
+            $qb->andWhere('a.statut = :statut')
+               ->setParameter('statut', $filters['statut']);
+        }
+
+        if (isset($filters['type'])) {
+            $qb->andWhere('a.type = :type')
+               ->setParameter('type', $filters['type']);
+        }
+
+        if (isset($filters['search'])) {
+            $qb->andWhere('(u.nom LIKE :search OR u.prenom LIKE :search OR u.email LIKE :search)')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        // Date range filtering
+        if ($dateFrom) {
+            $qb->andWhere('a.dateDebut >= :dateFrom')
+               ->setParameter('dateFrom', new \DateTime($dateFrom));
+        }
+
+        if ($dateTo) {
+            $qb->andWhere('a.dateDebut <= :dateTo')
+               ->setParameter('dateTo', new \DateTime($dateTo));
+        }
+
+        return $qb->orderBy('a.dateDebut', 'DESC')
+                  ->setMaxResults($limit)
+                  ->setFirstResult($offset)
+                  ->getQuery()
+                  ->getResult();
+    }
+
+    /**
+     * Count subscriptions with filters
+     */
+    public function countWithFilters(array $filters = [], ?string $dateFrom = null, ?string $dateTo = null): int
+    {
+        $qb = $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->leftJoin('a.user', 'u');
+
+        // Apply same filters as findWithFilters
+        if (isset($filters['statut'])) {
+            $qb->andWhere('a.statut = :statut')
+               ->setParameter('statut', $filters['statut']);
+        }
+
+        if (isset($filters['type'])) {
+            $qb->andWhere('a.type = :type')
+               ->setParameter('type', $filters['type']);
+        }
+
+        if (isset($filters['search'])) {
+            $qb->andWhere('(u.nom LIKE :search OR u.prenom LIKE :search OR u.email LIKE :search)')
+               ->setParameter('search', '%' . $filters['search'] . '%');
+        }
+
+        // Date range filtering
+        if ($dateFrom) {
+            $qb->andWhere('a.dateDebut >= :dateFrom')
+               ->setParameter('dateFrom', new \DateTime($dateFrom));
+        }
+
+        if ($dateTo) {
+            $qb->andWhere('a.dateDebut <= :dateTo')
+               ->setParameter('dateTo', new \DateTime($dateTo));
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 } 
