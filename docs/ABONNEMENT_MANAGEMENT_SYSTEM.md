@@ -13,7 +13,7 @@
 
 ## Overview
 
-The Abonnement Management System is a comprehensive subscription management solution for JoodKitchen that allows administrators to manage weekly and monthly meal subscriptions for clients. The system provides real-time statistics, advanced filtering, status workflow management, and bulk operations.
+The Abonnement Management System is a comprehensive subscription management solution for JoodKitchen that allows administrators to manage weekly and monthly meal subscriptions for clients. The system follows strict business rules: **hebdomadaire subscriptions run exactly 7 days with 5 weekday meals**, and **mensuel subscriptions run exactly 30 days with ~22 weekday meals**. **Weekends are completely excluded** from meal service.
 
 ### Key Features
 - 📊 **Real-time Statistics Dashboard** with visual metrics
@@ -24,29 +24,48 @@ The Abonnement Management System is a comprehensive subscription management solu
 - 📤 **Export Functionality** for business reporting
 - 💳 **Payment Tracking** with CMI integration support
 
+## Business Rules
+
+### Subscription Types & Duration
+- **Hebdomadaire (Weekly)**: Exactly **7 calendar days** from start to end date
+- **Mensuel (Monthly)**: Exactly **30 calendar days** from start to end date
+
+### Meal Service Policy
+- **Service Days**: **Monday to Friday only** (weekends completely excluded)
+- **Meals Per Day**: **1 meal per weekday** (no multiple daily meals)
+- **Total Meal Count**:
+  - **Hebdomadaire**: 5 meals total (Mon-Fri of the week)
+  - **Mensuel**: ~22 meals total (weekdays within 30-day period)
+
+### Selection Rules
+- All meal selections must fall on **weekdays only**
+- **Weekends (Saturday/Sunday) are never counted**
+- Price calculation: `Number of weekdays × Meal price`
+- Status progression follows realistic timeline (past = delivered, future = selected)
+
 ## System Architecture
 
 ### Entity Structure
 ```
 Abonnement (Main Entity)
 ├── User (ManyToOne) - Client relationship
-├── AbonnementSelection (OneToMany) - Daily meal selections
+├── AbonnementSelection (OneToMany) - Weekday meal selections (Mon-Fri only)
 └── Properties:
-    ├── type: 'hebdo' | 'mensuel'
+    ├── type: 'hebdo' (7 days, 5 meals) | 'mensuel' (30 days, ~22 meals)
     ├── statut: 'en_confirmation' | 'actif' | 'suspendu' | 'expire' | 'annule'
-    ├── repasParJour: integer
-    ├── dateDebut/dateFin: date range
+    ├── repasParJour: 1 (always 1 meal per weekday)
+    ├── dateDebut/dateFin: exact duration (hebdo=7 days, mensuel=30 days)
     └── timestamps: createdAt, updatedAt
 
 AbonnementSelection (Selection Entity)
 ├── Abonnement (ManyToOne) - Parent subscription
 ├── Menu/Plat (ManyToOne) - Meal choice
 └── Properties:
-    ├── dateRepas: specific meal date
+    ├── dateRepas: weekday meal date (Monday-Friday only)
     ├── cuisineType: 'marocain' | 'italien' | 'international'
     ├── typeSelection: 'menu_du_jour' | 'menu_normal' | 'plat_individuel'
     ├── statut: 'selectionne' | 'confirme' | 'prepare' | 'livre'
-    └── prix: meal price
+    └── prix: meal price (~12-15 MAD per meal)
 ```
 
 ### API Architecture
@@ -150,17 +169,17 @@ public function countWithFilters(array $filters = [], ?string $dateFrom = null, 
 // Real-time metrics displayed
 {
     overview: {
-        total: 13,
+        total: 12,
         en_confirmation: 2,
-        actif: 7,
+        actif: 6,
         suspendu: 1,
-        expire: 2,
-        annule: 1
+        expire: 1,
+        annule: 2
     },
     revenue: {
-        weekly_total: 0,
-        monthly_total: 0,
-        average_subscription_value: 0
+        weekly_total: 450.00,  // Based on 75 MAD per hebdo subscription
+        monthly_total: 1800.00, // Realistic revenue calculations
+        average_subscription_value: 75.00
     }
 }
 ```
@@ -292,18 +311,18 @@ async exportSubscriptions(filters)
 
 #### Demo Subscriptions Created
 - **13 total subscriptions** across realistic scenarios
-- **7 active subscriptions** with ongoing meal plans
+- **6 active subscriptions** with ongoing meal plans
 - **2 pending confirmations** awaiting activation
 - **1 suspended subscription** for testing workflows
 - **2 expired subscriptions** for historical data
-- **1 cancelled subscription** for complete testing
+- **2 cancelled subscription** for complete testing
 
 #### Realistic Data Features
-- **Mixed subscription types**: Both weekly and monthly
-- **Varied meal counts**: 1-3 meals per day
-- **Historical timeline**: Subscriptions spanning several months
-- **Meal selections**: Automatic generation with realistic distribution
-- **Status progression**: Natural workflow transitions
+- **Mixed subscription types**: Both weekly (7 days) and monthly (30 days)
+- **Consistent meal service**: 1 meal per weekday only (no weekends)
+- **Proper duration**: Hebdo=5 meals total, Mensuel=~22 meals total
+- **Meal selections**: Automatic generation following business rules
+- **Status progression**: Natural workflow transitions based on dates
 
 ### Testing Scenarios Covered
 1. **New subscription workflow**: en_confirmation → actif
@@ -655,24 +674,25 @@ Response:
     "success": true,
     "data": [
         {
-            "id": 1,
+            "id": 3,
             "user": {
-                "nom": "Dupont",
-                "prenom": "Marie",
-                "email": "marie.dupont@gmail.com"
+                "nom": "Martin",
+                "prenom": "Sarah",
+                "email": "sarah.martin@yahoo.fr"
             },
             "type": "hebdo",
             "statut": "actif",
-            "date_debut": "2025-07-03",
-            "date_fin": "2025-08-14",
-            "nb_repas": 2,
-            "montant": 150.00
+            "date_debut": "2025-07-13",
+            "date_fin": "2025-07-19",
+            "nb_repas": 1,
+            "selections_count": 5,
+            "montant": 75.00
         }
     ],
     "pagination": {
         "page": 1,
         "limit": 20,
-        "total": 7,
+        "total": 6,
         "pages": 1
     }
 }
@@ -687,17 +707,17 @@ Response:
     "success": true,
     "data": {
         "overview": {
-            "total": 13,
+            "total": 12,
             "en_confirmation": 2,
-            "actif": 7,
+            "actif": 6,
             "suspendu": 1,
-            "expire": 2,
-            "annule": 1
+            "expire": 1,
+            "annule": 2
         },
         "revenue": {
-            "weekly_total": 1050.00,
-            "monthly_total": 4200.00,
-            "average_subscription_value": 185.50,
+            "weekly_total": 450.00,
+            "monthly_total": 1800.00,
+            "average_subscription_value": 75.00,
             "growth_rate": 12.5
         },
         "conversion": {
@@ -726,6 +746,7 @@ The system successfully handles the complete subscription lifecycle from initial
 
 ---
 
-**Documentation Version**: 1.0  
-**Last Updated**: July 17, 2025  
-**Status**: Production Ready ✅ 
+**Documentation Version**: 1.1  
+**Last Updated**: July 20, 2025  
+**Status**: Production Ready ✅  
+**Business Rules**: ✅ Aligned with actual implementation (weekdays only, exact durations) 

@@ -319,7 +319,10 @@ class Abonnement
         }
         
         $discountRate = $this->getWeeklyDiscountRate();
-        return $totalPrice * (1 - $discountRate);
+        $finalPrice = $totalPrice * (1 - $discountRate);
+        
+        // Fix precision issues by rounding to 2 decimal places
+        return round($finalPrice, 2);
     }
 
     /**

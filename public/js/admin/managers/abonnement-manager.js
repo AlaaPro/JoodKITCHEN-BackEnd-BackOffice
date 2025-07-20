@@ -417,7 +417,7 @@ class AbonnementManager {
             await Promise.all([
                 this.loadStatistics(),
                 this.loadSubscriptions(),
-                this.loadCalendarData(),
+                this.loadCalendarCount(), // Load count only initially
                 this.updatePendingBadge()
             ]);
             
@@ -427,6 +427,30 @@ class AbonnementManager {
             this.showNotification('Erreur lors du chargement des données', 'error');
         } finally {
             this.showGlobalLoading(false);
+        }
+    }
+
+    /**
+     * Load calendar count for tab badge (lightweight version)
+     */
+    async loadCalendarCount() {
+        try {
+            const params = new URLSearchParams({
+                week_start: this.currentWeek
+            });
+
+            const result = await AdminAPI.request('GET', `${this.apiEndpoints.calendar}?${params}`);
+
+            if (result.success) {
+                // Update calendar tab count only
+                this.updateElement('calendarViewCount', result.data.total_week_selections || 0);
+                console.log(`📊 Calendar count loaded: ${result.data.total_week_selections} selections`);
+            } else {
+                this.updateElement('calendarViewCount', 0);
+            }
+        } catch (error) {
+            console.error('❌ Error loading calendar count:', error);
+            this.updateElement('calendarViewCount', 0);
         }
     }
 
@@ -670,14 +694,23 @@ class AbonnementManager {
 
             if (result.success) {
                 this.cache.calendar = result.data;
+                
+                // Update calendar tab count with total weekly selections
+                this.updateElement('calendarViewCount', result.data.total_week_selections || 0);
+                
                 this.renderWeeklyCalendar(result.data);
                 this.updateWeekDisplay();
+                
+                console.log(`📅 Calendar loaded: ${result.data.total_week_selections} selections for week starting ${result.data.week_start}`);
             } else {
                 throw new Error(result.error || 'Failed to load calendar data');
             }
         } catch (error) {
             console.error('❌ Error loading calendar data:', error);
             this.showNotification('Erreur lors du chargement du calendrier', 'error');
+            
+            // Set count to 0 on error
+            this.updateElement('calendarViewCount', 0);
         }
     }
 
@@ -1845,6 +1878,310 @@ class AbonnementManager {
      */
     viewSubscriptionDetails(subscriptionId) {
         window.location.href = `/admin/abonnements/${subscriptionId}`;
+    }
+
+    /**
+     * Load analytics data for the analytics tab
+     */
+    async loadAnalyticsData() {
+        console.log('📊 Loading analytics data...');
+        
+        try {
+            // Load analytics statistics
+            const response = await AdminAPI.request('GET', this.apiEndpoints.statistics);
+            
+            if (response.success) {
+                this.renderAnalyticsCharts(response.data);
+                this.updateAnalyticsMetrics(response.data);
+            } else {
+                throw new Error(response.message || 'Failed to load analytics data');
+            }
+        } catch (error) {
+            console.error('❌ Error loading analytics data:', error);
+            this.showNotification('Erreur lors du chargement des analytics', 'error');
+        }
+    }
+
+    /**
+     * Update analytics period and refresh data
+     */
+    updateAnalyticsPeriod(period) {
+        console.log('📅 Updating analytics period to:', period);
+        
+        // Update active period button
+        document.querySelectorAll('[data-period]').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-period="${period}"]`)?.classList.add('active');
+        
+        // Reload analytics data for the selected period
+        this.loadAnalyticsData();
+    }
+
+    /**
+     * Load status management data
+     */
+    async loadStatusManagementData() {
+        console.log('🔄 Loading status management data...');
+        
+        try {
+            // Load status statistics and workflow data
+            const [statusResponse, workflowResponse] = await Promise.all([
+                AdminAPI.request('GET', this.apiEndpoints.statistics),
+                AdminAPI.request('GET', `${this.apiEndpoints.subscriptions}?status_workflow=true`)
+            ]);
+            
+            if (statusResponse.success) {
+                this.renderStatusManagementDashboard(statusResponse.data);
+            }
+            
+            if (workflowResponse.success) {
+                this.renderWorkflowTable(workflowResponse.data);
+            }
+        } catch (error) {
+            console.error('❌ Error loading status management data:', error);
+            this.showNotification('Erreur lors du chargement des données de statut', 'error');
+        }
+    }
+
+    /**
+     * Suspend a subscription
+     */
+    async suspendSubscription(id) {
+        console.log('⏸️ Suspending subscription:', id);
+        
+        try {
+            const result = await this.confirmAction(
+                'Suspendre l\'abonnement',
+                'Êtes-vous sûr de vouloir suspendre cet abonnement ?',
+                'warning'
+            );
+            
+            if (result.isConfirmed) {
+                const response = await AdminAPI.request('POST', this.apiEndpoints.status_update, {
+                    subscription_id: id,
+                    new_status: 'suspendu',
+                    reason: 'Suspension manuelle par l\'administrateur'
+                });
+                
+                if (response.success) {
+                    this.showNotification('Abonnement suspendu avec succès', 'success');
+                    this.loadSubscriptions(); // Refresh the table
+                } else {
+                    throw new Error(response.message || 'Failed to suspend subscription');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error suspending subscription:', error);
+            this.showNotification('Erreur lors de la suspension', 'error');
+        }
+    }
+
+    /**
+     * Edit subscription
+     */
+    async editSubscription(id) {
+        console.log('✏️ Editing subscription:', id);
+        
+        try {
+            // Load subscription details
+            const response = await AdminAPI.request('GET', `${this.apiEndpoints.subscriptions}/${id}`);
+            
+            if (response.success) {
+                this.showEditSubscriptionModal(response.data);
+            } else {
+                throw new Error(response.message || 'Failed to load subscription details');
+            }
+        } catch (error) {
+            console.error('❌ Error loading subscription for edit:', error);
+            this.showNotification('Erreur lors du chargement de l\'abonnement', 'error');
+        }
+    }
+
+    /**
+     * Show status details (called from template onclick handlers)
+     */
+    showStatusDetails(status) {
+        console.log('👁️ Showing status details for:', status);
+        
+        // Filter subscriptions by status
+        this.currentFilters = { ...this.currentFilters, status: status };
+        this.loadSubscriptions();
+        
+        // Switch to table view if not already there
+        if (this.currentTab !== 'table-view') {
+            this.switchTab('table-view');
+        }
+    }
+
+    /**
+     * Bulk status transition (called from template onclick handlers)
+     */
+    async bulkStatusTransition(fromStatus, toStatus) {
+        console.log('🔄 Bulk status transition from', fromStatus, 'to', toStatus);
+        
+        try {
+            const result = await this.confirmAction(
+                'Transition de statut en lot',
+                `Êtes-vous sûr de vouloir changer tous les abonnements "${fromStatus}" vers "${toStatus}" ?`,
+                'warning'
+            );
+            
+            if (result.isConfirmed) {
+                const response = await AdminAPI.request('POST', this.apiEndpoints.bulk_actions, {
+                    action: 'bulk_status_update',
+                    from_status: fromStatus,
+                    to_status: toStatus
+                });
+                
+                if (response.success) {
+                    this.showNotification(`${response.affected_count} abonnements mis à jour avec succès`, 'success');
+                    this.loadSubscriptions();
+                    this.loadStatistics();
+                } else {
+                    throw new Error(response.message || 'Failed to update subscriptions');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error in bulk status transition:', error);
+            this.showNotification('Erreur lors de la mise à jour en lot', 'error');
+        }
+    }
+
+    /**
+     * Refresh status history (called from template onclick handlers)
+     */
+    async refreshStatusHistory() {
+        console.log('🔄 Refreshing status history...');
+        
+        try {
+            const response = await AdminAPI.request('GET', `${this.apiEndpoints.status_update}/history`);
+            
+            if (response.success) {
+                this.renderStatusHistory(response.data);
+                this.showNotification('Historique actualisé', 'success');
+            } else {
+                throw new Error(response.message || 'Failed to load status history');
+            }
+        } catch (error) {
+            console.error('❌ Error refreshing status history:', error);
+            this.showNotification('Erreur lors de l\'actualisation', 'error');
+        }
+    }
+
+    /**
+     * Render analytics charts
+     */
+    renderAnalyticsCharts(data) {
+        // This method will be implemented when we work on the analytics tab
+        console.log('📊 Rendering analytics charts with data:', data);
+        
+        // TODO: Implement chart.js integration
+        const analyticsContainer = document.getElementById('analytics-view');
+        if (analyticsContainer) {
+            analyticsContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-12 text-center p-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <h4>Graphiques Analytics</h4>
+                        <p class="text-muted">Les graphiques détaillés seront disponibles prochainement</p>
+                        <div class="mt-3">
+                            <small class="badge bg-info">Total: ${data.overview?.total || 0}</small>
+                            <small class="badge bg-success ms-2">Actifs: ${data.overview?.actif || 0}</small>
+                            <small class="badge bg-warning ms-2">En confirmation: ${data.overview?.en_confirmation || 0}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Update analytics metrics
+     */
+    updateAnalyticsMetrics(data) {
+        console.log('📈 Updating analytics metrics');
+        // This will be enhanced when analytics tab is fully implemented
+    }
+
+    /**
+     * Render status management dashboard
+     */
+    renderStatusManagementDashboard(data) {
+        console.log('🎛️ Rendering status management dashboard');
+        
+        const statusContainer = document.getElementById('status-management');
+        if (statusContainer) {
+            statusContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-12">
+                        <h4>Gestion des Statuts</h4>
+                        <p class="text-muted">Gérez les transitions de statut et surveillez les workflows</p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <h3>${data.overview?.en_confirmation || 0}</h3>
+                                        <small>En Confirmation</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h3>${data.overview?.actif || 0}</h3>
+                                        <small>Actifs</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <h3>${data.overview?.suspendu || 0}</h3>
+                                        <small>Suspendus</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-secondary text-white">
+                                    <div class="card-body text-center">
+                                        <h3>${data.overview?.expire || 0}</h3>
+                                        <small>Expirés</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Render workflow table
+     */
+    renderWorkflowTable(data) {
+        console.log('🔄 Rendering workflow table');
+        // Implementation for workflow table rendering
+    }
+
+    /**
+     * Show edit subscription modal
+     */
+    showEditSubscriptionModal(subscription) {
+        console.log('📝 Showing edit modal for subscription:', subscription);
+        
+        // TODO: Create and show edit modal
+        this.showNotification('Modal d\'édition sera disponible prochainement', 'info');
+    }
+
+    /**
+     * Render status history
+     */
+    renderStatusHistory(data) {
+        console.log('📜 Rendering status history');
+        // Implementation for status history rendering
     }
 
     /**

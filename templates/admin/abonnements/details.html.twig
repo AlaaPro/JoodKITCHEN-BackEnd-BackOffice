@@ -1,0 +1,802 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Détails Abonnement - JoodKitchen Admin{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ path('admin_dashboard') }}">Accueil</a></li>
+<li class="breadcrumb-item"><a href="{{ path('admin_abonnements') }}">Abonnements</a></li>
+<li class="breadcrumb-item active">Détails</li>
+{% endblock %}
+
+{% block content %}
+<!-- Subscription Details Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="h2 mb-2 jood-dark">
+                    <i class="fas fa-calendar-check jood-primary"></i> 
+                    Détails de l'Abonnement
+                </h1>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-info fs-6" id="subscriptionIdBadge">ID: ...</span>
+                    <span class="badge fs-6" id="subscriptionStatusBadge">...</span>
+                    <span class="badge bg-secondary fs-6" id="subscriptionTypeBadge">...</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </button>
+                <button class="btn btn-outline-primary" id="editSubscriptionBtn">
+                    <i class="fas fa-edit"></i> Modifier
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-primary dropdown-toggle" data-coreui-toggle="dropdown">
+                        <i class="fas fa-cog"></i> Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="suspendSubscriptionBtn">
+                            <i class="fas fa-pause"></i> Suspendre
+                        </a></li>
+                        <li><a class="dropdown-item" href="#" id="activateSubscriptionBtn">
+                            <i class="fas fa-play"></i> Activer
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="exportSubscriptionBtn">
+                            <i class="fas fa-download"></i> Exporter
+                        </a></li>
+                        <li><a class="dropdown-item text-danger" href="#" id="cancelSubscriptionBtn">
+                            <i class="fas fa-times"></i> Annuler
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div id="loadingSpinner" class="d-flex justify-content-center align-items-center py-5">
+    <div class="spinner-border jood-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="subscriptionDetailsContent" style="display: none;">
+    
+    <!-- Customer Information Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user"></i> Informations Client
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Nom complet</label>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar avatar-sm me-2">
+                                    <div class="avatar-initial bg-light text-dark rounded-circle" id="customerInitials">
+                                        XX
+                                    </div>
+                                </div>
+                                <span id="customerName">...</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email</label>
+                            <div id="customerEmail">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Téléphone</label>
+                            <div id="customerPhone">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Adresse</label>
+                            <div id="customerAddress">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subscription Overview Card -->
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt"></i> Aperçu de l'Abonnement
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Type</label>
+                            <div id="subscriptionType">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Statut</label>
+                            <div id="subscriptionStatus">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Date de début</label>
+                            <div id="subscriptionStartDate">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Date de fin</label>
+                            <div id="subscriptionEndDate">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Repas par jour</label>
+                            <div id="mealsPerDay">...</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Prix hebdomadaire</label>
+                            <div class="fw-bold text-primary" id="weeklyPrice">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fs-4 fw-bold" id="totalSelectionsCount">0</div>
+                            <div class="small">Sélections Totales</div>
+                        </div>
+                        <i class="fas fa-utensils fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fs-4 fw-bold" id="pendingSelectionsCount">0</div>
+                            <div class="small">En Attente</div>
+                        </div>
+                        <i class="fas fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fs-4 fw-bold" id="completedSelectionsCount">0</div>
+                            <div class="small">Complétées</div>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fs-4 fw-bold" id="totalAmountPaid">0 MAD</div>
+                            <div class="small">Montant Payé</div>
+                        </div>
+                        <i class="fas fa-coins fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs for Detailed Information -->
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="detailsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="selections-tab" data-coreui-toggle="tab" data-coreui-target="#selections" type="button" role="tab">
+                        <i class="fas fa-utensils"></i> Sélections de Repas
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="payments-tab" data-coreui-toggle="tab" data-coreui-target="#payments" type="button" role="tab">
+                        <i class="fas fa-credit-card"></i> Historique des Paiements
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="history-tab" data-coreui-toggle="tab" data-coreui-target="#history" type="button" role="tab">
+                        <i class="fas fa-history"></i> Historique des Modifications
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="communications-tab" data-coreui-toggle="tab" data-coreui-target="#communications" type="button" role="tab">
+                        <i class="fas fa-envelope"></i> Communications
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="detailsTabsContent">
+                
+                <!-- Meal Selections Tab -->
+                <div class="tab-pane fade show active" id="selections" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Sélections de Repas</h6>
+                        <button class="btn btn-sm btn-outline-primary" id="addSelectionBtn">
+                            <i class="fas fa-plus"></i> Ajouter Sélection
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Jour</th>
+                                    <th>Type</th>
+                                    <th>Plat/Menu</th>
+                                    <th>Cuisine</th>
+                                    <th>Prix</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="selectionsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-utensils fa-2x mb-2"></i>
+                                        <div>Chargement des sélections...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div class="tab-pane fade" id="payments" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Historique des Paiements</h6>
+                        <button class="btn btn-sm btn-outline-success" id="recordPaymentBtn">
+                            <i class="fas fa-plus"></i> Enregistrer Paiement
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Montant</th>
+                                    <th>Méthode</th>
+                                    <th>Référence</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-credit-card fa-2x mb-2"></i>
+                                        <div>Chargement des paiements...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div class="tab-pane fade" id="history" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Historique des Modifications</h6>
+                        <button class="btn btn-sm btn-outline-info" id="refreshHistoryBtn">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                    </div>
+                    
+                    <div class="timeline" id="historyTimeline">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-2x mb-2"></i>
+                            <div>Chargement de l'historique...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communications Tab -->
+                <div class="tab-pane fade" id="communications" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Communications avec le Client</h6>
+                        <button class="btn btn-sm btn-outline-primary" id="sendMessageBtn">
+                            <i class="fas fa-envelope"></i> Envoyer Message
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Actions Rapides</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary btn-sm" id="sendReminderBtn">
+                                            <i class="fas fa-bell"></i> Envoyer Rappel
+                                        </button>
+                                        <button class="btn btn-outline-warning btn-sm" id="sendPaymentReminderBtn">
+                                            <i class="fas fa-credit-card"></i> Rappel de Paiement
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm" id="sendWelcomeMessageBtn">
+                                            <i class="fas fa-smile"></i> Message de Bienvenue
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Statistiques Communication</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2 text-center">
+                                        <div class="col-6">
+                                            <div class="border rounded p-2">
+                                                <div class="fw-bold" id="totalMessagesCount">0</div>
+                                                <small class="text-muted">Messages Envoyés</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="border rounded p-2">
+                                                <div class="fw-bold" id="lastContactDate">Jamais</div>
+                                                <small class="text-muted">Dernier Contact</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Subscription Modal -->
+<div class="modal fade" id="editSubscriptionModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier l'Abonnement</h5>
+                <button type="button" class="btn-close" data-coreui-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSubscriptionForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Type d'abonnement</label>
+                            <select class="form-select" id="editSubscriptionType">
+                                <option value="hebdo">Hebdomadaire</option>
+                                <option value="mensuel">Mensuel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" id="editSubscriptionStatus">
+                                <option value="en_confirmation">En Confirmation</option>
+                                <option value="actif">Actif</option>
+                                <option value="suspendu">Suspendu</option>
+                                <option value="expire">Expiré</option>
+                                <option value="annule">Annulé</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date de début</label>
+                            <input type="date" class="form-control" id="editStartDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date de fin</label>
+                            <input type="date" class="form-control" id="editEndDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Repas par jour</label>
+                            <input type="number" class="form-control" id="editMealsPerDay" min="1" max="3">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveSubscriptionChangesBtn">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+/**
+ * Subscription Details Manager
+ * Handles the detailed view of a specific subscription
+ */
+class SubscriptionDetailsManager {
+    constructor() {
+        this.subscriptionId = null;
+        this.subscriptionData = null;
+        this.currentTab = 'selections';
+        
+        // Get subscription ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        this.subscriptionId = urlParams.get('id') || this.getSubscriptionIdFromPath();
+        
+        if (!this.subscriptionId) {
+            this.showError('ID d\'abonnement manquant');
+            return;
+        }
+        
+        this.initialize();
+    }
+    
+    getSubscriptionIdFromPath() {
+        // Extract ID from path like /admin/abonnements/123
+        const pathParts = window.location.pathname.split('/');
+        return pathParts[pathParts.length - 1];
+    }
+    
+    async initialize() {
+        console.log('🚀 Initializing Subscription Details for ID:', this.subscriptionId);
+        
+        try {
+            this.bindEvents();
+            await this.loadSubscriptionData();
+            await this.loadSelections();
+            await this.loadPayments();
+            this.hideLoading();
+        } catch (error) {
+            console.error('❌ Error initializing subscription details:', error);
+            this.showError('Erreur lors du chargement des détails');
+        }
+    }
+    
+    bindEvents() {
+        // Tab switching
+        document.querySelectorAll('#detailsTabs .nav-link').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.currentTab = e.target.getAttribute('data-coreui-target').replace('#', '');
+                this.onTabSwitch(this.currentTab);
+            });
+        });
+        
+        // Action buttons
+        document.getElementById('editSubscriptionBtn')?.addEventListener('click', () => {
+            this.showEditModal();
+        });
+        
+        document.getElementById('suspendSubscriptionBtn')?.addEventListener('click', () => {
+            this.suspendSubscription();
+        });
+        
+        document.getElementById('activateSubscriptionBtn')?.addEventListener('click', () => {
+            this.activateSubscription();
+        });
+        
+        document.getElementById('saveSubscriptionChangesBtn')?.addEventListener('click', () => {
+            this.saveSubscriptionChanges();
+        });
+    }
+    
+    async loadSubscriptionData() {
+        console.log('📊 Loading subscription data...');
+        
+        try {
+            const response = await AdminAPI.request('GET', `/admin/abonnements/${this.subscriptionId}`);
+            
+            if (response.success) {
+                this.subscriptionData = response.data;
+                this.renderSubscriptionData();
+            } else {
+                throw new Error(response.message || 'Failed to load subscription');
+            }
+        } catch (error) {
+            console.error('❌ Error loading subscription:', error);
+            throw error;
+        }
+    }
+    
+    renderSubscriptionData() {
+        const data = this.subscriptionData;
+        
+        // Update header badges
+        document.getElementById('subscriptionIdBadge').textContent = `ID: ${data.id}`;
+        document.getElementById('subscriptionStatusBadge').className = `badge fs-6 bg-${data.statut_color}`;
+        document.getElementById('subscriptionStatusBadge').textContent = data.statut_label;
+        document.getElementById('subscriptionTypeBadge').textContent = data.type_label;
+        
+        // Customer information
+        document.getElementById('customerInitials').textContent = 
+            `${data.user.prenom.charAt(0)}${data.user.nom.charAt(0)}`;
+        document.getElementById('customerName').textContent = 
+            `${data.user.prenom} ${data.user.nom}`;
+        document.getElementById('customerEmail').textContent = data.user.email;
+        document.getElementById('customerPhone').textContent = data.user.telephone || 'Non renseigné';
+        // Use user address data from API
+        const userAddress = data.user.adresse || data.user.adresse_livraison || 'Adresse non renseignée';
+        document.getElementById('customerAddress').textContent = userAddress;
+        
+        // Subscription overview
+        document.getElementById('subscriptionType').textContent = data.type_label;
+        document.getElementById('subscriptionStatus').innerHTML = 
+            `<span class="badge bg-${data.statut_color}">${data.statut_label}</span>`;
+        document.getElementById('subscriptionStartDate').textContent = data.date_debut || 'Non définie';
+        document.getElementById('subscriptionEndDate').textContent = data.date_fin || 'Non définie';
+        document.getElementById('mealsPerDay').textContent = data.nb_repas;
+        document.getElementById('weeklyPrice').textContent = `${data.weekly_price} MAD`;
+        
+        // Statistics cards - use calculated data from API
+        const stats = data.selection_statistics || {};
+        document.getElementById('totalSelectionsCount').textContent = stats.total_selections || 0;
+        document.getElementById('pendingSelectionsCount').textContent = stats.pending_selections || 0;
+        document.getElementById('completedSelectionsCount').textContent = stats.completed_selections || 0;
+        document.getElementById('totalAmountPaid').textContent = `${stats.total_amount || '0.00'} MAD`;
+    }
+    
+    async loadSelections() {
+        // Load meal selections for this subscription
+        // This will be implemented based on the selections data
+        console.log('🍽️ Loading meal selections...');
+        
+        const tbody = document.getElementById('selectionsTableBody');
+        if (this.subscriptionData.selections && this.subscriptionData.selections.length > 0) {
+            tbody.innerHTML = this.subscriptionData.selections.map(selection => `
+                <tr>
+                    <td>${selection.date_selection}</td>
+                    <td>${this.getDayName(selection.date_selection)}</td>
+                    <td>${selection.type_selection}</td>
+                    <td>${selection.plat || selection.menu || 'Non sélectionné'}</td>
+                    <td>${selection.type_cuisine || 'N/A'}</td>
+                    <td>${selection.prix} MAD</td>
+                    <td><span class="badge bg-info">${selection.statut}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="detailsManager.editSelection(${selection.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="fas fa-utensils fa-2x mb-2"></i>
+                        <div>Aucune sélection de repas trouvée</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    async loadPayments() {
+        console.log('💳 Loading payment history...');
+        
+        try {
+            const response = await AdminAPI.request('GET', `/admin/abonnements/${this.subscriptionId}/payments`);
+            
+            const tbody = document.getElementById('paymentsTableBody');
+            if (response.success && response.data.payments.length > 0) {
+                tbody.innerHTML = response.data.payments.map(payment => `
+                    <tr>
+                        <td>${payment.date_creation}</td>
+                        <td>${payment.montant} MAD</td>
+                        <td>${payment.mode_paiement}</td>
+                        <td>${payment.reference_externe || 'N/A'}</td>
+                        <td><span class="badge bg-warning">${payment.statut}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="fas fa-credit-card fa-2x mb-2"></i>
+                            <div>Aucun paiement enregistré</div>
+                        </td>
+                    </tr>
+                `;
+            }
+        } catch (error) {
+            console.error('❌ Error loading payments:', error);
+        }
+    }
+    
+    onTabSwitch(tabId) {
+        console.log('🔄 Switching to tab:', tabId);
+        
+        switch(tabId) {
+            case 'selections':
+                this.loadSelections();
+                break;
+            case 'payments':
+                this.loadPayments();
+                break;
+            case 'history':
+                this.loadHistory();
+                break;
+            case 'communications':
+                this.loadCommunications();
+                break;
+        }
+    }
+    
+    loadHistory() {
+        // Load status change history
+        document.getElementById('historyTimeline').innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-history fa-2x mb-2"></i>
+                <div>Fonctionnalité d'historique sera disponible prochainement</div>
+            </div>
+        `;
+    }
+    
+    loadCommunications() {
+        // Load communication history
+        console.log('📧 Loading communications...');
+        document.getElementById('totalMessagesCount').textContent = '0';
+        document.getElementById('lastContactDate').textContent = 'Jamais';
+    }
+    
+    showEditModal() {
+        const data = this.subscriptionData;
+        
+        // Populate form with current data
+        document.getElementById('editSubscriptionType').value = data.type;
+        document.getElementById('editSubscriptionStatus').value = data.statut;
+        document.getElementById('editStartDate').value = data.date_debut;
+        document.getElementById('editEndDate').value = data.date_fin;
+        document.getElementById('editMealsPerDay').value = data.nb_repas;
+        
+        // Show modal
+        const modal = new coreui.Modal(document.getElementById('editSubscriptionModal'));
+        modal.show();
+    }
+    
+    async saveSubscriptionChanges() {
+        console.log('💾 Saving subscription changes...');
+        
+        const formData = {
+            type: document.getElementById('editSubscriptionType').value,
+            statut: document.getElementById('editSubscriptionStatus').value,
+            date_debut: document.getElementById('editStartDate').value,
+            date_fin: document.getElementById('editEndDate').value,
+            repas_par_jour: document.getElementById('editMealsPerDay').value
+        };
+        
+        try {
+            const response = await AdminAPI.request('PUT', `/admin/abonnements/${this.subscriptionId}`, formData);
+            
+            if (response.success) {
+                this.showNotification('Abonnement modifié avec succès', 'success');
+                await this.loadSubscriptionData(); // Refresh data
+                
+                // Hide modal
+                const modal = coreui.Modal.getInstance(document.getElementById('editSubscriptionModal'));
+                modal.hide();
+            } else {
+                throw new Error(response.message || 'Failed to update subscription');
+            }
+        } catch (error) {
+            console.error('❌ Error saving changes:', error);
+            this.showNotification('Erreur lors de la modification', 'error');
+        }
+    }
+    
+    async suspendSubscription() {
+        const result = await Swal.fire({
+            title: 'Suspendre l\'abonnement',
+            text: 'Êtes-vous sûr de vouloir suspendre cet abonnement ?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Oui, suspendre',
+            cancelButtonText: 'Annuler'
+        });
+        
+        if (result.isConfirmed) {
+            try {
+                const response = await AdminAPI.request('POST', '/admin/abonnements/status-update', {
+                    subscription_id: this.subscriptionId,
+                    new_status: 'suspendu'
+                });
+                
+                if (response.success) {
+                    this.showNotification('Abonnement suspendu', 'success');
+                    await this.loadSubscriptionData();
+                }
+            } catch (error) {
+                this.showNotification('Erreur lors de la suspension', 'error');
+            }
+        }
+    }
+    
+    async activateSubscription() {
+        try {
+            const response = await AdminAPI.request('POST', '/admin/abonnements/status-update', {
+                subscription_id: this.subscriptionId,
+                new_status: 'actif'
+            });
+            
+            if (response.success) {
+                this.showNotification('Abonnement activé', 'success');
+                await this.loadSubscriptionData();
+            }
+        } catch (error) {
+            this.showNotification('Erreur lors de l\'activation', 'error');
+        }
+    }
+    
+    getDayName(dateString) {
+        const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        const date = new Date(dateString);
+        return days[date.getDay()];
+    }
+    
+    hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        document.getElementById('subscriptionDetailsContent').style.display = 'block';
+    }
+    
+    showError(message) {
+        document.getElementById('loadingSpinner').innerHTML = `
+            <div class="text-center text-danger">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                <h4>Erreur</h4>
+                <p>${message}</p>
+                <button class="btn btn-outline-secondary" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </button>
+            </div>
+        `;
+    }
+    
+    showNotification(message, type = 'info') {
+        // Use the global notification system
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: type === 'success' ? 'Succès' : 'Information',
+                text: message,
+                icon: type,
+                timer: 3000,
+                showConfirmButton: false
+            });
+        } else {
+            alert(message);
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.detailsManager = new SubscriptionDetailsManager();
+});
+</script>
+{% endblock %} 

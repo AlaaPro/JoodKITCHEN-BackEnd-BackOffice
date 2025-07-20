@@ -9,17 +9,28 @@ use App\Entity\ClientProfile;
 use App\Entity\Menu;
 use App\Entity\Plat;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class AbonnementFixtures extends Fixture
+class AbonnementFixtures extends Fixture implements DependentFixtureInterface
 {
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher
     ) {}
 
+    public function getDependencies(): array
+    {
+        return [
+            AppFixtures::class,
+        ];
+    }
+
     public function load(ObjectManager $manager): void
     {
+        // Flush any pending entities from AppFixtures first
+        $manager->flush();
+        
         // Create additional demo clients first
         $demoClients = $this->createDemoClients($manager);
         
@@ -321,27 +332,54 @@ class AbonnementFixtures extends Fixture
 
     private function createMealSelections(ObjectManager $manager, Abonnement $abonnement): void
     {
+        // Flush to ensure we can query for Menu/Plat entities
+        $manager->flush();
+        
         // Get some existing menus/plats if they exist
         $menus = $manager->getRepository(Menu::class)->findAll();
         $plats = $manager->getRepository(Plat::class)->findAll();
         
-        if (empty($menus) && empty($plats)) {
-            return; // Skip if no menu data exists yet
+        // Create selections even if no specific menus/plats exist
+        // We'll create basic selections with default data
+        
+        // Create selections within the subscription's actual date range
+        $subscriptionStart = $abonnement->getDateDebut();
+        $subscriptionEnd = $abonnement->getDateFin();
+        $now = new \DateTime();
+        
+        // Create selections for a reasonable range within the subscription
+        // For demo purposes, create selections from subscription start to a reasonable future date
+        $startDate = $subscriptionStart;
+        $threeWeeksLater = new \DateTime($subscriptionStart->format('Y-m-d'));
+        $threeWeeksLater->modify('+3 weeks');
+        $endDate = min($subscriptionEnd, $threeWeeksLater);
+        
+        // Ensure we have at least a week of data from subscription start
+        $oneWeekLater = new \DateTime($subscriptionStart->format('Y-m-d'));
+        $oneWeekLater->modify('+1 week');
+        $endDate = max($endDate, $oneWeekLater);
+        
+        // Skip if date range doesn't make sense
+        if ($startDate > $endDate) {
+            return;
         }
-
-        // Create some sample selections for the past week
-        $startDate = new \DateTime('-1 week');
-        $endDate = new \DateTime('+1 week');
-        $cuisineTypes = ['moroccan', 'italian', 'international'];
+        
+        $cuisineTypes = ['marocain', 'italien', 'international'];
 
         for ($date = clone $startDate; $date <= $endDate; $date->modify('+1 day')) {
-            // Skip weekends for some variety
-            if (in_array($date->format('N'), ['6', '7']) && rand(0, 100) < 30) {
+            // Skip weekends for variety
+            if (in_array($date->format('N'), ['6', '7']) && rand(0, 100) < 60) {
                 continue;
             }
+            
+            // Add randomness - not every subscription has selections every day
+            if (rand(0, 100) < 30) {
+                continue; // Skip this day randomly
+            }
 
-            // Create 1-2 selections per day based on repasParJour
-            $selectionsCount = min($abonnement->getRepasParJour(), 2);
+            // Create 1-2 selections per day based on repasParJour, with some randomness
+            $maxSelections = min($abonnement->getRepasParJour(), 2);
+            $selectionsCount = rand(1, $maxSelections);
             
             for ($i = 0; $i < $selectionsCount; $i++) {
                 $selection = new AbonnementSelection();
@@ -350,7 +388,7 @@ class AbonnementFixtures extends Fixture
                 $selection->setCuisineType($cuisineTypes[array_rand($cuisineTypes)]);
                 $selection->setJourSemaine($this->getFrenchDayName($date));
                 
-                // Assign a random menu or plat if available
+                // Assign a random menu or plat if available, otherwise create with defaults
                 if (!empty($menus)) {
                     $selection->setMenu($menus[array_rand($menus)]);
                     $selection->setTypeSelection('menu_du_jour');
@@ -360,8 +398,10 @@ class AbonnementFixtures extends Fixture
                     $selection->setTypeSelection('plat_individuel');
                     $selection->setPrix('12.00');
                 } else {
+                    // Create selection even without specific menu/plat
                     $selection->setTypeSelection('menu_normal');
                     $selection->setPrix('10.00');
+                    $selection->setNotes('Menu standard - ' . $selection->getCuisineType());
                 }
                 
                 // Set realistic status distribution

@@ -380,12 +380,19 @@ class AbonnementSelectionController extends AbstractController
                 ], 400);
             }
 
-            // Get all selections for this date
-            $selections = $this->selectionRepository->findBy(['dateRepas' => $dateObj]);
+            // Get all selections for this date, then filter by abonnement status
+            $allSelections = $this->selectionRepository->findBy(['dateRepas' => $dateObj]);
+            
+            // Filter to only include active and pending confirmation subscriptions
+            $selections = array_filter($allSelections, function($selection) {
+                $status = $selection->getAbonnement()->getStatut();
+                return in_array($status, ['actif', 'en_confirmation']);
+            });
             
             // Get statistics for this day
             $totalSelections = count($selections);
-            $completedSelections = count(array_filter($selections, fn($s) => $s->getStatut() === 'confirme'));
+            // Use same logic as calendar: complete = 'confirme', 'prepare', or 'livre'
+            $completedSelections = count(array_filter($selections, fn($s) => in_array($s->getStatut(), ['confirme', 'prepare', 'livre'])));
             $incompleteSelections = $totalSelections - $completedSelections;
             
             // Count by cuisine type
@@ -399,7 +406,8 @@ class AbonnementSelectionController extends AbstractController
             // Get incomplete subscriptions details
             $incompleteSubscriptions = [];
             foreach ($selections as $selection) {
-                if ($selection->getStatut() !== 'confirme') {
+                // Use same logic as calendar: incomplete = NOT in ['confirme', 'prepare', 'livre']
+                if (!in_array($selection->getStatut(), ['confirme', 'prepare', 'livre'])) {
                     $user = $selection->getAbonnement()->getUser();
                     $incompleteSubscriptions[] = [
                         'id' => $selection->getAbonnement()->getId(),
@@ -411,8 +419,10 @@ class AbonnementSelectionController extends AbstractController
                 }
             }
             
-            // Count active subscriptions for this day
-            $activeSubscriptions = $this->abonnementRepository->count(['statut' => 'actif']);
+            // Count active and pending confirmation subscriptions
+            $activeCount = $this->abonnementRepository->count(['statut' => 'actif']);
+            $pendingCount = $this->abonnementRepository->count(['statut' => 'en_confirmation']);
+            $activeSubscriptions = $activeCount + $pendingCount;
 
             return new JsonResponse([
                 'success' => true,

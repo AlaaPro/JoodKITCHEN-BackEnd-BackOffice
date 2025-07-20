@@ -80,6 +80,7 @@ class AbonnementController extends AbstractController
                         'telephone' => $abonnement->getUser()->getTelephone(),
                     ],
                     'type' => $abonnement->getType(),
+                    'type_label' => $abonnement->getTypeLabel(),
                     'statut' => $abonnement->getStatut(),
                     'statut_label' => $abonnement->getStatutLabel(),
                     'statut_color' => $abonnement->getStatusColor(),
@@ -88,6 +89,9 @@ class AbonnementController extends AbstractController
                     'date_debut' => $abonnement->getDateDebut()?->format('Y-m-d'),
                     'date_fin' => $abonnement->getDateFin()?->format('Y-m-d'),
                     'montant' => $abonnement->calculateWeeklyPrice(), // Calculate price from selections
+                    'weekly_price' => $abonnement->calculateWeeklyPrice(), // Frontend expects this field name
+                    'discount_rate' => $abonnement->getWeeklyDiscountRate() * 100, // Convert to percentage
+                    'selections_count' => $abonnement->getSelections()->count(), // Number of meal selections
                     'mode_paiement' => 'cmi', // Default for now - TODO: add property to entity
                     'nb_repas' => $abonnement->getRepasParJour(),
                     'requires_cmi_payment' => $abonnement->requiresCMIPayment(),
@@ -189,24 +193,69 @@ class AbonnementController extends AbstractController
         try {
             $weekStart = $request->query->get('week_start', date('Y-m-d', strtotime('monday this week')));
             
-            // TODO: Implement actual calendar data retrieval
-            // This would get meal selections for the week
+            // Get real meal selections for the week
+            $weekEnd = date('Y-m-d', strtotime($weekStart . ' +6 days'));
+            
+            $selections = $this->selectionRepository->createQueryBuilder('s')
+                ->leftJoin('s.abonnement', 'a')
+                ->leftJoin('a.user', 'u')
+                ->addSelect('a', 'u')
+                ->where('s.dateRepas BETWEEN :weekStart AND :weekEnd')
+                ->andWhere('a.statut IN (:allowedStatuses)')
+                ->setParameter('weekStart', new \DateTime($weekStart))
+                ->setParameter('weekEnd', new \DateTime($weekEnd))
+                ->setParameter('allowedStatuses', ['actif', 'en_confirmation'])
+                ->orderBy('s.dateRepas', 'ASC')
+                ->getQuery()
+                ->getResult();
             
             $dailyData = [];
+            $totalWeekSelections = 0;
+            
             for ($i = 0; $i < 7; $i++) {
                 $date = date('Y-m-d', strtotime($weekStart . ' +' . $i . ' days'));
                 $dayName = date('l', strtotime($date));
                 
+                // Filter selections for this specific date
+                $daySelections = array_filter($selections, function($selection) use ($date) {
+                    return $selection->getDateRepas()?->format('Y-m-d') === $date;
+                });
+                
+                // Count by cuisine type
+                $cuisineCounts = ['marocain' => 0, 'italien' => 0, 'international' => 0];
+                $incompleteCount = 0;
+                
+                foreach ($daySelections as $selection) {
+                    $cuisine = $selection->getCuisineType();
+                    if ($cuisine && isset($cuisineCounts[$cuisine])) {
+                        $cuisineCounts[$cuisine]++;
+                    }
+                    
+                    // Count incomplete selections (not confirmed/completed)
+                    if (!in_array($selection->getStatut(), ['confirme', 'prepare', 'livre'])) {
+                        $incompleteCount++;
+                    }
+                }
+                
+                $dayTotalSelections = count($daySelections);
+                $totalWeekSelections += $dayTotalSelections;
+                
                 $dailyData[] = [
                     'date' => $date,
                     'day_name' => $dayName,
-                    'cuisine_counts' => [
-                        'marocain' => rand(0, 15),
-                        'italien' => rand(0, 10),
-                        'international' => rand(0, 8)
-                    ],
-                    'total_selections' => rand(10, 33),
-                    'incomplete_count' => rand(0, 5)
+                    'cuisine_counts' => $cuisineCounts,
+                    'total_selections' => $dayTotalSelections,
+                    'incomplete_count' => $incompleteCount,
+                    'selections' => array_map(function($selection) {
+                        return [
+                            'id' => $selection->getId(),
+                            'user_name' => $selection->getAbonnement()->getUser()->getPrenom() . ' ' . $selection->getAbonnement()->getUser()->getNom(),
+                            'cuisine_type' => $selection->getCuisineType(),
+                            'statut' => $selection->getStatut(),
+                            'plat_nom' => $selection->getPlat()?->getNom(),
+                            'menu_nom' => $selection->getMenu()?->getNom(),
+                        ];
+                    }, $daySelections)
                 ];
             }
 
@@ -214,6 +263,8 @@ class AbonnementController extends AbstractController
                 'success' => true,
                 'data' => [
                     'week_start' => $weekStart,
+                    'week_end' => $weekEnd,
+                    'total_week_selections' => $totalWeekSelections,
                     'daily_data' => $dailyData
                 ]
             ]);
@@ -277,8 +328,12 @@ class AbonnementController extends AbstractController
                     'prenom' => $abonnement->getUser()->getPrenom(),
                     'email' => $abonnement->getUser()->getEmail(),
                     'telephone' => $abonnement->getUser()->getTelephone(),
+                    'adresse' => $abonnement->getUser()->getAdresse(),
+                    'ville' => $abonnement->getUser()->getVille(),
+                    'adresse_livraison' => $abonnement->getUser()->getClientProfile()?->getAdresseLivraison(),
                 ],
                 'type' => $abonnement->getType(),
+                'type_label' => $abonnement->getTypeLabel(),
                 'statut' => $abonnement->getStatut(),
                 'statut_label' => $abonnement->getStatutLabel(),
                 'statut_color' => $abonnement->getStatusColor(),
@@ -287,6 +342,9 @@ class AbonnementController extends AbstractController
                 'date_debut' => $abonnement->getDateDebut()?->format('Y-m-d'),
                 'date_fin' => $abonnement->getDateFin()?->format('Y-m-d'),
                 'montant' => $abonnement->calculateWeeklyPrice(), // Calculate price from selections
+                'weekly_price' => $abonnement->calculateWeeklyPrice(), // Frontend expects this field name
+                'discount_rate' => $abonnement->getWeeklyDiscountRate() * 100, // Convert to percentage
+                'selections_count' => $abonnement->getSelections()->count(), // Number of meal selections
                 'mode_paiement' => 'cmi', // Default for now - TODO: add property to entity
                 'nb_repas' => $abonnement->getRepasParJour(),
                 'requires_cmi_payment' => $abonnement->requiresCMIPayment(),
@@ -297,6 +355,33 @@ class AbonnementController extends AbstractController
 
             // Get meal selections for this subscription
             $selections = $this->selectionRepository->findBy(['abonnement' => $abonnement]);
+            
+            // Calculate selection statistics
+            $totalSelections = count($selections);
+            $completedSelections = 0;
+            $pendingSelections = 0;
+            $totalAmountPaid = 0.0;
+            
+            foreach ($selections as $selection) {
+                // Count completed vs pending selections
+                if (in_array($selection->getStatut(), ['confirme', 'prepare', 'livre'])) {
+                    $completedSelections++;
+                } else {
+                    $pendingSelections++;
+                }
+                
+                // Sum up selection prices
+                $totalAmountPaid += (float) $selection->getPrix();
+            }
+            
+            // Add statistics to response
+            $data['selection_statistics'] = [
+                'total_selections' => $totalSelections,
+                'completed_selections' => $completedSelections,
+                'pending_selections' => $pendingSelections,
+                'total_amount' => number_format($totalAmountPaid, 2)
+            ];
+            
             $data['selections'] = array_map(function ($selection) {
                 return [
                     'id' => $selection->getId(),
@@ -661,18 +746,36 @@ class AbonnementController extends AbstractController
                 ], 404);
             }
 
-            // TODO: Get actual payment records from Payment entity
-            $payments = [
-                [
-                    'id' => 1,
-                    'montant' => $abonnement->calculateWeeklyPrice(),
-                    'mode_paiement' => 'cmi', // Default for now - TODO: add property to entity
-                    'statut' => 'en_attente',
-                    'date_creation' => $abonnement->getCreatedAt()->format('Y-m-d H:i:s'),
-                    'date_traitement' => null,
-                    'reference_externe' => null
-                ]
-            ];
+            // Get actual payment records from Payment entity
+            $paymentEntities = $this->entityManager->getRepository(\App\Entity\Payment::class)
+                ->findBy(['abonnement' => $abonnement]);
+            
+            $payments = array_map(function($payment) {
+                return [
+                    'id' => $payment->getId(),
+                    'montant' => $payment->getMontant(),
+                    'mode_paiement' => $payment->getMethodePaiement(),
+                    'statut' => $payment->getStatut(),
+                    'date_creation' => $payment->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'date_traitement' => $payment->getDatePaiement()?->format('Y-m-d H:i:s'),
+                    'reference_externe' => $payment->getReferenceTransaction()
+                ];
+            }, $paymentEntities);
+            
+            // If no payments exist, create a placeholder for UI
+            if (empty($payments)) {
+                $payments = [
+                    [
+                        'id' => null,
+                        'montant' => $abonnement->calculateWeeklyPrice(),
+                        'mode_paiement' => 'cmi',
+                        'statut' => 'en_attente',
+                        'date_creation' => $abonnement->getCreatedAt()->format('Y-m-d H:i:s'),
+                        'date_traitement' => null,
+                        'reference_externe' => 'À créer'
+                    ]
+                ];
+            }
 
             return new JsonResponse([
                 'success' => true,
