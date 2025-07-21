@@ -35,7 +35,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">1.247</div>
+                        <div class="widget-value" data-stat="totalClients">-</div>
                         <div class="widget-label">Total Clients</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -51,7 +51,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">89</div>
+                        <div class="widget-value" data-stat="newClients">-</div>
                         <div class="widget-label">Nouveaux (30j)</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -67,7 +67,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">456</div>
+                        <div class="widget-value" data-stat="activeClients">-</div>
                         <div class="widget-label">Clients actifs</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -83,7 +83,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
-                        <div class="widget-value">42.5€</div>
+                        <div class="widget-value" data-stat="averageOrder">-</div>
                         <div class="widget-label">Panier moyen</div>
                     </div>
                     <div class="flex-shrink-0">
@@ -109,43 +109,50 @@
         <div class="row g-3">
             <div class="col-md-3">
                 <label class="form-label">Recherche</label>
-                <input type="text" class="form-control" placeholder="Nom, email, téléphone...">
+                <input type="text" class="form-control" id="clientSearchInput" placeholder="Nom, email, téléphone...">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Statut</label>
-                <select class="form-select">
+                <select class="form-select" name="status">
                     <option value="">Tous</option>
                     <option value="active">Actif</option>
                     <option value="inactive">Inactif</option>
-                    <option value="vip">VIP</option>
                 </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label">Date d'inscription</label>
-                <input type="date" class="form-control">
+                <input type="date" class="form-control" name="date">
             </div>
             <div class="col-md-2">
                 <label class="form-label">Zone</label>
-                <select class="form-select">
+                <select class="form-select" name="zone">
                     <option value="">Toutes</option>
-                    <option value="paris">Paris</option>
-                    <option value="banlieue">Banlieue</option>
-                    <option value="province">Province</option>
+                    <option value="casablanca">Casablanca</option>
+                    <option value="rabat">Rabat</option>
+                    <option value="marrakech">Marrakech</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" id="searchBtn">
                         <i class="fas fa-search"></i> Rechercher
                     </button>
-                    <button class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" type="reset">
                         <i class="fas fa-times"></i> Reset
                     </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Loading State -->
+<div id="loadingState" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-3 text-muted">Chargement des clients...</p>
 </div>
 
 <!-- Users Table -->
@@ -155,7 +162,7 @@
             <h4 class="card-title mb-0">Liste des Clients</h4>
             <div class="d-flex align-items-center gap-2">
                 <span class="text-muted small">Affichage:</span>
-                <select class="form-select form-select-sm" style="width: auto;">
+                <select class="form-select form-select-sm" style="width: auto;" id="perPageSelect">
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
@@ -169,225 +176,29 @@
                 <thead>
                     <tr>
                         <th class="ps-4">
-                            <input type="checkbox" class="form-check-input">
+                            <input type="checkbox" class="form-check-input" id="selectAll">
                         </th>
-                        <th>Client</th>
-                        <th>Contact</th>
-                        <th>Inscription</th>
+                        <th data-sort="nom" class="sortable">Client <i class="fas fa-sort"></i></th>
+                        <th data-sort="email" class="sortable">Contact <i class="fas fa-sort"></i></th>
+                        <th data-sort="createdAt" class="sortable">Inscription <i class="fas fa-sort"></i></th>
                         <th>Commandes</th>
                         <th>Total dépensé</th>
-                        <th>Statut</th>
+                        <th data-sort="isActive" class="sortable">Statut <i class="fas fa-sort"></i></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="ps-4">
-                            <input type="checkbox" class="form-check-input">
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Marie Dubois</div>
-                                    <small class="text-muted">#CLT-001</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div>marie.dubois@email.com</div>
-                            <small class="text-muted">+33 6 12 34 56 78</small>
-                        </td>
-                        <td>
-                            <div>15/03/2023</div>
-                            <small class="text-muted">Il y a 8 mois</small>
-                        </td>
-                        <td>
-                            <span class="fw-bold jood-primary">23</span> commandes
-                            <div><small class="text-muted">Dernière: 12/12/2023</small></div>
-                        </td>
-                        <td class="fw-bold jood-primary">542.80€</td>
-                        <td>
-                            <span class="badge jood-warning-bg">VIP</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Voir profil">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-info" title="Historique">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="ps-4">
-                            <input type="checkbox" class="form-check-input">
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Jean Martin</div>
-                                    <small class="text-muted">#CLT-002</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div>jean.martin@email.com</div>
-                            <small class="text-muted">+33 6 98 76 54 32</small>
-                        </td>
-                        <td>
-                            <div>28/11/2023</div>
-                            <small class="text-muted">Il y a 2 semaines</small>
-                        </td>
-                        <td>
-                            <span class="fw-bold jood-primary">3</span> commandes
-                            <div><small class="text-muted">Dernière: 10/12/2023</small></div>
-                        </td>
-                        <td class="fw-bold jood-primary">89.50€</td>
-                        <td>
-                            <span class="badge jood-primary-bg">Actif</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Voir profil">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-info" title="Historique">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="ps-4">
-                            <input type="checkbox" class="form-check-input">
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Sophie Bernard</div>
-                                    <small class="text-muted">#CLT-003</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div>sophie.bernard@email.com</div>
-                            <small class="text-muted">+33 6 11 22 33 44</small>
-                        </td>
-                        <td>
-                            <div>05/07/2023</div>
-                            <small class="text-muted">Il y a 5 mois</small>
-                        </td>
-                        <td>
-                            <span class="fw-bold jood-primary">12</span> commandes
-                            <div><small class="text-muted">Dernière: 01/12/2023</small></div>
-                        </td>
-                        <td class="fw-bold jood-primary">287.20€</td>
-                        <td>
-                            <span class="badge jood-primary-bg">Actif</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Voir profil">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-info" title="Historique">
-                                    <i class="fas fa-history"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td class="ps-4">
-                            <input type="checkbox" class="form-check-input">
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="green-icon-bg me-3" style="opacity: 0.5;">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">Pierre Durand</div>
-                                    <small class="text-muted">#CLT-004</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div>pierre.durand@email.com</div>
-                            <small class="text-muted">+33 6 55 66 77 88</small>
-                        </td>
-                        <td>
-                            <div>12/01/2023</div>
-                            <small class="text-muted">Il y a 11 mois</small>
-                        </td>
-                        <td>
-                            <span class="fw-bold text-muted">1</span> commande
-                            <div><small class="text-muted">Dernière: 15/01/2023</small></div>
-                        </td>
-                        <td class="fw-bold text-muted">24.90€</td>
-                        <td>
-                            <span class="badge bg-secondary">Inactif</span>
-                        </td>
-                        <td>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" title="Voir profil">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-success" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-outline-warning" title="Réactiver">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    <!-- Dynamic content will be loaded here -->
                 </tbody>
             </table>
         </div>
     </div>
     <div class="card-footer">
         <div class="d-flex justify-content-between align-items-center">
-            <span class="text-muted">Affichage de 1 à 10 sur 1247 clients</span>
+            <span class="text-muted" id="paginationInfo">Chargement...</span>
             <nav>
-                <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item disabled">
-                        <span class="page-link">Précédent</span>
-                    </li>
-                    <li class="page-item active">
-                        <span class="page-link">1</span>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">2</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">3</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Suivant</a>
-                    </li>
+                <ul class="pagination pagination-sm mb-0" id="pagination">
+                    <!-- Pagination will be dynamically generated -->
                 </ul>
             </nav>
         </div>
@@ -406,15 +217,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Clients VIP actifs</span>
-                    <span class="fw-bold jood-primary">23</span>
+                    <span class="fw-bold jood-primary" id="vipActiveCount">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>CA VIP ce mois</span>
-                    <span class="fw-bold jood-primary">2.840€</span>
+                    <span class="fw-bold jood-primary" id="vipRevenue">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span>Panier moyen VIP</span>
-                    <span class="fw-bold jood-primary">67.50€</span>
+                    <span class="fw-bold jood-primary" id="vipAverageOrder">-</span>
                 </div>
             </div>
         </div>
@@ -430,15 +241,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Taux de rétention</span>
-                    <span class="fw-bold jood-primary">78%</span>
+                    <span class="fw-bold jood-primary" id="retentionRate">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Fréquence moyenne</span>
-                    <span class="fw-bold jood-primary">2.3/mois</span>
+                    <span class="fw-bold jood-primary" id="orderFrequency">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span>Note satisfaction</span>
-                    <span class="fw-bold jood-primary">4.7/5</span>
+                    <span class="fw-bold jood-primary" id="satisfactionRate">-</span>
                 </div>
             </div>
         </div>
@@ -454,15 +265,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Clients inactifs 30j+</span>
-                    <span class="fw-bold text-danger">156</span>
+                    <span class="fw-bold text-danger" id="inactiveCount">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>Commandes annulées</span>
-                    <span class="fw-bold text-warning">12</span>
+                    <span class="fw-bold text-warning" id="cancelledOrders">-</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
                     <span>Retours produits</span>
-                    <span class="fw-bold text-info">3</span>
+                    <span class="fw-bold text-info" id="productReturns">-</span>
                 </div>
             </div>
         </div>
@@ -471,25 +282,16 @@
 {% endblock %}
 
 {% block javascripts %}
+{{ parent() }}
+<script src="{{ asset('js/admin/managers/client-manager.js') }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle filters panel
-    const toggleBtn = document.getElementById('toggleFilters');
-    const filtersPanel = document.getElementById('filtersPanel');
+    // Initialize Client Manager
+    let clientManager;
     
-    toggleBtn.addEventListener('click', function() {
-        filtersPanel.style.display = filtersPanel.style.display === 'none' ? 'block' : 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔧 Initializing Client Management...');
+        clientManager = new ClientManager();
+        console.log('✅ Client Manager initialized');
     });
-    
-    // Select all checkboxes
-    const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
-    const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-    
-    selectAllCheckbox.addEventListener('change', function() {
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
-});
 </script>
 {% endblock %} 
