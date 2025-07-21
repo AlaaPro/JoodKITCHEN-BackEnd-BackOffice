@@ -196,7 +196,32 @@ class ClientManager {
         const lastOrder = client.last_order;
         const timeAgo = this.getTimeAgo(client.created_at);
         const commandeCount = client.total_orders || 0;
+        const hasActiveOrders = commandeCount > 0 && lastOrder?.statut !== 'livre' && lastOrder?.statut !== 'annule';
         
+        // Actions column
+        const actions = `
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-primary" onclick="clientManager.showClientDetails(${client.id})" title="Voir détails">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        `;
+
+        // Status column with toggle switch
+        const statusToggle = `
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" 
+                    id="statusToggle_${client.id}" 
+                    ${client.is_active ? 'checked' : ''} 
+                    onchange="clientManager.toggleClientStatus(${client.id}, this.checked)">
+                <label class="form-check-label" for="statusToggle_${client.id}">
+                    <span class="badge ${client.is_active ? 'jood-primary-bg' : 'bg-secondary'}">
+                        ${client.is_active ? 'Actif' : 'Inactif'}
+                    </span>
+                </label>
+            </div>
+        `;
+
         return `
             <tr data-client-id="${client.id}">
                 <td class="ps-4">
@@ -205,7 +230,10 @@ class ClientManager {
                 <td>
                     <div class="d-flex align-items-center">
                         <div class="green-icon-bg me-3">
-                            <i class="fas fa-user"></i>
+                            ${client.photo_profil_url 
+                                ? `<img src="${client.photo_profil_url}" alt="${client.nom}" class="profile-picture-img">`
+                                : `<i class="fas fa-user"></i>`
+                            }
                         </div>
                         <div>
                             <div class="fw-semibold">${client.prenom} ${client.nom}</div>
@@ -234,20 +262,10 @@ class ClientManager {
                     ${this.formatPrice(client.total_spent || 0)}
                 </td>
                 <td>
-                    ${this.generateStatusBadge(client.is_active)}
+                    ${statusToggle}
                 </td>
                 <td>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" onclick="clientManager.showClientDetails(${client.id})" title="Voir profil">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-outline-success" onclick="clientManager.showEditModal(${client.id})" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-outline-info" onclick="clientManager.showHistory(${client.id})" title="Historique">
-                            <i class="fas fa-history"></i>
-                        </button>
-                    </div>
+                    ${actions}
                 </td>
             </tr>
         `;
@@ -404,6 +422,218 @@ class ClientManager {
         }
         const years = Math.floor(diffDays / 365);
         return `Il y a ${years} an${years > 1 ? 's' : ''}`;
+    }
+
+    async showClientDetails(clientId) {
+        try {
+            console.log('🔍 Loading client details for ID:', clientId);
+            
+            // Get modal elements
+            const modal = new coreui.Modal(document.getElementById('clientDetailsModal'));
+            const modalBody = document.querySelector('#clientDetailsModal .modal-body');
+            const originalContent = modalBody.innerHTML;
+            
+            // Show modal first
+            modal.show();
+            
+            // Show loading state while preserving modal structure
+            const loadingHtml = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Chargement des détails du client...</p>
+                </div>
+            `;
+            
+            // Create a temporary container for loading state
+            const loadingContainer = document.createElement('div');
+            loadingContainer.innerHTML = loadingHtml;
+            modalBody.appendChild(loadingContainer);
+            
+            // Hide original content
+            Array.from(modalBody.children).forEach(child => {
+                if (child !== loadingContainer) {
+                    child.style.display = 'none';
+                }
+            });
+            
+            try {
+                // Load client details
+                const response = await ClientAPI.getClientDetails(clientId);
+                
+                if (!response || !response.success) {
+                    throw new Error('Failed to load client details');
+                }
+                
+                const client = response.data;
+                
+                // Load client history
+                const historyResponse = await ClientAPI.getClientHistory(clientId);
+                const history = historyResponse.success ? historyResponse.data : null;
+                
+                // Remove loading state and show original content
+                loadingContainer.remove();
+                Array.from(modalBody.children).forEach(child => {
+                    child.style.display = '';
+                });
+                
+                // Update modal content
+                this.updateClientDetailsModal(client, history);
+                
+            } catch (error) {
+                // In case of error, restore original content
+                modalBody.innerHTML = originalContent;
+                throw error;
+            }
+            
+        } catch (error) {
+            console.error('Error showing client details:', error);
+            AdminUtils.showAlert('Erreur lors du chargement des détails du client', 'error');
+            
+            // Close modal on error
+            const modal = coreui.Modal.getInstance(document.getElementById('clientDetailsModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    }
+
+    updateClientDetailsModal(client, history) {
+        // Helper function to safely update element text content
+        const updateElement = (id, content) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = content;
+            }
+        };
+
+        // Update profile picture
+        updateElement('clientDetailsPicture', client.photo_profil_url 
+            ? `<img src="${client.photo_profil_url}" alt="${client.nom}" class="profile-picture-img">`
+            : `<img src="/uploads/profile_pictures/default.jpg" alt="Default" class="profile-picture-img">`
+        );
+
+        // Update client name and ID
+        updateElement('clientDetailsName', `${client.prenom} ${client.nom}`);
+        updateElement('clientDetailsId', `#CLT-${String(client.id).padStart(3, '0')}`);
+
+        // Update personal information
+        updateElement('clientDetailsLastName', client.nom);
+        updateElement('clientDetailsFirstName', client.prenom);
+        updateElement('clientDetailsEmail', client.email);
+        updateElement('clientDetailsPhone', client.telephone || 'Non renseigné');
+        updateElement('clientDetailsStatus', `<span class="badge ${client.is_active ? 'jood-primary-bg' : 'bg-secondary'}">${client.is_active ? 'Actif' : 'Inactif'}</span>`);
+        updateElement('clientDetailsCreatedAt', new Date(client.created_at).toLocaleDateString('fr-FR'));
+
+        // Update order information
+        const orderCount = history?.orders?.length || 0;
+        const totalSpent = history?.orders?.reduce((sum, order) => sum + parseFloat(order.total || 0), 0) || 0;
+        const lastOrder = history?.orders?.[0];  // Orders should be sorted by date desc
+
+        updateElement('clientDetailsTotalOrders', `${orderCount} commande${orderCount > 1 ? 's' : ''}`);
+        updateElement('clientDetailsLastOrder', lastOrder 
+            ? `${new Date(lastOrder.date).toLocaleDateString('fr-FR')} (${this.formatPrice(lastOrder.total)})`
+            : 'Aucune commande'
+        );
+        updateElement('clientDetailsTotalSpent', this.formatPrice(totalSpent));
+        updateElement('clientDetailsPoints', client.client_profile?.points_fidelite || 0);
+        updateElement('clientDetailsAddress', client.client_profile?.adresse_livraison || 'Non renseignée');
+
+        // Update order history table
+        const ordersTableBody = document.querySelector('#clientOrdersTable tbody');
+        if (ordersTableBody) {
+            if (!history?.orders || history.orders.length === 0) {
+                ordersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            Aucun historique de commandes
+                        </td>
+                    </tr>
+                `;
+            } else {
+                ordersTableBody.innerHTML = history.orders.map(order => `
+                    <tr>
+                        <td>${new Date(order.date).toLocaleDateString('fr-FR')}</td>
+                        <td>#CMD-${String(order.id).padStart(3, '0')}</td>
+                        <td><span class="badge ${this.getOrderStatusClass(order.statut)}">${this.getOrderStatusLabel(order.statut)}</span></td>
+                        <td>${this.formatPrice(order.total)}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    }
+
+    getOrderStatusClass(status) {
+        const statusClasses = {
+            'en_livraison': 'bg-info',
+            'livre': 'bg-success',
+            'en_preparation': 'bg-warning',
+            'annule': 'bg-danger',
+            'en_attente': 'bg-secondary'
+        };
+        return statusClasses[status] || 'bg-secondary';
+    }
+
+    getOrderStatusLabel(status) {
+        const statusLabels = {
+            'en_livraison': 'En livraison',
+            'livre': 'Livrée',
+            'en_preparation': 'En préparation',
+            'annule': 'Annulée',
+            'en_attente': 'En attente'
+        };
+        return statusLabels[status] || status;
+    }
+
+    // Add toggle status handler
+    async toggleClientStatus(clientId, isActive) {
+        try {
+            // Get token from AdminAuth
+            const token = AdminAuth.getToken();
+            if (!token) {
+                throw new Error('Not authenticated');
+            }
+
+            const response = await fetch(`/api/clients/${clientId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ is_active: isActive })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Failed to update status');
+            }
+
+            const data = await response.json();
+
+            // Update the badge text and class
+            const label = document.querySelector(`#statusToggle_${clientId}`).nextElementSibling;
+            const badge = label.querySelector('.badge');
+            badge.className = `badge ${isActive ? 'jood-primary-bg' : 'bg-secondary'}`;
+            badge.textContent = isActive ? 'Actif' : 'Inactif';
+
+            // Show success message
+            this.showNotification('success', data.message || `Le statut du client a été ${isActive ? 'activé' : 'désactivé'}`);
+
+        } catch (error) {
+            console.error('Error toggling client status:', error);
+            // Revert the toggle if there was an error
+            document.querySelector(`#statusToggle_${clientId}`).checked = !isActive;
+            this.showNotification('error', error.message || 'Erreur lors de la mise à jour du statut');
+        }
+    }
+
+    showNotification(type, message) {
+        // You can implement this using your preferred notification library
+        // For now, we'll use a simple alert
+        alert(message);
     }
 }
 

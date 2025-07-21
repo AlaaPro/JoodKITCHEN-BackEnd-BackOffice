@@ -518,4 +518,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
+
+    public function hasActiveOrders(): bool
+    {
+        foreach ($this->commandes as $commande) {
+            if (!in_array($commande->getStatut(), ['livre', 'annule'])) {
+                return true;
+            }
+        }
+        return false;
+    }
 } 

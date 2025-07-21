@@ -279,19 +279,97 @@
         </div>
     </div>
 </div>
+
+<!-- Client Details Modal -->
+<div class="modal fade" id="clientDetailsModal" tabindex="-1" aria-labelledby="clientDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header jood-gradient">
+                <h5 class="modal-title text-white" id="clientDetailsModalLabel">
+                    <i class="fas fa-user"></i> Détails du Client
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-coreui-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Profile Picture Section -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <div class="profile-picture-container profile-picture-lg">
+                            <div class="profile-picture-wrapper" id="clientDetailsPicture">
+                                <!-- Profile picture will be inserted here -->
+                            </div>
+                        </div>
+                        <h5 class="mt-3 mb-1" id="clientDetailsName"></h5>
+                        <p class="text-muted" id="clientDetailsId"></p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 jood-primary-color">Informations Personnelles</h6>
+                        <table class="table table-borderless">
+                            <tr><td><strong>Nom:</strong></td><td id="clientDetailsLastName"></td></tr>
+                            <tr><td><strong>Prénom:</strong></td><td id="clientDetailsFirstName"></td></tr>
+                            <tr><td><strong>Email:</strong></td><td id="clientDetailsEmail"></td></tr>
+                            <tr><td><strong>Téléphone:</strong></td><td id="clientDetailsPhone"></td></tr>
+                            <tr><td><strong>Statut compte:</strong></td><td id="clientDetailsStatus"></td></tr>
+                            <tr><td><strong>Date d'inscription:</strong></td><td id="clientDetailsCreatedAt"></td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 jood-primary-color">Informations Commandes</h6>
+                        <table class="table table-borderless">
+                            <tr><td><strong>Total commandes:</strong></td><td id="clientDetailsTotalOrders"></td></tr>
+                            <tr><td><strong>Dernière commande:</strong></td><td id="clientDetailsLastOrder"></td></tr>
+                            <tr><td><strong>Total dépensé:</strong></td><td id="clientDetailsTotalSpent"></td></tr>
+                            <tr><td><strong>Points fidélité:</strong></td><td id="clientDetailsPoints"></td></tr>
+                            <tr><td><strong>Adresse livraison:</strong></td><td id="clientDetailsAddress"></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Order History Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="fw-bold mb-3 jood-primary-color">
+                            <i class="fas fa-history"></i> Historique des Commandes
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="clientOrdersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Commande #</th>
+                                        <th>Statut</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Order history will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-coreui-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block javascripts %}
 {{ parent() }}
 <script src="{{ asset('js/admin/managers/client-manager.js') }}"></script>
 <script>
-    // Initialize Client Manager
     let clientManager;
     
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🔧 Initializing Client Management...');
         clientManager = new ClientManager();
         console.log('✅ Client Manager initialized');
-    });
+});
 </script>
 {% endblock %} 
