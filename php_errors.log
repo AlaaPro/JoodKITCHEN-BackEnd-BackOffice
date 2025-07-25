@@ -26,3 +26,6 @@ Did you mean this?
 [23-Jul-2025 09:49:06 Africa/Casablanca] [critical] Error thrown while running command ""server:status"". Message: "There are no commands defined in the "server" namespace.
 
 You may be looking for a command provided by the "Debug Bundle" which is currently not installed. Try running "composer require symfony/debug-bundle --dev"."
+[25-Jul-2025 16:10:18 Africa/Casablanca] [critical] Error thrown while running command "doctrine:migrations:migrate --no-interaction". Message: "An exception occurred while executing a query: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'abonnement' already exists"
+[25-Jul-2025 16:10:26 Africa/Casablanca] [critical] Error thrown while running command "doctrine:migrations:execute "DoctrineMigrations\\Version20250725151003" --up --no-interaction". Message: "Migration class "DoctrineMigrations\\Version20250725151003" was not found?"
+[25-Jul-2025 16:10:39 Africa/Casablanca] [critical] Error thrown while running command "doctrine:migrations:execute Version20250725151003 --up --no-interaction". Message: "Migration class "Version20250725151003" was not found?"

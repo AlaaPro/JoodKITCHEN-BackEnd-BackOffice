@@ -3,12 +3,93 @@
 namespace App\Controller;
 
 use App\Service\EmailService;
+use App\Service\EmailVerificationService;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 class TestController extends AbstractController
 {
+    #[Route('/test/email-verification', name: 'test_email_verification', methods: ['GET'])]
+    public function testEmailVerification(): JsonResponse
+    {
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Email verification endpoints ready',
+            'endpoints' => [
+                'send_verification' => '/api/auth/send-verification (POST)',
+                'verify_email' => '/api/auth/verify-email (POST)',
+                'resend_verification' => '/api/auth/resend-verification (POST)'
+            ],
+            'usage' => [
+                'send_verification' => ['email' => 'user@example.com'],
+                'verify_email' => ['email' => 'user@example.com', 'code' => '123456'],
+                'resend_verification' => ['email' => 'user@example.com']
+            ]
+        ]);
+    }
+
+    #[Route('/test/debug-verification', name: 'test_debug_verification', methods: ['GET'])]
+    public function debugEmailVerification(
+        EmailVerificationService $emailVerificationService,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        try {
+            // Find the test user
+            $user = $entityManager->getRepository(User::class)->findOneBy(['email' => 'valaa4@gmail.com']);
+            
+            if (!$user) {
+                return new JsonResponse(['error' => 'User valaa4@gmail.com not found'], 404);
+            }
+
+            // Get user info before
+            $beforeCode = $user->getEmailVerificationCode();
+            $beforeExpires = $user->getEmailVerificationExpiresAt();
+            $beforeVerified = $user->getEmailVerifiedAt();
+
+            // Generate a test code manually to check the service
+            $testCode = $emailVerificationService->generateVerificationCode();
+
+            // Try to send verification email
+            $result = $emailVerificationService->sendVerificationEmail($user);
+
+            // Refresh user from database to get updated values
+            $entityManager->refresh($user);
+            
+            $afterCode = $user->getEmailVerificationCode();
+            $afterExpires = $user->getEmailVerificationExpiresAt();
+            $afterVerified = $user->getEmailVerifiedAt();
+
+            return new JsonResponse([
+                'success' => true,
+                'user_id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'test_code_generated' => $testCode,
+                'send_email_result' => $result,
+                'before' => [
+                    'code' => $beforeCode,
+                    'expires' => $beforeExpires?->format('Y-m-d H:i:s'),
+                    'verified' => $beforeVerified?->format('Y-m-d H:i:s')
+                ],
+                'after' => [
+                    'code' => $afterCode,
+                    'expires' => $afterExpires?->format('Y-m-d H:i:s'),
+                    'verified' => $afterVerified?->format('Y-m-d H:i:s')
+                ],
+                'code_was_set' => $afterCode !== null,
+                'code_changed' => $beforeCode !== $afterCode
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
     #[Route('/test/email', name: 'test_email', methods: ['GET'])]
     public function testEmail(EmailService $emailService): JsonResponse
     {

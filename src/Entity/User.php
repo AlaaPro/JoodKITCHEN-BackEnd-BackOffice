@@ -70,7 +70,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     #[Groups(['user:read', 'user:write'])]
-    private ?bool $isActive = true;
+    private ?bool $isActive = false;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
@@ -125,6 +125,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['user:read'])]
     private ?\DateTimeInterface $updatedAt = null;
+
+    // Email verification fields
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['user:read'])]
+    private ?\DateTimeInterface $emailVerifiedAt = null;
+
+    #[ORM\Column(length: 6, nullable: true)]
+    private ?string $emailVerificationCode = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $emailVerificationExpiresAt = null;
 
     // Relations
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: ClientProfile::class, cascade: ['persist', 'remove'])]
@@ -527,5 +538,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
         return false;
+    }
+
+    // Email verification methods
+    public function getEmailVerifiedAt(): ?\DateTimeInterface
+    {
+        return $this->emailVerifiedAt;
+    }
+
+    public function setEmailVerifiedAt(?\DateTimeInterface $emailVerifiedAt): static
+    {
+        $this->emailVerifiedAt = $emailVerifiedAt;
+        return $this;
+    }
+
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerifiedAt !== null;
+    }
+
+    public function getEmailVerificationCode(): ?string
+    {
+        return $this->emailVerificationCode;
+    }
+
+    public function setEmailVerificationCode(?string $emailVerificationCode): static
+    {
+        $this->emailVerificationCode = $emailVerificationCode;
+        return $this;
+    }
+
+    public function getEmailVerificationExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->emailVerificationExpiresAt;
+    }
+
+    public function setEmailVerificationExpiresAt(?\DateTimeInterface $emailVerificationExpiresAt): static
+    {
+        $this->emailVerificationExpiresAt = $emailVerificationExpiresAt;
+        return $this;
+    }
+
+    public function isEmailVerificationExpired(): bool
+    {
+        if (!$this->emailVerificationExpiresAt) {
+            return true;
+        }
+        return $this->emailVerificationExpiresAt < new \DateTime();
     }
 } 
