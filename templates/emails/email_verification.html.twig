@@ -1,0 +1,64 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block email_title %}Vérification email - JoodKitchen{% endblock %}
+
+{% block email_content %}
+    <h2>🔐 Vérifiez votre adresse email</h2>
+    
+    <p>Bienvenue chez JoodKitchen !</p>
+    
+    <p>Pour finaliser la création de votre compte et commencer à profiter de nos délicieuses cuisines du monde, veuillez vérifier votre adresse email en utilisant le code ci-dessous :</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <div style="background-color: #f8f9fa; border: 2px dashed #a9b73e; padding: 20px; border-radius: 10px; display: inline-block;">
+            <p style="margin: 0; font-size: 14px; color: #666;">Code de vérification</p>
+            <p style="margin: 10px 0 0 0; font-size: 32px; font-weight: bold; color: #a9b73e; letter-spacing: 3px;">
+                {{ verification_code }}
+            </p>
+        </div>
+    </div>
+    
+    <p style="text-align: center; color: #666; font-size: 14px;">
+        ⏰ Ce code est valide pendant <strong>15 minutes</strong>
+    </p>
+    
+    <div class="highlight-box">
+        <p><strong>📱 Comment utiliser ce code :</strong></p>
+        <ol>
+            <li>Retournez dans l'application JoodKitchen</li>
+            <li>Saisissez le code à 6 chiffres ci-dessus</li>
+            <li>Votre compte sera immédiatement activé !</li>
+        </ol>
+    </div>
+    
+    <h3>🍽️ Découvrez nos cuisines du monde</h3>
+    
+    <p>Une fois votre compte vérifié, vous pourrez :</p>
+    
+    <ul>
+        <li><span class="cuisine-flag">🇲🇦</span> <strong>Cuisine Marocaine</strong> - Tajines authentiques, couscous royal...</li>
+        <li><span class="cuisine-flag">🇮🇹</span> <strong>Cuisine Italienne</strong> - Pizzas artisanales, risottos crémeux...</li>
+        <li><span class="cuisine-flag">🌍</span> <strong>Cuisine Internationale</strong> - Burgers gourmets, plats du monde...</li>
+    </ul>
+    
+    <p><strong>✨ Bonus :</strong> Profitez de nos menus du jour qui changent quotidiennement avec nos 3 cuisines ! Chaque jour une nouvelle aventure culinaire vous attend.</p>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="#" class="button">🚀 Commencer à commander</a>
+    </div>
+    
+    <p style="color: #666; font-size: 14px;">
+        <strong>Problème avec la vérification ?</strong><br>
+        Si vous n'arrivez pas à vérifier votre email, contactez-nous et nous vous aiderons rapidement.
+    </p>
+    
+    <p style="color: #666; font-size: 14px;">
+        Si vous n'avez pas créé de compte chez JoodKitchen, vous pouvez ignorer cet email en toute sécurité.
+    </p>
+    
+    <p>À bientôt chez JoodKitchen ! 🍽️</p>
+    
+    <p style="color: #666; font-size: 14px;">
+        <em>L'équipe JoodKitchen</em>
+    </p>
+{% endblock %} 

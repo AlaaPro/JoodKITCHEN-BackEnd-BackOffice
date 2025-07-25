@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block email_title %}JoodKitchen{% endblock %}</title>
+    <style>
+        /* Email-safe CSS */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .email-header {
+            background-color: #a9b73e;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .email-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .tagline {
+            font-size: 14px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .email-content {
+            padding: 30px;
+        }
+        
+        .email-content h2 {
+            color: #a9b73e;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .email-content p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #a9b73e;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .button:hover {
+            background-color: #8fa034;
+        }
+        
+        .highlight-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #a9b73e;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .cuisine-flag {
+            font-size: 18px;
+            margin-right: 5px;
+        }
+        
+        .email-footer {
+            background-color: #202d5b;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+        
+        .email-footer p {
+            margin: 5px 0;
+        }
+        
+        .email-footer a {
+            color: #a9b73e;
+            text-decoration: none;
+        }
+        
+        .social-links {
+            margin: 15px 0;
+        }
+        
+        .social-links a {
+            margin: 0 10px;
+            font-size: 16px;
+        }
+        
+        /* Responsive */
+        @media only screen and (max-width: 480px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 5px;
+            }
+            
+            .email-content {
+                padding: 20px;
+            }
+            
+            .email-header h1 {
+                font-size: 24px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header with Logo -->
+        <div class="email-header">
+            <div class="logo">🍽️ JoodKitchen</div>
+            <p class="tagline">Cuisines du Monde • Saveurs Authentiques</p>
+        </div>
+        
+        <!-- Dynamic Content -->
+        <div class="email-content">
+            {% block email_content %}
+            <!-- Dynamic content will be inserted here -->
+            {% endblock %}
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <p><strong>🍽️ JoodKitchen</strong></p>
+            <p>Cuisines Marocaine 🇲🇦 • Italienne 🇮🇹 • Internationale 🌍</p>
+            
+            <div class="social-links">
+                <a href="#" title="Facebook">📘</a>
+                <a href="#" title="Instagram">📸</a>
+                <a href="#" title="WhatsApp">📱</a>
+            </div>
+            
+            <p>
+                📍 Adresse: [Votre Adresse]<br>
+                📞 Téléphone: [Votre Téléphone]<br>
+                📧 Email: <a href="mailto:contact@joodkitchen.com">contact@joodkitchen.com</a>
+            </p>
+            
+            <p style="font-size: 12px; opacity: 0.8; margin-top: 15px;">
+                Vous recevez cet email car vous êtes client chez JoodKitchen.<br>
+                <a href="#" style="color: #a9b73e;">Se désabonner</a> | 
+                <a href="#" style="color: #a9b73e;">Préférences email</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html> 

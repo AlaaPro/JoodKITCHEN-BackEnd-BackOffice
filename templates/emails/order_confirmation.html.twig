@@ -1,0 +1,91 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block email_title %}Confirmation de commande - JoodKitchen{% endblock %}
+
+{% block email_content %}
+    <h2>🎉 Merci pour votre commande !</h2>
+    
+    <p>Bonjour {% if order.client_name %}{{ order.client_name }}{% else %}cher client{% endif %},</p>
+    
+    <p>Nous avons bien reçu votre commande et nous vous remercions de votre confiance. Voici les détails de votre commande :</p>
+    
+    <div class="highlight-box">
+        <p><strong>📋 Numéro de commande :</strong> {{ order.numero|default('CMD-' ~ order.id) }}</p>
+        <p><strong>📅 Date de commande :</strong> {{ order.date_commande|date('d/m/Y à H:i') }}</p>
+        <p><strong>🚚 Type de service :</strong> 
+            {% if order.type_livraison == 'livraison' %}
+                Livraison à domicile
+            {% elseif order.type_livraison == 'a_emporter' %}
+                À emporter
+            {% else %}
+                Sur place
+            {% endif %}
+        </p>
+        {% if order.adresse_livraison is defined and order.adresse_livraison %}
+            <p><strong>📍 Adresse :</strong> {{ order.adresse_livraison }}</p>
+        {% endif %}
+    </div>
+    
+    <h3>🍽️ Détails de votre commande</h3>
+    
+    {% if order.articles is defined and order.articles|length > 0 %}
+        {% for article in order.articles %}
+            <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                <p style="margin-bottom: 5px;">
+                    <strong>{{ article.nom }}</strong>
+                    {% if article.type == 'menu' %}
+                        {% if article.cuisine_type == 'marocain' %}🇲🇦
+                        {% elseif article.cuisine_type == 'italien' %}🇮🇹
+                        {% else %}🌍{% endif %}
+                    {% endif %}
+                </p>
+                {% if article.description is defined and article.description %}
+                    <p style="font-size: 14px; color: #666; margin-bottom: 5px;">{{ article.description }}</p>
+                {% endif %}
+                <p style="margin: 0;">
+                    Quantité: {{ article.quantite }} × {{ article.prix_unitaire }}€ = 
+                    <strong>{{ (article.quantite * article.prix_unitaire)|number_format(2, ',', ' ') }}€</strong>
+                </p>
+                {% if article.commentaire is defined and article.commentaire %}
+                    <p style="font-size: 13px; color: #a9b73e; margin: 5px 0 0 0;">
+                        💬 {{ article.commentaire }}
+                    </p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px;">
+        {% if order.total_avant_reduction and order.total_avant_reduction != order.total %}
+            <p style="margin: 5px 0;">Sous-total: {{ order.total_avant_reduction|number_format(2, ',', ' ') }}€</p>
+            <p style="margin: 5px 0; color: #dc3545;">Réduction: -{{ (order.total_avant_reduction - order.total)|number_format(2, ',', ' ') }}€</p>
+        {% endif %}
+        <p style="margin: 5px 0; font-size: 18px; font-weight: bold; color: #a9b73e;">
+            💰 Total: {{ order.total|number_format(2, ',', ' ') }}€
+        </p>
+    </div>
+    
+    {% if order.statut == 'en_attente' %}
+        <div class="highlight-box">
+            <p><strong>⏳ Statut actuel :</strong> En attente de confirmation</p>
+            <p>Nous préparons votre commande avec soin. Vous recevrez une notification dès que votre commande sera prête !</p>
+        </div>
+    {% endif %}
+    
+    {% if order.commentaire is defined and order.commentaire %}
+        <p><strong>💬 Vos instructions :</strong><br>
+        <em>{{ order.commentaire }}</em></p>
+    {% endif %}
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="#" class="button">📱 Suivre ma commande</a>
+    </div>
+    
+    <p>Si vous avez des questions concernant votre commande, n'hésitez pas à nous contacter.</p>
+    
+    <p>Merci encore pour votre confiance et bon appétit ! 🍽️</p>
+    
+    <p style="color: #666; font-size: 14px;">
+        <em>L'équipe JoodKitchen</em>
+    </p>
+{% endblock %} 
