@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class TestController extends AbstractController
 {
@@ -171,6 +173,42 @@ class TestController extends AbstractController
             return $this->json([
                 'success' => false,
                 'error' => $e->getMessage(),
+                'smtp_config' => [
+                    'from_email' => $_ENV['MAILER_FROM_EMAIL'] ?? 'Not set',
+                    'from_name' => $_ENV['MAILER_FROM_NAME'] ?? 'Not set',
+                    'dsn_configured' => isset($_ENV['MAILER_DSN']) ? 'Yes' : 'No'
+                ]
+            ], 500);
+        }
+    }
+
+    #[Route('/test/smtp-debug', name: 'test_smtp_debug', methods: ['GET'])]
+    public function testSmtpConnection(MailerInterface $mailer): JsonResponse
+    {
+        try {
+            $email = (new Email())
+                ->from($_ENV['MAILER_FROM_EMAIL'] ?? 'test@example.com')
+                ->to('alaa.zerroud@gmail.com')
+                ->subject('🧪 SMTP Test - JoodKitchen')
+                ->html('<h2>SMTP Test Email</h2><p>If you receive this, SMTP is working correctly!</p><p><strong>From:</strong> JoodKitchen Email Service</p><p><strong>Time:</strong> ' . date('Y-m-d H:i:s') . '</p>');
+
+            $mailer->send($email);
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Email sent successfully via SMTP',
+                'config' => [
+                    'from_email' => $_ENV['MAILER_FROM_EMAIL'] ?? 'Not set',
+                    'from_name' => $_ENV['MAILER_FROM_NAME'] ?? 'Not set',
+                    'dsn_configured' => isset($_ENV['MAILER_DSN']) ? 'Yes' : 'No'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'error_type' => get_class($e),
                 'smtp_config' => [
                     'from_email' => $_ENV['MAILER_FROM_EMAIL'] ?? 'Not set',
                     'from_name' => $_ENV['MAILER_FROM_NAME'] ?? 'Not set',
